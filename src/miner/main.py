@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -7,7 +5,7 @@ from itertools import islice
 import json
 import urllib.parse as urlparse
 
-from iribaker import to_iri
+from packages.iribaker.iribaker import to_iri
 from rdflib import URIRef, Literal
 
 import load_json as h
@@ -36,11 +34,11 @@ def id_to_iri(id_):
 
 
 def format_name_string(input_string):
+    print (input_string)
     input_string = re.sub('\(.+?\)', '', input_string)
     input_string = input_string.lower().title().encode('utf-8').strip()
-    input_string = re.sub('\s+', '_', input_string)
+    input_string = re.sub('\s+', '_', str(input_string))
     return urlparse.quote(input_string.replace('.','_'))
-
 
 def name_to_dbr(name):
     formatted = format_name_string(name)

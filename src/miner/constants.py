@@ -3,19 +3,21 @@ import os
 
 DATA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/data/'
-print (DATA_DIR)
 
 JSON_DIR = DATA_DIR + 'json/'
 LD_DIR = DATA_DIR + 'linked_data/'
 
 DATA_OUTPUT = LD_DIR + 'parltrack.ttl'
 
-DATA_MEP = JSON_DIR + 'meps.json'
-DATA_VOTES = JSON_DIR + 'votes.json'
-DATA_DOSSIER = JSON_DIR + 'dossiers.json'
+print ("??????")
+
+DATA_MEP = JSON_DIR + 'ep_meps_current.json'
+DATA_VOTES = JSON_DIR + 'ep_votes.json'
+DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
 DICT_MEPS = JSON_DIR + 'dict_meps.json'
 DICT_PARTIES = JSON_DIR + 'dict_parties.json'
 
+DOWNLOAD_TIMEOUT = 30
 DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']

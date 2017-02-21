@@ -1,7 +1,5 @@
-import tarfile
-import urllib.request
-from urllib2 import URLError, urlopen
-from urlparse import urlparse
+import lzma
+from urllib import error, request, parse
 from os.path import basename
 import os, datetime, time
 
@@ -10,26 +8,27 @@ import constants as c
 def download_datasets():
 
     for url in c.DATA_URLS:
-        uo = urlopen(url)
-        meta = uo.info()
-        modified_date = meta.getheaders("Last-Modified")
+        uo = request.urlopen(url, timeout=c.DOWNLOAD_TIMEOUT)
+        modified_date = uo.headers['last-modified']
+        remote_unix = time.mktime(datetime.datetime.strptime(modified_date, '%a, %d %b %Y %X GMT').timetuple())
 
-        print modified_date
-        modified_remote = time.mktime(datetime.datetime.strptime(modified_date, '%a, %d %b %Y %X UTC').timetuple())
-        print modified_remote
-
-        disassembled = urlparse(url)
+        disassembled = parse.urlparse(url)
         file_name = basename(disassembled.path)
         path = c.JSON_DIR + file_name
 
-        if os.path.getmtime(path) > modified_remote:
+        if os.path.isfile(path):
+            local_unix = os.path.getmtime(path)
+        else:
+            local_unix = 0
+
+        if local_unix < remote_unix:
             try:
                 print ("Downloading", url, "to", path, "...")
-                urllib.request.urlretrieve(url, path)
+                request.urlretrieve(url, path)
                 print ("Extracting dataset...")
                 extract_dataset(path)
-            except URLError, e:
-                if e.code = 404:
+            except (error.URLError) as e:
+                if e.code == 404:
                     print ("Resource", url, "could not be found")
                 else:
                     print ("%s" % e)
@@ -37,5 +36,11 @@ def download_datasets():
             print (file_name, "already the latest version. skipping.")
 
 def extract_dataset(path):
-    with tarfile.open(path) as f:
-        f.extractall('.')
+    dir_path, filename = os.path.split(path)
+    name = os.path.splitext(filename)[0]
+
+    print (dir_path, name)
+
+    with lzma.open(path) as f, open(c.JSON_DIR+name, 'wb') as fout:
+        file_content = f.read()
+        fout.write(file_content)

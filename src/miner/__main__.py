@@ -3,10 +3,11 @@ import argparse
 
 import constants as c, main as m, save as s, downloader as dl
 
+print ("Data directory:", c.DATA_DIR)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--update", help="Will fetch the latest dataset")
-parser.parse_args()
+parser.add_argument("--update", help="Will fetch the latest dataset and then run", action="store_true")
+args = parser.parse_args()
 
 if args.update:
     print ("Downloading latest datasets...")
@@ -22,7 +23,6 @@ ds.bind('dbp', c.DBP)
 ds.bind('foaf', c.FOAF)
 
 graph = ds.graph(c.ONT)
-
 ds, graph = m.convert_mep(c.DATA_MEP, ds, graph)
 
 print ("Saving JSON Dumps...")

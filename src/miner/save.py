@@ -3,7 +3,7 @@ from flask import json
 def save_dataset(filename, dataset):
     with open(filename, 'w') as f:
         print ('Saving:', filename)
-        dataset.serialize(f, format='turtle')
+        dataset.serialize(str(f), format='turtle')
     print ('Saved.')
     print
 
