@@ -1,0 +1,3 @@
+[submodule "src/packages/iribaker"]
+	path = src/packages/iribaker
+	url = git@github.com:Chadsr/iribaker.git
