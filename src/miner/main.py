@@ -12,6 +12,9 @@ import io_handler as io
 import constants as c
 import formatting as fmt
 
+from timeit import default_timer as timer
+from timing import get_elapsed_seconds
+
 # These are currently dict(lists), because there is a possibility of multiple iris per key in the future
 dict_mep = defaultdict(list)
 dict_party = defaultdict(list)
@@ -52,6 +55,7 @@ def convert_dossier(path, dataset, graph):
     json_data = io.load_json(path)
     count = 0
 
+    start = timer()
     for dossier in islice(json_data, 0, c.DOSSIER_LIMIT):
         for activity in dossier['activities']:
             if 'type' in activity:
@@ -79,7 +83,8 @@ def convert_dossier(path, dataset, graph):
                     count += 1
                     break  # dossier matches DOSSIER_TYPE, no need to search more activities
 
-    print (fmt.OK_SYMBOL, "Mined", count, "voted dossiers.")
+    end = timer()
+    print (fmt.OK_SYMBOL, "Mined", count, "voted dossiers. Took ", get_elapsed_seconds(start, end), "seconds")
     return dataset, graph
 
 
@@ -87,13 +92,14 @@ def convert_votes(path, dataset, graph):
     json_data = io.load_json(path)
     count = 0
 
+    start = timer()
     for votes in islice(json_data, 0, c.VOTES_LIMIT):
         if 'dossierid' in votes:
             dossier_id = votes['dossierid']
 
             # If this dossier is in our dictionary of useful dossiers, continue
             if dossier_id in dict_dossier:
-                dossier_uri = str(dict_dossier[dossier_id][0])
+                dossier_uri = dict_dossier[dossier_id][0]
                 # title = votes['title']
                 # url = dossier['url']
                 # ep_title = dossier['eptitle']
@@ -103,30 +109,33 @@ def convert_votes(path, dataset, graph):
                         # group_name = group['group']
                         for vote in group['votes']:
                             # user_id = vote['userid']
-                            voter_id = vote['ep_id']
+                            voter_id = str(vote['ep_id'])
                             if voter_id in dict_mep:
                                 dataset.add((URIRef(str(dict_mep[voter_id][0])), c.ABSTAINS, dossier_uri))
+                                count += 1
 
                 if 'For' in votes:
                     for group in votes['For']['groups']:
                         # group_name = group['group']
                         for vote in group['votes']:
                             # user_id = vote['userid']
-                            voter_id = vote['ep_id']
+                            voter_id = str(vote['ep_id'])
                             if voter_id in dict_mep:
                                 dataset.add((URIRef(str(dict_mep[voter_id][0])), c.VOTES_FOR, dossier_uri))
+                                count += 1
 
                 if 'Against' in votes:
                     for group in votes['Against']['groups']:
                         # group_name = group['group']
                         for vote in group['votes']:
                             # user_id = vote['userid']
-                            voter_id = vote['ep_id']
+                            voter_id = str(vote['ep_id'])
                             if voter_id in dict_mep:
                                 dataset.add((URIRef(str(dict_mep[voter_id][0])), c.VOTES_AGAINST, dossier_uri))
-                count += 1
-                #print ('Votes on dossier:', dossier_uri)
-    print (fmt.OK_SYMBOL, "Mined", count, "related votes.")
+                                count += 1
+
+    end = timer()
+    print (fmt.OK_SYMBOL, "Mined", count, "related votes. Took ", get_elapsed_seconds(start, end), "seconds")
     return dataset, graph
 
 
@@ -134,6 +143,7 @@ def convert_mep(path, dataset, graph):
     json_data = io.load_json(path)
     count = 0
 
+    start = timer()
     for mep in islice(json_data, 0, c.MEP_LIMIT):
         # Get raw values
         user_id = str(mep['UserID'])
@@ -212,6 +222,6 @@ def convert_mep(path, dataset, graph):
         dataset.add((mep_uri, c.OFFICE, c.MEMBER_OF_EU))
 
         count += 1
-
-    print (fmt.OK_SYMBOL, "Mined", count, "MEPs")
+    end = timer()
+    print (fmt.OK_SYMBOL, "Mined", count, "MEPs. Took ", get_elapsed_seconds(start, end), "seconds")
     return dataset, graph
