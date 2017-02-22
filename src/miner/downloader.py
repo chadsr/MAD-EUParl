@@ -3,7 +3,7 @@ from urllib import error, request, parse
 from os.path import basename
 import os, datetime, time
 
-import constants as c
+import constants as c, formatting as fmt
 
 def download_datasets():
 
@@ -23,17 +23,17 @@ def download_datasets():
 
         if local_unix < remote_unix:
             try:
-                print ("Downloading", url, "to", path, "...")
+                print (fmt.WAIT_SYMBOL, "Downloading", url, "to", path, "...")
                 request.urlretrieve(url, path)
-                print ("Extracting dataset...")
+                print (fmt.WAIT_SYMBOL, "Extracting dataset...")
                 extract_dataset(path)
             except (error.URLError) as e:
                 if e.code == 404:
-                    print ("Resource", url, "could not be found")
+                    print (fmt.ERROR_SYMBOL, "Resource", url, "could not be found")
                 else:
                     print ("%s" % e)
         else:
-            print (file_name, "already the latest version. skipping.")
+            print (fmt.WARNING_SYMBOL, file_name, "already the latest version. skipping.")
 
 def extract_dataset(path):
     dir_path, filename = os.path.split(path)

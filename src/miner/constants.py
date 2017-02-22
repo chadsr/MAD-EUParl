@@ -9,8 +9,6 @@ LD_DIR = DATA_DIR + 'linked_data/'
 
 DATA_OUTPUT = LD_DIR + 'parltrack.ttl'
 
-print ("??????")
-
 DATA_MEP = JSON_DIR + 'ep_meps_current.json'
 DATA_VOTES = JSON_DIR + 'ep_votes.json'
 DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
