@@ -87,7 +87,7 @@ def convert_dossier(path, dataset, graph):
                     break  # dossier matches DOSSIER_TYPE, no need to search more activities
 
     end = timer()
-    print (fmt.OK_SYMBOL, "Mined", count, "voted dossiers. Took ", get_elapsed_seconds(start, end), "seconds")
+    print (fmt.OK_SYMBOL, "Mined", count, "dossiers. Took ", get_elapsed_seconds(start, end), "seconds")
     return dataset, graph
 
 

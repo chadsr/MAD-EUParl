@@ -12,6 +12,14 @@ def save_dataset(filename, dataset):
         end = timer()
     print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
+def save_graph(filename, graph):
+    with open(filename, 'wb') as f:
+        print ('\n' + fmt.WAIT_SYMBOL, 'Saving:', filename)
+        start = timer()
+        graph.serialize(f, format='nt')
+        end = timer()
+    print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
+
 def save_json(filename, data):
     with open(filename, 'w') as f:
         print ('\n' + fmt.WAIT_SYMBOL, 'Saving:', filename)

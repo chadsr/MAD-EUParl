@@ -1,13 +1,16 @@
 from rdflib import Namespace, XSD
 import os
 
+SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
+
 DATA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/data/'
 
 JSON_DIR = DATA_DIR + 'json/'
 LD_DIR = DATA_DIR + 'linked_data/'
 
-DATA_OUTPUT = LD_DIR + 'parltrack.ttl'
+DATA_OUTPUT = LD_DIR + 'parltrack-data.ttl'
+GRAPH_OUTPUT = LD_DIR + 'parltrack-graph.ttl'
 
 DATA_MEP = JSON_DIR + 'ep_meps_current.json'
 DATA_VOTES = JSON_DIR + 'ep_votes.json'
@@ -32,7 +35,7 @@ ont = NAMESPACE
 ONT = Namespace(ont)
 PREFIX = 'votes'
 
-DOSSIER_TYPE = 'Legislative proposal published'
+#DOSSIER_TYPE = 'Legislative proposal published'
 
 # eo = 'http://www.w3.org/2003/01/geo/wgs84_pos#'
 # GEO = Namespace(geo)
