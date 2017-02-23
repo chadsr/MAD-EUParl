@@ -59,7 +59,9 @@ def convert_dossier(path, dataset, graph):
     for dossier in islice(json_data, 0, c.DOSSIER_LIMIT):
         for activity in dossier['activities']:
             if 'type' in activity:
-                if activity['type'] == c.DOSSIER_TYPE:
+                if activity['type'] != None:
+                    dossier_activity = Literal(str(activity['type']), datatype=c.STRING)
+                #if activity['type'] == c.DOSSIER_TYPE:
                     dossier_id = dossier['_id']
                     dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
                     dossier_date = Literal(
@@ -75,6 +77,7 @@ def convert_dossier(path, dataset, graph):
                     dataset.add((dossier_uri, c.DOSSIER_TITLE, dossier_title))
                     dataset.add((dossier_uri, c.URI, dossier_url))
                     dataset.add((dossier_uri, c.DATE, dossier_date))
+                    dataset.add((dossier_uri, c.ACTIVITY_TYPE, dossier_activity))
 
                     # Store the id and uri in the dictionary for use later
                     dict_dossier[dossier_id].append(dossier_uri)

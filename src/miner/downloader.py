@@ -4,6 +4,8 @@ from os.path import basename
 import os, datetime, time
 
 import constants as c, formatting as fmt
+from timeit import default_timer as timer
+from timing import get_elapsed_seconds
 
 def download_datasets():
 
@@ -25,8 +27,11 @@ def download_datasets():
             try:
                 print (fmt.WAIT_SYMBOL, "Downloading", url, "to", path, "...")
                 request.urlretrieve(url, path)
-                print (fmt.WAIT_SYMBOL, "Extracting dataset...")
+                print (fmt.WAIT_SYMBOL, "Extracting ", path)
+                start = timer()
                 extract_dataset(path)
+                end = timer()
+                print (fmt.OK_SYMBOL, "Extracted. Took", get_elapsed_seconds(start, end))
             except (error.URLError) as e:
                 if e.code == 404:
                     print (fmt.ERROR_SYMBOL, "Resource", url, "could not be found")
@@ -38,8 +43,6 @@ def download_datasets():
 def extract_dataset(path):
     dir_path, filename = os.path.split(path)
     name = os.path.splitext(filename)[0]
-
-    print (dir_path, name)
 
     with lzma.open(path) as f, open(c.JSON_DIR+name, 'wb') as fout:
         file_content = f.read()

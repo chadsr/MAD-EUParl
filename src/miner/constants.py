@@ -47,14 +47,16 @@ DBP = Namespace(dbp)
 foaf = 'http://xmlns.com/foaf/0.1/'
 FOAF = Namespace(foaf)
 
-DOSSIER = ONT['Bill']
-DOSSIER_TITLE = ONT['bill_text']
+DOSSIER = ONT['Dossier']
+DOSSIER_TITLE = ONT['dossier_title']
 PROCESSED_BY = ONT['processedBy']
 
 ABSTAINS = ONT['abstains']
-VOTES_FOR = ONT['upvotes']
-VOTES_AGAINST = ONT['downvotes']
+VOTES_FOR = ONT['for']
+VOTES_AGAINST = ONT['against']
 VOTES_IN = ONT['votesIn']
+
+ACTIVITY_TYPE = ONT['activityType']
 
 MEMBER_OF = DBR['party']
 PARTY = DBO['party']
