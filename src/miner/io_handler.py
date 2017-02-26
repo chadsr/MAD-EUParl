@@ -20,14 +20,20 @@ def save_graph(filename, graph):
         end = timer()
     print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
-def save_json(filename, data, ordered=True):
+def get_key(key):
+    try:
+        return int(key)
+    except ValueError:
+        return key
+
+def save_dict_to_json(filename, data, ordered=True, indent_num=2):
     if ordered:
-        data = OrderedDict(sorted(data.items()))
+        data = OrderedDict(sorted(data.items(), key=lambda d: get_key(d[0])))
 
     with open(filename, 'w') as f:
         print (fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
-        json.dump(data, f, indent=2)
+        json.dump(data, f, indent=indent_num)
         end = timer()
     print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
@@ -57,8 +63,10 @@ def json_to_defaultdict(json_str):
     print (fmt.WAIT_SYMBOL, 'Converting JSON to Dict...')
     start = timer()
     for key in json_str:
+        dict_key = get_key(key)
+        
         for element in json_str[key]:
-            def_dict[str(key)].append(element)
+            def_dict[dict_key].append(element)
     end = timer()
     print (fmt.OK_SYMBOL, "Done. Took: ", get_elapsed_seconds(start, end), "seconds\n")
     return def_dict

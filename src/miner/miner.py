@@ -39,8 +39,8 @@ class Miner(object):
         print (fmt.WAIT_SYMBOL, "Mining MEPS...")
         count, time = self.convert_meps(c.DATA_MEP)
 
-        io.save_json(c.DICT_MEPS, self.dict_mep)
-        io.save_json(c.DICT_PARTIES, self.dict_party)
+        io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
+        io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
 
         print (fmt.WAIT_SYMBOL, "Mining dossiers...")
         count, time = self.convert_dossier(c.DATA_DOSSIER)
@@ -163,7 +163,7 @@ class Miner(object):
         start = timer()
         for mep in islice(json_data, 0, c.MEP_LIMIT):
             # Get raw values
-            user_id = str(mep['UserID'])
+            user_id = int(mep['UserID'])
             full_name = Literal(str(mep['Name']['full'].lower().title().strip()), datatype=c.STRING)
             profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
             mep_uri = self.name_to_dbr(full_name)
