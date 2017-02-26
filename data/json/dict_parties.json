@@ -1,0 +1,140 @@
+{
+  "ALDE": [
+    "http://dbpedia.org/resource/Alliance_of_Liberals_and_Democrats_for_Europe_Party",
+    "http://dbpedia.org/resource/Group_Of_The_Alliance_Of_Liberals_And_Democrats_For_Europe"
+  ],
+  "CDI": [
+    "http://dbpedia.org/resource/Technical_Group_of_Independents_%281979%E2%80%9384%29",
+    "http://dbpedia.org/resource/Group_For_The_Technical_Coordination_And_Defence_Of_Indipendent_Groups_And_Members"
+  ],
+  "COM": [
+    "http://dbpedia.org/resource/Communist_and_Allies_Group",
+    "http://dbpedia.org/resource/Communist_And_Allies_Group"
+  ],
+  "DEP": [
+    "http://dbpedia.org/resource/European_Progressive_Democrats",
+    "http://dbpedia.org/resource/Group_Of_European_Progressive_Democrats"
+  ],
+  "DR": [
+    "http://dbpedia.org/resource/Technical_Group_of_the_European_Right",
+    "http://dbpedia.org/resource/Technical_Group_Of_The_European_Right"
+  ],
+  "ECR": [
+    "http://dbpedia.org/resource/European_Conservatives_and_Reformists",
+    "http://dbpedia.org/resource/European_Conservatives_And_Reformists_Group"
+  ],
+  "EDA": [
+    "http://dbpedia.org/resource/European_Democratic_Alliance",
+    "http://dbpedia.org/resource/Group_Of_The_European_Democratic_Alliance"
+  ],
+  "EDD": [
+    "http://dbpedia.org/resource/Group_for_a_Europe_of_Democracies_and_Diversities",
+    "http://dbpedia.org/resource/Group_For_A_Europe_Of_Democracies_And_Diversities"
+  ],
+  "EDG": [
+    "http://dbpedia.org/resource/European_Democratic_Group"
+  ],
+  "EFD": [
+    "http://dbpedia.org/resource/Europe_of_Freedom_and_Democracy",
+    "http://dbpedia.org/resource/Europe_Of_Freedom_And_Democracy_Group"
+  ],
+  "EFDD": [
+    "http://dbpedia.org/resource/Europe_of_Freedom_and_Direct_Democracy",
+    "http://dbpedia.org/resource/Europe_Of_Freedom_And_Direct_Democracy_Group"
+  ],
+  "ELDR": [
+    "http://dbpedia.org/resource/European_Liberal_Democrat_and_Reform_Party_%28European_Parliament_group%29",
+    "http://dbpedia.org/resource/Group_Of_The_European_Liberal%2C_Democrat_And_Reform_Party"
+  ],
+  "ENF": [
+    "http://dbpedia.org/resource/Europe_of_Nations_and_Freedom",
+    "http://dbpedia.org/resource/Europe_Of_Nations_And_Freedom_Group"
+  ],
+  "ER": [
+    "http://dbpedia.org/resource/European_Right_%281984%E2%80%9389%29",
+    "http://dbpedia.org/resource/Group_Of_Independents_For_A_Europe_Of_Nations",
+    "http://dbpedia.org/resource/Group_Of_The_European_Right"
+  ],
+  "ERA": [
+    "http://dbpedia.org/resource/European_Radical_Alliance",
+    "http://dbpedia.org/resource/Group_Of_The_European_Radical_Alliance"
+  ],
+  "GUE/NGL": [
+    "http://dbpedia.org/resource/European_United_Left%E2%80%93Nordic_Green_Left",
+    "http://dbpedia.org/resource/Confederal_Group_Of_The_European_United_Left_-_Nordic_Green_Left",
+    "http://dbpedia.org/resource/Confederal_Group_Of_The_European_United_Left/Nordic_Green_Left",
+    "http://dbpedia.org/resource/Confederal_Group_Of_The_European_United_Left"
+  ],
+  "ID": [
+    "http://dbpedia.org/resource/Independence/Democracy",
+    "http://dbpedia.org/resource/Independence/Democracy_Group"
+  ],
+  "IND/DEM": [
+    "http://dbpedia.org/resource/Independence/Democracy",
+    "http://dbpedia.org/resource/Independence/Democracy_Group"
+  ],
+  "INDDEM": [
+    "http://dbpedia.org/resource/Independence/Democracy",
+    "http://dbpedia.org/resource/Independence/Democracy_Group"
+  ],
+  "LD": [
+    "http://dbpedia.org/resource/Liberal_and_Democratic_Group",
+    "http://dbpedia.org/resource/Liberal_And_Democratic_Group"
+  ],
+  "LDR": [
+    "http://dbpedia.org/resource/Liberal_and_Democratic_Reformist_Group",
+    "http://dbpedia.org/resource/Liberal_And_Democratic_Reformist_Group"
+  ],
+  "LU": [
+    "http://dbpedia.org/resource/Left_Unity_%28European_Parliament%29",
+    "http://dbpedia.org/resource/Left_Unity"
+  ],
+  "NA": [
+    "http://dbpedia.org/resource/Non-Inscrits",
+    "http://dbpedia.org/resource/Non-Attached_Members",
+    "http://dbpedia.org/resource/Non-Attached"
+  ],
+  "NI": [
+    "http://dbpedia.org/resource/Non-Inscrits",
+    "http://dbpedia.org/resource/Non-Attached_Members",
+    "http://dbpedia.org/resource/Non-Attached"
+  ],
+  "PPE": [
+    "http://dbpedia.org/resource/European_People%27s_Party",
+    "http://dbpedia.org/resource/Group_Of_The_European_People%27S_Party"
+  ],
+  "PPE-DE": [
+    "http://dbpedia.org/resource/Group_Of_The_European_People%27s_Party_And_European_Democrats",
+    "http://dbpedia.org/resource/Group_Of_The_European_People%27S_Party_And_European_Democrats"
+  ],
+  "PSE": [
+    "http://dbpedia.org/resource/Socialist_Group_in_the_European_Parliament",
+    "http://dbpedia.org/resource/Socialist_Group_In_The_European_Parliament",
+    "http://dbpedia.org/resource/Group_Of_The_Party_Of_European_Socialists"
+  ],
+  "RBW": [
+    "http://dbpedia.org/resource/Rainbow_Group_in_the_European_Parliament",
+    "http://dbpedia.org/resource/Rainbow_Group_In_The_European_Parliament",
+    "http://dbpedia.org/resource/Rainbow_Group%3A_Federation_Of_The_Green-Alternative_European_Links%2C_Agelev-Ecolo%2C_The_Danish_People%27S_Movement_Against_Membership_Of_The_European_Community_And_The_European_Free_Alliance_In_The_European_Parliament"
+  ],
+  "S&D": [
+    "http://dbpedia.org/resource/Progressive_Alliance_of_Socialists_&_Democrats",
+    "http://dbpedia.org/resource/Group_Of_The_Progressive_Alliance_Of_Socialists_And_Democrats_In_The_European_Parliament"
+  ],
+  "SOC": [
+    "http://dbpedia.org/resource/Socialist_Group_%28European_Parliament_group%29",
+    "http://dbpedia.org/resource/Socialist_Group"
+  ],
+  "UEN": [
+    "http://dbpedia.org/resource/Union_For_Europe_Of_The_Nations_Group"
+  ],
+  "UFE": [
+    "http://dbpedia.org/resource/Union_for_Europe_of_the_Nations_%28European_Parliament_group%29",
+    "http://dbpedia.org/resource/Group_Union_For_Europe"
+  ],
+  "Verts/ALE": [
+    "http://dbpedia.org/resource/The_Greens%E2%80%93European_Free_Alliance",
+    "http://dbpedia.org/resource/Group_Of_The_Greens/European_Free_Alliance",
+    "http://dbpedia.org/resource/The_Green_Group_In_The_European_Parliament"
+  ]
+}
