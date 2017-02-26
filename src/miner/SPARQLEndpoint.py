@@ -3,11 +3,13 @@ from rdflib import py3compat as compat
 import constants as c, formatting as fmt
 from timeit import default_timer as timer
 from timing import get_elapsed_seconds
-
+import subprocess
 
 class SparqlServer(object):
-    def __init__(self):
+    def __init__(self, start_server=True):
         self.sparql = SPARQLWrapper(c.SPARQL_ENDPOINT)
+        if start_server:
+            subprocess.Popen(c.SERVER_START, shell=True)
 
     def import_graph(self, graph):
         print (fmt.WAIT_SYMBOL, "Importing graph to", c.SPARQL_ENDPOINT)

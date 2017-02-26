@@ -31,7 +31,7 @@ def download_datasets():
                 start = timer()
                 extract_dataset(path)
                 end = timer()
-                print (fmt.OK_SYMBOL, "Extracted. Took", get_elapsed_seconds(start, end))
+                print (fmt.OK_SYMBOL, "Extracted. Took", get_elapsed_seconds(start, end), 'seconds')
             except (error.URLError) as e:
                 if e.code == 404:
                     print (fmt.ERROR_SYMBOL, "Resource", url, "could not be found")

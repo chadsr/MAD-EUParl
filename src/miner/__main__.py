@@ -2,17 +2,27 @@ import argparse
 from timeit import default_timer as timer
 from timing import get_elapsed_seconds
 from SPARQLEndpoint import SparqlServer
-from dataset_generator import DatasetGenerator
+import os
+from miner import Miner
 
-import constants as c, main as m, io_handler as io, downloader as dl, formatting as fmt
+import constants as c, io_handler as io, downloader as dl, formatting as fmt
 
 print (fmt.INFO_SYMBOL, "Data directory:", c.DATA_DIR, "\n")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--update", help="Will fetch the latest dataset and then run", action="store_true")
+parser.add_argument("--threads", help="Used to specify the number of threads the miner should utilise. Takes an integer, or if left out, uses cpu thread count as default.", type=int)
+
 args = parser.parse_args()
 
 start = timer()
+
+if args.threads:
+    num_threads = args.threads
+else:
+    num_threads = os.cpu_count()
+
+print (fmt.INFO_SYMBOL, "Using", num_threads, "thread(s).\n")
 
 if args.update:
     print (fmt.WAIT_SYMBOL, "Downloading latest datasets...")
@@ -22,25 +32,13 @@ else:
 
 sparql_endpoint = SparqlServer()
 
-ds = DatasetGenerator.get_dataset()
-graph = ds.graph(c.ONT)
+miner = Miner()
+miner.start(num_threads)
 
-ds, graph = m.convert_mep(c.DATA_MEP, ds, graph)
-sparql_endpoint.import_dataset(ds)
+sparql_endpoint.import_dataset(miner.dataset)
 
-io.save_json(c.DICT_MEPS, m.dict_mep)
-io.save_json(c.DICT_PARTIES, m.dict_party)
-
-ds = DatasetGenerator.get_dataset()
-ds, graph = m.convert_dossier(c.DATA_DOSSIER, ds, graph)
-sparql_endpoint.import_dataset(ds)
-
-ds = DatasetGenerator.get_dataset()
-ds, graph = m.convert_votes(c.DATA_VOTES, ds, graph)
-sparql_endpoint.import_dataset(ds)
-
-io.save_graph(c.GRAPH_OUTPUT, graph)
-io.save_dataset(c.DATA_OUTPUT, ds)
+#io.save_graph(c.GRAPH_OUTPUT, graph)
+io.save_dataset(c.DATA_OUTPUT, miner.dataset)
 
 end = timer()
 

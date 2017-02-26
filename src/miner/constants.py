@@ -2,6 +2,7 @@ from rdflib import Namespace, XSD
 import os
 
 SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
+SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics'
 
 DATA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/data/'

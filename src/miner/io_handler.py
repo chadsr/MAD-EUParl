@@ -6,7 +6,7 @@ import formatting as fmt
 
 def save_dataset(filename, dataset):
     with open(filename, 'wb') as f:
-        print ('\n' + fmt.WAIT_SYMBOL, 'Saving:', filename)
+        print (fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
         dataset.serialize(f, format='turtle')
         end = timer()
@@ -14,7 +14,7 @@ def save_dataset(filename, dataset):
 
 def save_graph(filename, graph):
     with open(filename, 'wb') as f:
-        print ('\n' + fmt.WAIT_SYMBOL, 'Saving:', filename)
+        print (fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
         graph.serialize(f, format='nt')
         end = timer()
@@ -22,7 +22,7 @@ def save_graph(filename, graph):
 
 def save_json(filename, data):
     with open(filename, 'w') as f:
-        print ('\n' + fmt.WAIT_SYMBOL, 'Saving:', filename)
+        print (fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
         json.dump(data, f)
         end = timer()
@@ -32,7 +32,7 @@ def save_json(filename, data):
 def load_json(path):
     try:
         f = open(path, 'r')
-        print ('\n' + fmt.WAIT_SYMBOL, 'Loading file:', path)
+        print (fmt.WAIT_SYMBOL, 'Loading file:', path)
         try:
             start = timer()
             json_data = json.load(f)
@@ -51,7 +51,7 @@ def load_json(path):
 def json_to_defaultdict(json_str):
     def_dict = defaultdict(list)
 
-    print ('\n' + fmt.WAIT_SYMBOL, 'Converting JSON to Dict...')
+    print (fmt.WAIT_SYMBOL, 'Converting JSON to Dict...')
     start = timer()
     for key in json_str:
         for element in json_str[key]:
