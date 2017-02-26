@@ -1,7 +1,8 @@
 data/json/*.json
 data/json/*.xz
 data/linked_data/*.ttl
-
+!data/json/dict_meps.json
+!data/json/dict_parties.json
 __pycache__
 
 # Byte-compiled / optimized / DLL files
