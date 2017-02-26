@@ -1,5 +1,5 @@
 import json as json
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from timeit import default_timer as timer
 from timing import get_elapsed_seconds
 import formatting as fmt
@@ -20,11 +20,14 @@ def save_graph(filename, graph):
         end = timer()
     print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
-def save_json(filename, data):
+def save_json(filename, data, ordered=True):
+    if ordered:
+        data = OrderedDict(sorted(data.items()))
+
     with open(filename, 'w') as f:
         print (fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
         end = timer()
     print (fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
