@@ -1,11 +1,13 @@
+catalog-v001.xml
 
-!data/linked_data
+!data/linked_data/.gitkeep
 data/linked_data/*.ttl
 
 data/json/*.json
 data/json/*.xz
 !data/json/dict_meps.json
 !data/json/dict_parties.json
+!data/json/.gitkeep
 __pycache__
 
 # Byte-compiled / optimized / DLL files
