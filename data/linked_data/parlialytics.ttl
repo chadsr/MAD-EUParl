@@ -1,0 +1,437 @@
+@prefix : <http://localhost:5820/databases/parlialytics#> .
+@prefix dbo: <http://dbpedia.org/ontology/> .
+@prefix dbp: <http://dbpedia.org/property/> .
+@prefix dbr: <http://dbpedia.org/resource/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix votes: <http://localhost:5820/databases/votes/> .
+@base <http://localhost:5820/databases/parlialytics#> .
+
+<http://localhost:5820/databases/parlialytics#> rdf:type owl:Ontology .
+
+#################################################################
+#    Datatypes
+#################################################################
+
+###  http://www.w3.org/2001/XMLSchema#date
+xsd:date rdf:type rdfs:Datatype .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://dbpedia.org/ontology/PoliticalParty
+dbo:PoliticalParty rdf:type owl:ObjectProperty .
+
+
+###  http://dbpedia.org/ontology/birthPlace
+dbo:birthPlace rdf:type owl:ObjectProperty ;
+               rdfs:domain dbo:Person ;
+               rdfs:range dbo:Place .
+
+
+###  http://dbpedia.org/ontology/gender
+dbo:gender rdf:type owl:ObjectProperty .
+
+
+###  http://dbpedia.org/ontology/party
+dbo:party rdf:type owl:ObjectProperty ;
+          rdfs:range dbo:PoliticalParty .
+
+
+###  http://dbpedia.org/ontology/politicalPartyInLegislature
+dbo:politicalPartyInLegislature rdf:type owl:ObjectProperty ;
+                                rdfs:domain dbo:Legislature ;
+                                rdfs:range dbo:PoliticalParty .
+
+
+###  http://dbpedia.org/property/houses
+dbp:houses rdf:type owl:ObjectProperty ;
+           owl:inverseOf :processesFor ;
+           rdfs:domain :Authority ;
+           rdfs:range :VotingAssembly .
+
+
+###  http://dbpedia.org/property/office
+dbp:office rdf:type owl:ObjectProperty .
+
+
+###  http://localhost:5820/databases/parlialytics#abstains
+:abstains rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :reactsToVote ;
+          rdfs:domain :Voter ;
+          rdfs:range :Dossier .
+
+
+###  http://localhost:5820/databases/parlialytics#appliesTo
+:appliesTo rdf:type owl:ObjectProperty ;
+           rdfs:domain :Dossier ;
+           rdfs:label "appliesTo"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#hasMember
+:hasMember rdf:type owl:ObjectProperty ;
+           owl:equivalentProperty [ owl:inverseOf dbo:party
+                                  ] ;
+           rdfs:domain :Party ;
+           rdfs:range :Voter .
+
+
+###  http://localhost:5820/databases/parlialytics#hasText
+:hasText rdf:type owl:ObjectProperty ;
+         rdfs:domain :Dossier ;
+         rdfs:range [ rdf:type owl:Restriction ;
+                      owl:onProperty :bill_text ;
+                      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                      owl:onDataRange xsd:string
+                    ] .
+
+
+###  http://localhost:5820/databases/parlialytics#hasVoter
+:hasVoter rdf:type owl:ObjectProperty ;
+          owl:inverseOf :votesIn ;
+          rdfs:domain :VotingAssembly ;
+          rdfs:range :Voter .
+
+
+###  http://localhost:5820/databases/parlialytics#legalizesFor
+:legalizesFor rdf:type owl:ObjectProperty ;
+              rdfs:domain :Authority ;
+              rdfs:comment "The polity that a voting assembly's can pass legislation onto." ;
+              rdfs:label "legalizesFor"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#processed
+:processed rdf:type owl:ObjectProperty ;
+           owl:inverseOf :processedBy ;
+           rdfs:domain :VotingAssembly ;
+           rdfs:range :Dossier ;
+           rdfs:label "processed"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#processedBy
+:processedBy rdf:type owl:ObjectProperty ;
+             rdfs:domain :Dossier ;
+             rdfs:range :VotingAssembly ;
+             rdfs:label "processedBy"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#processesFor
+:processesFor rdf:type owl:ObjectProperty ;
+              rdfs:domain :VotingAssembly ;
+              rdfs:range :Authority .
+
+
+###  http://localhost:5820/databases/parlialytics#reactsToVote
+:reactsToVote rdf:type owl:ObjectProperty ;
+              rdfs:domain :Voter ;
+              rdfs:range :Dossier .
+
+
+###  http://localhost:5820/databases/parlialytics#representedBy
+:representedBy rdf:type owl:ObjectProperty ;
+               owl:inverseOf :represents ;
+               rdfs:range :Voter ;
+               rdfs:label "representedBy"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#represents
+:represents rdf:type owl:ObjectProperty ;
+            rdfs:domain :Voter ;
+            rdfs:label "represents"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#votesAgainst
+:votesAgainst rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :votesOn ;
+              rdfs:domain :Voter ;
+              rdfs:range :Dossier .
+
+
+###  http://localhost:5820/databases/parlialytics#votesFor
+:votesFor rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :votesOn ;
+          rdfs:domain :Voter ;
+          rdfs:range :Dossier .
+
+
+###  http://localhost:5820/databases/parlialytics#votesIn
+:votesIn rdf:type owl:ObjectProperty ;
+         rdfs:domain :Voter ;
+         rdfs:range :VotingAssembly ;
+         rdfs:label "votesIn"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#votesOn
+:votesOn rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf :reactsToVote ;
+         rdfs:domain :Voter ;
+         rdfs:range :Dossier .
+
+
+###  http://localhost:5820/databases/parlialytics#wikipedia
+:wikipedia rdf:type owl:ObjectProperty .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://dbpedia.org/ontology/birthDate
+dbo:birthDate rdf:type owl:DatatypeProperty ;
+              rdfs:domain dbo:Person ;
+              rdfs:range xsd:date .
+
+
+###  http://dbpedia.org/ontology/deathDate
+dbo:deathDate rdf:type owl:DatatypeProperty ;
+              rdfs:domain dbo:Person ;
+              rdfs:range xsd:date .
+
+
+###  http://localhost:5820/databases/parlialytics#bill_text
+:bill_text rdf:type owl:DatatypeProperty ;
+           rdfs:domain :Dossier ;
+           rdfs:range xsd:string ;
+           rdfs:label "bill_text"@en .
+
+
+###  http://xmlns.com/foaf/0.1/age
+foaf:age rdf:type owl:DatatypeProperty ,
+                  owl:FunctionalProperty ;
+         rdfs:domain foaf:Agent .
+
+
+###  http://xmlns.com/foaf/0.1/gender
+foaf:gender rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            rdfs:domain foaf:Agent .
+
+
+###  http://xmlns.com/foaf/0.1/name
+foaf:name rdf:type owl:DatatypeProperty .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://dbpedia.org/ontology/Legislature
+dbo:Legislature rdf:type owl:Class .
+
+
+###  http://dbpedia.org/ontology/Person
+dbo:Person rdf:type owl:Class ;
+           rdfs:subClassOf :Agent .
+
+
+###  http://dbpedia.org/ontology/Place
+dbo:Place rdf:type owl:Class .
+
+
+###  http://dbpedia.org/ontology/PoliticalParty
+dbo:PoliticalParty rdf:type owl:Class ;
+                   owl:equivalentClass :Party .
+
+
+###  http://localhost:5820/databases/parlialytics#Agent
+:Agent rdf:type owl:Class ;
+       owl:equivalentClass foaf:Agent ;
+       rdfs:label "Agent"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#Authority
+:Authority rdf:type owl:Class ;
+           rdfs:subClassOf :Agent .
+
+
+###  http://localhost:5820/databases/parlialytics#Dossier
+:Dossier rdf:type owl:Class ;
+         owl:equivalentClass [ rdf:type owl:Restriction ;
+                               owl:onProperty :processedBy ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :VotingAssembly
+                             ] .
+
+
+###  http://localhost:5820/databases/parlialytics#FemaleVoter
+:FemaleVoter rdf:type owl:Class ;
+             owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                        [ rdf:type owl:Class ;
+                                                          owl:unionOf ( [ rdf:type owl:Restriction ;
+                                                                          owl:onProperty dbo:gender ;
+                                                                          owl:hasValue dbr:Female
+                                                                        ]
+                                                                        [ rdf:type owl:Restriction ;
+                                                                          owl:onProperty foaf:gender ;
+                                                                          owl:hasValue "female"
+                                                                        ]
+                                                                      )
+                                                        ]
+                                                        [ rdf:type owl:Restriction ;
+                                                          owl:onProperty :reactsToVote ;
+                                                          owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                          owl:onClass :Dossier
+                                                        ]
+                                                        [ rdf:type owl:Restriction ;
+                                                          owl:onProperty :votesIn ;
+                                                          owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                          owl:onClass :VotingAssembly
+                                                        ]
+                                                      ) ;
+                                   rdf:type owl:Class
+                                 ] ;
+             rdfs:subClassOf :HumanVoter ;
+             rdfs:label "FemaleVoter"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#HumanVoter
+:HumanVoter rdf:type owl:Class ;
+            owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :reactsToVote ;
+                                                         owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                         owl:onClass :Dossier
+                                                       ]
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :votesIn ;
+                                                         owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                         owl:onClass :VotingAssembly
+                                                       ]
+                                                     ) ;
+                                  rdf:type owl:Class
+                                ] ;
+            rdfs:subClassOf dbo:Person ,
+                            :Voter .
+
+
+###  http://localhost:5820/databases/parlialytics#MaleVoter
+:MaleVoter rdf:type owl:Class ;
+           owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                      [ rdf:type owl:Class ;
+                                                        owl:unionOf ( [ rdf:type owl:Restriction ;
+                                                                        owl:onProperty dbo:gender ;
+                                                                        owl:hasValue dbr:Male
+                                                                      ]
+                                                                      [ rdf:type owl:Restriction ;
+                                                                        owl:onProperty foaf:gender ;
+                                                                        owl:hasValue "male"
+                                                                      ]
+                                                                    )
+                                                      ]
+                                                      [ rdf:type owl:Restriction ;
+                                                        owl:onProperty :reactsToVote ;
+                                                        owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                        owl:onClass :Dossier
+                                                      ]
+                                                      [ rdf:type owl:Restriction ;
+                                                        owl:onProperty :votesIn ;
+                                                        owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                                        owl:onClass :VotingAssembly
+                                                      ]
+                                                    ) ;
+                                 rdf:type owl:Class
+                               ] ;
+           rdfs:subClassOf :HumanVoter ;
+           rdfs:label "MaleVoter"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#MiddleAgedVoter
+:MiddleAgedVoter rdf:type owl:Class ;
+                 owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                            [ rdf:type owl:Restriction ;
+                                                              owl:onProperty foaf:age ;
+                                                              owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                                   owl:onDatatype xsd:integer ;
+                                                                                   owl:withRestrictions ( [ xsd:minInclusive 40
+                                                                                                          ]
+                                                                                                          [ xsd:maxExclusive 60
+                                                                                                          ]
+                                                                                                        )
+                                                                                 ]
+                                                            ]
+                                                          ) ;
+                                       rdf:type owl:Class
+                                     ] ;
+                 rdfs:subClassOf :HumanVoter ;
+                 rdfs:label "MiddleAgedVoter"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#OldVoter
+:OldVoter rdf:type owl:Class ;
+          owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                     [ rdf:type owl:Restriction ;
+                                                       owl:onProperty foaf:age ;
+                                                       owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                            owl:onDatatype xsd:integer ;
+                                                                            owl:withRestrictions ( [ xsd:minInclusive 60
+                                                                                                   ]
+                                                                                                 )
+                                                                          ]
+                                                     ]
+                                                   ) ;
+                                rdf:type owl:Class
+                              ] ;
+          rdfs:subClassOf :HumanVoter ;
+          rdfs:label "OldVoter"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#Party
+:Party rdf:type owl:Class ;
+       rdfs:subClassOf :Agent ;
+       rdfs:comment "A collection of relatively likeminded Voters" ;
+       rdfs:label "Party"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#Voter
+:Voter rdf:type owl:Class ;
+       rdfs:subClassOf :Agent .
+
+
+###  http://localhost:5820/databases/parlialytics#VotingAssembly
+:VotingAssembly rdf:type owl:Class ;
+                rdfs:subClassOf :Agent ;
+                rdfs:label "VotingAssembly"@en .
+
+
+###  http://localhost:5820/databases/parlialytics#YoungVoter
+:YoungVoter rdf:type owl:Class ;
+            owl:equivalentClass [ owl:intersectionOf ( dbo:Person
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty foaf:age ;
+                                                         owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                              owl:onDatatype xsd:integer ;
+                                                                              owl:withRestrictions ( [ xsd:maxExclusive 40
+                                                                                                     ]
+                                                                                                   )
+                                                                            ]
+                                                       ]
+                                                     ) ;
+                                  rdf:type owl:Class
+                                ] ;
+            rdfs:subClassOf :HumanVoter ;
+            rdfs:label "YoungVoter"@en .
+
+
+###  http://xmlns.com/foaf/0.1/Agent
+foaf:Agent rdf:type owl:Class .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://dbpedia.org/resource/Female
+dbr:Female rdf:type owl:NamedIndividual .
+
+
+###  http://dbpedia.org/resource/Male
+dbr:Male rdf:type owl:NamedIndividual .
+
+
+###  Generated by the OWL API (version 4.2.6.20160910-2108) https://github.com/owlcs/owlapi
