@@ -1,7 +1,6 @@
 import argparse
 from timeit import default_timer as timer
 from timing import get_elapsed_seconds
-from SPARQLEndpoint import SparqlServer
 import os
 from miner import Miner
 
@@ -30,15 +29,8 @@ if args.update:
 else:
     print (fmt. WARNING_SYMBOL, "Using existing datasets")
 
-sparql_endpoint = SparqlServer()
-
 miner = Miner()
 miner.start(num_threads)
-
-sparql_endpoint.import_dataset(miner.dataset)
-
-#io.save_graph(c.GRAPH_OUTPUT, graph)
-io.save_dataset(c.DATA_OUTPUT, miner.dataset)
 
 end = timer()
 

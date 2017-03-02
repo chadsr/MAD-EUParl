@@ -23,12 +23,12 @@ class SparqlServer(object):
         print (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")
 
     def import_dataset(self, dataset):
-        print (fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
-        start = timer()
+        #print (fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
+        #start = timer()
         ds = dataset.serialize(format='turtle')
         query_string = ds.decode('utf-8')
         self.sparql.setQuery('INSERT DATA { %s }' % query_string)
         self.sparql.method = 'POST'
         self.sparql.query()
-        end = timer()
-        print (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")
+        #end = timer()
+        #print (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")

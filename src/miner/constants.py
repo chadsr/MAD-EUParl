@@ -1,9 +1,6 @@
 from rdflib import Namespace, XSD
 import os
 
-SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
-SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics'
-
 DATA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/data/'
 
@@ -18,6 +15,10 @@ DATA_VOTES = JSON_DIR + 'ep_votes.json'
 DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
 DICT_MEPS = JSON_DIR + 'dict_meps.json'
 DICT_PARTIES = JSON_DIR + 'dict_parties.json'
+DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
+
+SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics '+LD_DIR+"parlialytics.ttl"
+SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
 
 DOWNLOAD_TIMEOUT = 30
 DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
@@ -29,7 +30,7 @@ MEP_LIMIT = None
 DOSSIER_LIMIT = None
 VOTES_LIMIT = None
 
-DATABASE = 'http://localhost:5820/databases/votes/' # Database endpoint
+DATABASE = 'http://localhost:5820/databases/parlialytics#' # Database endpoint
 NAMESPACE = DATABASE
 
 ont = NAMESPACE
@@ -52,15 +53,25 @@ foaf = 'http://xmlns.com/foaf/0.1/'
 FOAF = Namespace(foaf)
 
 DOSSIER = ONT['Dossier']
+ACTIVITY = ONT['Activity']
 DOSSIER_TITLE = ONT['dossier_title']
 PROCESSED_BY = ONT['processedBy']
+HAS_ACTIVITY = ONT['hasActivity']
+REACHED_STAGE = ONT['reachedStage']
+PROCEDURE_TYPE = ONT['procedureType']
+GEO_AREA = ONT['geoArea']
+
+HAS_TITLE = ONT['hasTitle']
+
+HAS_DOC = ONT['hasDocument']
 
 ABSTAINS = ONT['abstains']
-VOTES_FOR = ONT['for']
-VOTES_AGAINST = ONT['against']
+VOTES_FOR = ONT['vptesFor']
+VOTES_AGAINST = ONT['votesAgainst']
 VOTES_IN = ONT['votesIn']
 
-ACTIVITY_TYPE = ONT['activityType']
+HAS_TYPE = ONT['hasType']
+HAS_BODY = ONT['hasBody']
 
 MEMBER_OF = DBR['party']
 PARTY = DBO['party']
