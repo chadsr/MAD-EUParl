@@ -20,8 +20,6 @@ from timing import get_elapsed_seconds
 from multiprocessing import Pool
 from dataset_generator import DatasetGenerator
 
-import logging
-
 class Miner(object):
     def __init__(self):
         # These are currently dict(lists), because there is a possibility of multiple iris per key in the future
@@ -39,20 +37,18 @@ class Miner(object):
         if json_str is not None:
             self.dict_party = io.json_to_defaultdict(json_str)
 
-        logging.basicConfig(filename='error.log', level=logging.WARNING)
-
     def start(self, num_threads):
         count, time = self.convert_meps(c.DATA_MEP)
-        print (fmt.OK_SYMBOL, "Mined", count, "MEPs. Took ", time, "seconds")
+        print (fmt.OK_SYMBOL, "Mined", count, "MEPs. Took ", time, "seconds\n")
 
         io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
         io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
 
         count, time = self.convert_dossiers(c.DATA_DOSSIER, num_threads)
-        print (fmt.OK_SYMBOL, "Mined", count, "dossiers. Took ", time, "seconds")
+        print (fmt.OK_SYMBOL, "Mined", count, "dossiers. Took ", time, "seconds\n")
 
         count, fails, time = self.convert_votes(c.DATA_VOTES, num_threads)
-        print (fmt.OK_SYMBOL, "Mined", count, "related votes.", fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds")
+        print (fmt.OK_SYMBOL, "Mined", count, "related votes.", fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n")
 
         #io.save_graph(c.GRAPH_OUTPUT, graph)
         #io.save_dataset(c.DATA_OUTPUT, miner.dataset)
@@ -189,7 +185,7 @@ class Miner(object):
                 if (counter % 1000) == 0:
                     # reset dataset
                     self.sparql_endpoint.import_dataset(dataset)
-                    print(counter, "dossiers imported.")
+                    print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
                     dataset = DatasetGenerator.get_dataset()
 
 
@@ -276,7 +272,7 @@ class Miner(object):
                 if (counter % 1000) == 0:
                     # reset dataset
                     self.sparql_endpoint.import_dataset(dataset)
-                    print (counter, "votes imported.")
+                    print (fmt.INFO_SYMBOL, counter, "votes imported.")
                     dataset = DatasetGenerator.get_dataset()
 
             # Import any left over from the last (incomplete) batch

@@ -6,6 +6,12 @@ from miner import Miner
 
 import constants as c, io_handler as io, downloader as dl, formatting as fmt
 
+import logging
+
+start = timer()
+
+logging.basicConfig(filename='execution_time.log', format='%(asctime)s %(message)s', filemode='w', level=logging.INFO)
+
 print (fmt.INFO_SYMBOL, "Data directory:", c.DATA_DIR, "\n")
 
 parser = argparse.ArgumentParser()
@@ -14,8 +20,6 @@ parser.add_argument("--threads", help="Used to specify the number of threads the
 
 args = parser.parse_args()
 
-start = timer()
-
 if args.threads:
     num_threads = args.threads
 else:
@@ -23,9 +27,10 @@ else:
 
 print (fmt.INFO_SYMBOL, "Using", num_threads, "thread(s).\n")
 
+updated = False
 if args.update:
     print (fmt.WAIT_SYMBOL, "Downloading latest datasets...")
-    dl.download_datasets()
+    updated = dl.download_datasets()
 else:
     print (fmt. WARNING_SYMBOL, "Using existing datasets")
 
@@ -34,4 +39,6 @@ miner.start(num_threads)
 
 end = timer()
 
-print (fmt.INFO_SYMBOL ,"Total execution time:", get_elapsed_seconds(start, end), "seconds")
+total_time = get_elapsed_seconds(start, end)
+print (fmt.INFO_SYMBOL ,"Total execution time:", total_time, "seconds")
+logging.info("Datasets updated: "+str(updated)+" Number of threads: "+str(num_threads)+" Execution time: "+str(total_time))

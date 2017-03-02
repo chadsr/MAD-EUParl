@@ -32,6 +32,7 @@ def download_datasets():
                 extract_dataset(path)
                 end = timer()
                 print (fmt.OK_SYMBOL, "Extracted. Took", get_elapsed_seconds(start, end), 'seconds')
+                return True
             except (error.URLError) as e:
                 if e.code == 404:
                     print (fmt.ERROR_SYMBOL, "Resource", url, "could not be found")
@@ -39,6 +40,8 @@ def download_datasets():
                     print ("%s" % e)
         else:
             print (fmt.WARNING_SYMBOL, file_name, "already the latest version. skipping.")
+
+        return False
 
 def extract_dataset(path):
     dir_path, filename = os.path.split(path)
