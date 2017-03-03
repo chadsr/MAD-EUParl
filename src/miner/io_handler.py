@@ -64,7 +64,7 @@ def json_to_defaultdict(json_str):
     start = timer()
     for key in json_str:
         dict_key = get_key(key)
-        
+
         for element in json_str[key]:
             def_dict[dict_key].append(element)
     end = timer()

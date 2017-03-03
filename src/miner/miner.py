@@ -20,6 +20,9 @@ from timing import get_elapsed_seconds
 from multiprocessing import Pool
 from dataset_generator import DatasetGenerator
 
+#TODO Look into addN() function for adding multiple triples in one go
+# https://rdflib.readthedocs.io/en/stable/_modules/rdflib/graph.html#ConjunctiveGraph.addN
+
 class Miner(object):
     def __init__(self):
         # These are currently dict(lists), because there is a possibility of multiple iris per key in the future
@@ -37,19 +40,23 @@ class Miner(object):
         if json_str is not None:
             self.dict_party = io.json_to_defaultdict(json_str)
 
+        self.total_triples = 0
+
     def start(self, num_threads):
-        count, time = self.convert_meps(c.DATA_MEP)
-        print (fmt.OK_SYMBOL, "Mined", count, "MEPs. Took ", time, "seconds\n")
+        mep_triples, count, time = self.convert_meps(c.DATA_MEP)
+        print (fmt.OK_SYMBOL, "Mined", count, "MEPs ("+str(mep_triples),"triples). Took ", time, "seconds\n")
 
         io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
         io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
 
-        count, time = self.convert_dossiers(c.DATA_DOSSIER, num_threads)
-        print (fmt.OK_SYMBOL, "Mined", count, "dossiers. Took ", time, "seconds\n")
+        dossier_triples, count, time = self.convert_dossiers(c.DATA_DOSSIER, num_threads)
+        print (fmt.OK_SYMBOL, "Mined", count, "dossiers ("+str(dossier_triples),"triples). Took ", time, "seconds\n")
 
-        count, fails, time = self.convert_votes(c.DATA_VOTES, num_threads)
-        print (fmt.OK_SYMBOL, "Mined", count, "related votes.", fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n")
+        vote_triples, count, fails, time = self.convert_votes(c.DATA_VOTES, num_threads)
+        print (fmt.OK_SYMBOL, "Mined", count, "related votes ("+str(vote_triples),"triples)", fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n")
 
+
+        self.total_triples = mep_triples + dossier_triples + vote_triples
         #io.save_graph(c.GRAPH_OUTPUT, graph)
         #io.save_dataset(c.DATA_OUTPUT, miner.dataset)
 
@@ -166,6 +173,7 @@ class Miner(object):
 
         start = timer()
         counter = 0
+        num_triples = 0
 
         try:
             input_data = islice(json_data, 0, c.DOSSIER_LIMIT)
@@ -179,10 +187,11 @@ class Miner(object):
                 for triple in dossier[2]:
                     dataset.add((triple[0], triple[1], triple[2]))
 
+                num_triples += len(dossier[2])
                 counter += 1
 
-                # Max 100 dossiers per request
-                if (counter % 1000) == 0:
+                # Max 1000 dossiers per request
+                if (counter % 1000) == 0 and counter != 0:
                     # reset dataset
                     self.sparql_endpoint.import_dataset(dataset)
                     print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
@@ -199,7 +208,7 @@ class Miner(object):
             pool.join()
 
         end = timer()
-        return counter, get_elapsed_seconds(start, end)
+        return num_triples, counter, get_elapsed_seconds(start, end)
 
     def process_votes(self, votes):
         vote_dict = {'Abstain':c.ABSTAINS, 'For':c.VOTES_FOR, 'Against':c.VOTES_AGAINST}
@@ -254,6 +263,7 @@ class Miner(object):
         start = timer()
         counter = 0
         failed = 0
+        num_triples = 0
 
         try:
             input_data = islice(json_data, 0, c.VOTES_LIMIT)
@@ -262,14 +272,18 @@ class Miner(object):
 
             dataset = DatasetGenerator.get_dataset()
             for result in results:
-                counter += result[0]
                 failed += result[1]
 
                 for triple in result[2]:
-                    dataset.add((triple[0], triple[1], triple[2]))
+                    if triple[0] != None:
+                        dataset.add((triple[0], triple[1], triple[2]))
+                    else:
+                        print (triple)
 
-                # Max 100 dossiers per request
-                if (counter % 1000) == 0:
+                counter += result[0]
+                num_triples += len(result[2])
+
+                if (counter % 1000) == 0 and counter != 0:
                     # reset dataset
                     self.sparql_endpoint.import_dataset(dataset)
                     print (fmt.INFO_SYMBOL, counter, "votes imported.")
@@ -284,16 +298,17 @@ class Miner(object):
             pool.join()
 
         end = timer()
-        return counter, failed, get_elapsed_seconds(start, end)
+        return num_triples, counter, failed, get_elapsed_seconds(start, end)
 
+    # TODO Implement triple count
     def convert_meps(self, path):
         json_data = io.load_json(path)
         dataset = DatasetGenerator.get_dataset()
+        counter = 0
 
         print (fmt.WAIT_SYMBOL, "Mining MEPS...")
 
         start = timer()
-        counter = 0
         for mep in islice(json_data, 0, c.MEP_LIMIT):
             # Get raw values
             user_id = int(mep['UserID'])
@@ -379,4 +394,4 @@ class Miner(object):
 
         end = timer()
 
-        return counter, get_elapsed_seconds(start, end)
+        return dataset.__len__(), counter, get_elapsed_seconds(start, end)

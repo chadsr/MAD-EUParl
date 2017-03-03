@@ -1,8 +1,11 @@
 from rdflib import Namespace, XSD
 import os
 
-DATA_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/data/'
+DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+LOG_DIR = DIR + '/logs/'
+DATA_DIR = DIR + '/data/'
 
 JSON_DIR = DATA_DIR + 'json/'
 LD_DIR = DATA_DIR + 'linked_data/'
