@@ -3,9 +3,16 @@
     "http://dbpedia.org/resource/Alliance_of_Liberals_and_Democrats_for_Europe_Party",
     "http://dbpedia.org/resource/Group_Of_The_Alliance_Of_Liberals_And_Democrats_For_Europe"
   ],
+  "C": [
+    "http://dbpedia.org/resource/European_Conservative_Group"
+  ],
+  "CD": [
+    "http://dbpedia.org/resource/Christian-Democratic_Group"
+  ],
   "CDI": [
     "http://dbpedia.org/resource/Technical_Group_of_Independents_%281979%E2%80%9384%29",
-    "http://dbpedia.org/resource/Group_For_The_Technical_Coordination_And_Defence_Of_Indipendent_Groups_And_Members"
+    "http://dbpedia.org/resource/Group_For_The_Technical_Coordination_And_Defence_Of_Indipendent_Groups_And_Members",
+    "http://dbpedia.org/resource/Technical_Coordination_And_Defence_Of_Independent_Groups_And_Members"
   ],
   "COM": [
     "http://dbpedia.org/resource/Communist_and_Allies_Group",
@@ -59,6 +66,12 @@
     "http://dbpedia.org/resource/European_Radical_Alliance",
     "http://dbpedia.org/resource/Group_Of_The_European_Radical_Alliance"
   ],
+  "FE": [
+    "http://dbpedia.org/resource/Forza_Europa_Group"
+  ],
+  "GUE": [
+    "http://dbpedia.org/resource/Group_For_The_European_United_Left"
+  ],
   "GUE/NGL": [
     "http://dbpedia.org/resource/European_United_Left%E2%80%93Nordic_Green_Left",
     "http://dbpedia.org/resource/Confederal_Group_Of_The_European_United_Left_-_Nordic_Green_Left",
@@ -76,6 +89,9 @@
   "INDDEM": [
     "http://dbpedia.org/resource/Independence/Democracy",
     "http://dbpedia.org/resource/Independence/Democracy_Group"
+  ],
+  "ITS": [
+    "http://dbpedia.org/resource/Identity%2C_Tradition_And_Sovereignty_Group"
   ],
   "LD": [
     "http://dbpedia.org/resource/Liberal_and_Democratic_Group",
@@ -125,8 +141,15 @@
     "http://dbpedia.org/resource/Socialist_Group_%28European_Parliament_group%29",
     "http://dbpedia.org/resource/Socialist_Group"
   ],
+  "TGI": [
+    "http://dbpedia.org/resource/Technical_Group_Of_Independent_Members_-_Mixed_Group"
+  ],
+  "UDE": [
+    "http://dbpedia.org/resource/European_Democratic_Union_Group"
+  ],
   "UEN": [
-    "http://dbpedia.org/resource/Union_For_Europe_Of_The_Nations_Group"
+    "http://dbpedia.org/resource/Union_For_Europe_Of_The_Nations_Group",
+    "http://dbpedia.org/resource/Europe_Of_Nations_Group"
   ],
   "UFE": [
     "http://dbpedia.org/resource/Union_for_Europe_of_the_Nations_%28European_Parliament_group%29",
