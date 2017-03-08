@@ -14,6 +14,9 @@ print (fmt.INFO_SYMBOL, "Data directory:", c.DATA_DIR, "\n")
 parser = argparse.ArgumentParser()
 parser.add_argument("--update", help="Will fetch the latest dataset and then run", action="store_true")
 parser.add_argument("--threads", help="Used to specify the number of threads the miner should utilise. Takes an integer, or if left out, uses cpu thread count as default.", type=int)
+parser.add_argument("--mep-limit", help="Used to specify the number of MEPs to process from the dataset.", type=int)
+parser.add_argument("--dossier-limit", help="Used to specify the number of dossiers to process from the dataset.", type=int)
+parser.add_argument("--vote-limit", help="Used to specify the number of votes to process from the dataset.", type=int)
 
 args = parser.parse_args()
 
@@ -33,7 +36,7 @@ else:
 start = timer()
 
 miner = Miner()
-miner.start(num_threads)
+miner.start(num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)
 
 end = timer()
 

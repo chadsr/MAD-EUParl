@@ -43,17 +43,17 @@ class Miner(object):
 
         self.total_triples = 0
 
-    def start(self, num_threads):
-        mep_triples, count, time = self.convert_meps(c.DATA_MEP)
+    def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
+        mep_triples, count, time = self.convert_meps(c.DATA_MEP, mep_limit)
         print (fmt.OK_SYMBOL, "Mined", count, "MEPs ("+str(mep_triples),"triples). Took ", time, "seconds\n")
 
         io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
         io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
 
-        dossier_triples, count, time = self.convert_dossiers(c.DATA_DOSSIER, num_threads)
+        dossier_triples, count, time = self.convert_dossiers(c.DATA_DOSSIER, num_threads, dossier_limit)
         print (fmt.OK_SYMBOL, "Mined", count, "dossiers ("+str(dossier_triples),"triples). Took ", time, "seconds\n")
 
-        vote_triples, count, fails, time = self.convert_votes(c.DATA_VOTES, num_threads)
+        vote_triples, count, fails, time = self.convert_votes(c.DATA_VOTES, num_threads, vote_limit)
         print (fmt.OK_SYMBOL, "Mined", count, "related votes ("+str(vote_triples),"triples)", fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n")
 
 
@@ -169,7 +169,7 @@ class Miner(object):
 
     # TODO: See if there is a better dossier url to use instead of dossier['meta']['source']
     # TODO: See if there is a better dossier text to use instead of dossier['procedure']['title']
-    def convert_dossiers(self, path, num_threads):
+    def convert_dossiers(self, path, num_threads, limit):
         json_data = io.load_json(path)
 
         print (fmt.WAIT_SYMBOL, "Mining dossiers...")
@@ -179,7 +179,7 @@ class Miner(object):
         num_triples = 0
 
         try:
-            input_data = islice(json_data, 0, c.DOSSIER_LIMIT)
+            input_data = islice(json_data, 0, limit)
             pool = Pool(num_threads)
             results = pool.map(self.process_dossier, input_data)
 
@@ -258,7 +258,7 @@ class Miner(object):
 
         return [counter, failed, triples]
 
-    def convert_votes(self, path, num_threads):
+    def convert_votes(self, path, num_threads, limit):
         json_data = io.load_json(path)
 
         print (fmt.WAIT_SYMBOL, 'Mining votes...')
@@ -269,7 +269,7 @@ class Miner(object):
         num_triples = 0
 
         try:
-            input_data = islice(json_data, 0, c.VOTES_LIMIT)
+            input_data = islice(json_data, 0, limit)
             pool = Pool(num_threads)
             results = pool.map(self.process_votes, input_data)
 
@@ -303,7 +303,7 @@ class Miner(object):
         end = timer()
         return num_triples, counter, failed, get_elapsed_seconds(start, end)
 
-    def convert_meps(self, path):
+    def convert_meps(self, path, limit):
         role_dict = {'Member':[c.MEMBER_OF, c.WAS_MEMBER_OF], 'Member of the Bureau':[c.BUREAU_MEMBER_OF, c.WAS_BUREAU_MEMBER_OF], 'Vice-Chair':[c.VICE_CHAIR_OF, c.WAS_VICE_CHAIR_OF], 'Treasurer':[c.TREASURER_OF, c.WAS_TREASURER_OF], 'President':[c.PRESIDENT_OF, c.WAS_PRESIDENT_OF], 'Chair':[c.CHAIR_OF, c.WAS_CHAIR_OF], 'Co-Chair':[c.CO_CHAIR_OF, c.WAS_CO_CHAIR_OF], 'Chair of the Bureau':[c.BUREAU_CHAIR_OF, c.WAS_BUREAU_CHAIR_OF], 'Co-treasurer':[c.CO_TREASURER_OF, c.WAS_CO_TREASURER_OF], 'Observer':[c.OBSERVER_OF, c.WAS_OBSERVER_OF], 'Deputy Chair':[c.DEPUTY_CHAIR_OF, c.WAS_DEPUTY_CHAIR_OF], 'Vice-Chair/Member of the Bureau':[c.BUREAU_VICE_CHAIR_OF, c.WAS_BUREAU_VICE_CHAIR_OF], 'Deputy Treasurer':[c.DEPUTY_TREASURER_OF, c.WAS_DEPUTY_TREASURER_OF],'Substitute':[c.SUBSTITUTE_OF, c.WAS_SUBSTITUTE_OF]}
         json_data = io.load_json(path)
         dataset = DatasetGenerator.get_dataset()
@@ -313,7 +313,7 @@ class Miner(object):
         print (fmt.WAIT_SYMBOL, "Mining MEPS...")
 
         start = timer()
-        for mep in islice(json_data, 0, c.MEP_LIMIT):
+        for mep in islice(json_data, 0, limit):
             # Get raw values
             user_id = int(mep['UserID'])
             full_name = Literal(str(mep['Name']['full'].lower().title().strip()), datatype=c.STRING)

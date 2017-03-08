@@ -28,11 +28,6 @@ DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']
 
-# Number of elements to iterate over (None for all, all for None)
-MEP_LIMIT = 50
-DOSSIER_LIMIT = 10
-VOTES_LIMIT = None
-
 DATABASE = 'http://localhost:5820/databases/parlialytics#' # Database endpoint
 NAMESPACE = DATABASE
 
