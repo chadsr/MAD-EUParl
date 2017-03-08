@@ -29,8 +29,8 @@ DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']
 
 # Number of elements to iterate over (None for all, all for None)
-MEP_LIMIT = None
-DOSSIER_LIMIT = None
+MEP_LIMIT = 50
+DOSSIER_LIMIT = 10
 VOTES_LIMIT = None
 
 DATABASE = 'http://localhost:5820/databases/parlialytics#' # Database endpoint
@@ -38,7 +38,7 @@ NAMESPACE = DATABASE
 
 ont = NAMESPACE
 ONT = Namespace(ont)
-PREFIX = 'votes'
+PREFIX = 'epv'
 
 #DOSSIER_TYPE = 'Legislative proposal published'
 
@@ -69,15 +69,47 @@ HAS_TITLE = ONT['hasTitle']
 HAS_DOC = ONT['hasDocument']
 
 ABSTAINS = ONT['abstains']
-VOTES_FOR = ONT['vptesFor']
+VOTES_FOR = ONT['votesFor']
 VOTES_AGAINST = ONT['votesAgainst']
 VOTES_IN = ONT['votesIn']
 
 HAS_TYPE = ONT['hasType']
 HAS_BODY = ONT['hasBody']
 
-MEMBER_OF = DBR['party']
 PARTY = DBO['party']
+
+MEMBER_OF = ONT['isMemberOf']
+CHAIR_OF = ONT['isChairOf']
+CO_CHAIR_OF = ONT['isCoChairOf']
+TREASURER_OF = ONT['isTreasurerOf']
+VICE_CHAIR_OF = ONT['isViceChairOf']
+PRESIDENT_OF = ONT['isPresidentOf']
+CO_TREASURER_OF = ONT['isCoTreasurerOf']
+DEPUTY_CHAIR_OF = ONT['isDeputyChairOf']
+OBSERVER_OF = ONT['isObserverOf']
+DEPUTY_TREASURER_OF = ONT['isDeputyTreasurerOf']
+SUBSTITUTE_OF = ONT['isSubstituteOf']
+
+BUREAU_MEMBER_OF = ONT['isBureauMemberOf']
+BUREAU_CHAIR_OF = ONT['isBureauChairOf']
+BUREAU_VICE_CHAIR_OF = ONT['isBureauViceChairOf']
+
+
+WAS_MEMBER_OF = ONT['wasMemberOf']
+WAS_CHAIR_OF = ONT['wasChairOf']
+WAS_CO_CHAIR_OF = ONT['wasCoChairOf']
+WAS_TREASURER_OF = ONT['wasTreasurerOf']
+WAS_VICE_CHAIR_OF = ONT['wasViceChairOf']
+WAS_PRESIDENT_OF = ONT['wasPresidentOf']
+WAS_CO_TREASURER_OF = ONT['wasCoTreasurerOf']
+WAS_DEPUTY_CHAIR_OF = ONT['wasDeputyChairOf']
+WAS_OBSERVER_OF = ONT['wasObserverOf']
+WAS_DEPUTY_TREASURER_OF = ONT['wasDeputyTreasurerOf']
+WAS_SUBSTITUTE_OF = ONT['wasSubstituteOf']
+
+WAS_BUREAU_MEMBER_OF = ONT['wasBureauMemberOf']
+WAS_BUREAU_CHAIR_OF = ONT['wasBureauChairOf']
+WAS_BUREAU_VICE_CHAIR_OF = ONT['wasBureauViceChairOf']
 
 GENDER = DBO['gender']
 MALE = DBR['Male']

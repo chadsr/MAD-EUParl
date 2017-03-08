@@ -29,6 +29,7 @@ class Miner(object):
         self.dict_mep = defaultdict(list)
         self.dict_party = defaultdict(list)
         self.dict_dossier = defaultdict(list)
+        self.dict_committees = defaultdict(list)
 
         self.sparql_endpoint = SparqlServer()
 
@@ -98,7 +99,7 @@ class Miner(object):
 
         try:
             triples.append([dossier_uri, c.REACHED_STAGE, dossier_stage])
-            triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
+            #triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
             triples.append([dossier_uri, c.DOSSIER_TITLE, dossier_title])
             triples.append([dossier_uri, c.URI, dossier_url])
             triples.append([dossier_uri, c.PROCESSED_BY, c.EUROPEAN_PARLIAMENT])
@@ -300,11 +301,12 @@ class Miner(object):
         end = timer()
         return num_triples, counter, failed, get_elapsed_seconds(start, end)
 
-    # TODO Implement triple count
     def convert_meps(self, path):
+        role_dict = {'Member':[c.MEMBER_OF, c.WAS_MEMBER_OF], 'Member of the Bureau':[c.BUREAU_MEMBER_OF, c.WAS_BUREAU_MEMBER_OF], 'Vice-Chair':[c.VICE_CHAIR_OF, c.WAS_VICE_CHAIR_OF], 'Treasurer':[c.TREASURER_OF, c.WAS_TREASURER_OF], 'President':[c.PRESIDENT_OF, c.WAS_PRESIDENT_OF], 'Chair':[c.CHAIR_OF, c.WAS_CHAIR_OF], 'Co-Chair':[c.CO_CHAIR_OF, c.WAS_CO_CHAIR_OF], 'Chair of the Bureau':[c.BUREAU_CHAIR_OF, c.WAS_BUREAU_CHAIR_OF], 'Co-treasurer':[c.CO_TREASURER_OF, c.WAS_CO_TREASURER_OF], 'Observer':[c.OBSERVER_OF, c.WAS_OBSERVER_OF], 'Deputy Chair':[c.DEPUTY_CHAIR_OF, c.WAS_DEPUTY_CHAIR_OF], 'Vice-Chair/Member of the Bureau':[c.BUREAU_VICE_CHAIR_OF, c.WAS_BUREAU_VICE_CHAIR_OF], 'Deputy Treasurer':[c.DEPUTY_TREASURER_OF, c.WAS_DEPUTY_TREASURER_OF],'Substitute':[c.SUBSTITUTE_OF, c.WAS_SUBSTITUTE_OF]}
         json_data = io.load_json(path)
         dataset = DatasetGenerator.get_dataset()
         counter = 0
+        date_now = datetime.now().date()
 
         print (fmt.WAIT_SYMBOL, "Mining MEPS...")
 
@@ -350,32 +352,74 @@ class Miner(object):
 
             # Can be expanded to process all groups. For now takes the latest known
             if 'Groups' in mep:
-                # For different memberships
-                # if organisationRole = mep['Groups'][0]['role'] == 'member':
-                # memberOf
-                # if organisationRole = mep['Groups'][0]['role'] == 'xxx':
-                # xxx
-                # elif organisationRole = mep['Groups'][0]['role'] == 'xxx':
-                # xxx
+                mep_groups = []
 
-                party_title = str(mep['Groups'][0]['Organization'])
-                party_dbr = self.name_to_dbr(party_title)
+                for group in mep['Groups']:
+                    party_id = group['groupid']
+                    party_title = str(group['Organization'])
+                    party_dbr = self.name_to_dbr(party_title)
 
-                party_id = mep['Groups'][0]['groupid']
-                if type(party_id) is list:
-                    for pid in party_id:
-                        if party_dbr not in self.dict_party[pid]:
-                            self.dict_party[pid].append(party_dbr)
-                    party_id = party_id[0]
-                elif party_dbr not in self.dict_party[party_id]:
-                    self.dict_party[party_id].append(party_dbr)
+                    if type(party_id) is list:
+                        for pid in party_id:
+                            if party_dbr not in self.dict_party[pid]:
+                                self.dict_party[pid].append(party_dbr)
+                        party_id = party_id[0]
+                    elif party_dbr not in self.dict_party[party_id]:
+                        self.dict_party[party_id].append(party_dbr)
 
+                    # If a valid iri was added manually, it's always first, so just take the first
+                    party_uri = URIRef(str(self.dict_party[party_id][0]))
 
-                party_uri = URIRef(str(self.dict_party[party_id][0]))
-                # If a valid iri was added manually, it's always first, so just take the first
-                #dataset.add((mep_uri, c.MEMBER_OF, URIRef(dict_party[party_id][0])))
-                dataset.add((mep_uri, c.PARTY, party_uri))
-                dataset.add((party_uri, c.IN_LEGISLATURE, c.EUROPEAN_PARLIAMENT))
+                    if 'role' in group:
+                        role = str(group['role'])
+
+                        if role != "":
+                            # If no instance of this party for this MEP has been encountered yet... (Take only the latest instance for now)
+                            if party_id not in mep_groups:
+                                mep_groups.append(party_id)
+                                #start_date = group['start']
+                                end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
+
+                                if role in role_dict:
+                                    # If end_date has passed
+                                    if end_date <= date_now:
+                                        dataset.add((mep_uri, role_dict[role][1], party_uri))
+                                    else:
+                                        dataset.add((mep_uri, role_dict[role][0], party_uri))
+                                else:
+                                    print ("Unknown role:", role)
+
+                    dataset.add((c.EUROPEAN_PARLIAMENT, c.IN_LEGISLATURE, party_uri))
+
+            if 'Committees' in mep:
+                mep_committees = []
+
+                for committee in mep['Committees']:
+                    committee_title = committee['Organization']
+                    # Since IDs are not always available, we use a formatted title string for now
+                    committee_id = self.format_name_string(committee_title)
+                    committee_uri = self.id_to_iri(committee_id)
+
+                    if committee_uri not in self.dict_committees[committee_id]:
+                        self.dict_committees[committee_id].append(committee_uri)
+
+                    if 'role' in committee:
+                        role = str(committee['role'])
+
+                        if role != "":
+                            if committee_id not in mep_committees:
+                                mep_committees.append(committee_id)
+                                #start_date = group['start']
+                                end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
+
+                                if role in role_dict:
+                                    # If end_date has passed
+                                    if end_date <= date_now:
+                                        dataset.add((mep_uri, role_dict[role][1], committee_uri))
+                                    else:
+                                        dataset.add((mep_uri, role_dict[role][0], committee_uri))
+                                else:
+                                    print ("Unknown role:", role)
 
             if 'Gender' in mep:
                 gender = str(mep['Gender'])
@@ -383,6 +427,8 @@ class Miner(object):
                     dataset.add((mep_uri, c.GENDER, c.MALE))
                 elif gender == 'F':
                     dataset.add((mep_uri, c.GENDER, c.FEMALE))
+                else:
+                    print ("Unknown gender:", gender)
 
             dataset.add((mep_uri, c.FULL_NAME, full_name))
             dataset.add((mep_uri, c.URI, profile_url))
