@@ -81,6 +81,12 @@ epv:appliesTo a owl:ObjectProperty ;
 	rdfs:domain epv:Dossier ;
 	rdfs:label "appliesTo"@en .
 # 
+# http://localhost:5820/databases/parlialytics#geoArea
+
+epv:geoArea a owl:ObjectProperty ;
+	rdfs:domain epv:Dossier ;
+	rdfs:range dbo:Place .
+# 
 # http://localhost:5820/databases/parlialytics#hasMeeting
 
 epv:hasMeeting a owl:ObjectProperty ;

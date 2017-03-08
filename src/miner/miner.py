@@ -108,8 +108,10 @@ class Miner(object):
 
             if 'geographical_area' in procedure:
                 if procedure['geographical_area']:
-                    dossier_geo = Literal(str(procedure['geographical_area']), datatype=c.STRING)
-                    triples.append([dossier_uri, c.GEO_AREA, dossier_geo])
+                    geo_areas = procedure['geographical_area']
+                    for geo_area in geo_areas:
+                        dossier_geo = URIRef(self.name_to_dbr(geo_area))
+                        triples.append([dossier_uri, c.GEO_AREA, dossier_geo])
 
             for activity in dossier['activities']:
                 if 'type' in activity:
