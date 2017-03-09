@@ -18,6 +18,7 @@ DATA_VOTES = JSON_DIR + 'ep_votes.json'
 DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
 DICT_MEPS = JSON_DIR + 'dict_meps.json'
 DICT_PARTIES = JSON_DIR + 'dict_parties.json'
+DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
 SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics '+LD_DIR+"parlialytics.ttl"
@@ -62,6 +63,10 @@ GEO_AREA = ONT['geoArea']
 HAS_TITLE = ONT['hasTitle']
 
 HAS_DOC = ONT['hasDocument']
+
+IS_RESPONSIBLE = ONT['isResponsibleIn']
+IS_INVOLVED = ONT['isInvolvedIn']
+HAS_RAPPORTEUR = ONT['hasRapporteur']
 
 ABSTAINS = ONT['abstains']
 VOTES_FOR = ONT['votesFor']
@@ -110,10 +115,12 @@ GENDER = DBO['gender']
 MALE = DBR['Male']
 FEMALE = DBR['Female']
 EUROPEAN_PARLIAMENT = DBR['European_Parliament']
+EUROPEAN_COUNCIL = DBR['European_Council']
 EUROPEAN_PARLIAMENT_GROUP = DBO['europeanParliamentGroup']
 IN_LEGISLATURE = DBO['politicalPartyInLegislature']
 POLITICAL_PARTY = DBO['PoliticalParty']
 LEGISLATURE = DBO['Legislature']
+ORGANISATION = DBO['Organisation']
 OFFICE = DBP['office']
 MEMBER_OF_EU = DBR['Member_of_the_European_Parliament']
 THUMBNAIL = DBO['thumbnail']

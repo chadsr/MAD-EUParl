@@ -83,226 +83,6 @@ class Miner(object):
         #uriref = URIRef(iri)
         return iri
 
-    def process_dossier(self, dossier):
-        triples = []
-
-        dossier_id = dossier['_id']
-        dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
-
-        procedure = dossier['procedure']
-
-        dossier_title = Literal(str(procedure['title'].strip()), datatype=c.STRING)
-        dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
-        dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
-
-        dossier_uri = URIRef(self.name_to_dbr(dossier_title))
-
-        try:
-            triples.append([dossier_uri, c.REACHED_STAGE, dossier_stage])
-            #triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
-            triples.append([dossier_uri, c.DOSSIER_TITLE, dossier_title])
-            triples.append([dossier_uri, c.URI, dossier_url])
-            triples.append([dossier_uri, c.PROCESSED_BY, c.EUROPEAN_PARLIAMENT])
-
-            # dataset.add((dossier_uri, RDF.type, DOSSIER))
-
-            if 'geographical_area' in procedure:
-                if procedure['geographical_area']:
-                    geo_areas = procedure['geographical_area']
-                    for geo_area in geo_areas:
-                        dossier_geo = URIRef(self.name_to_dbr(geo_area))
-                        triples.append([dossier_uri, c.GEO_AREA, dossier_geo])
-
-            for activity in dossier['activities']:
-                if 'type' in activity:
-                    if activity['type'] != None:
-                        activity_id = dossier_title+'#'+activity['type']
-                        activity_uri = URIRef(self.name_to_dbr(activity_id))
-                        activity_type = Literal(str(activity['type']), datatype=c.STRING)
-                        activity_date = Literal(
-                            datetime.strptime(activity['date'].split('T')[0], '%Y-%m-%d').date(),
-                            datatype=c.DATE)
-
-                        triples.append([activity_uri, c.HAS_TYPE, activity_type])
-                        triples.append([activity_uri, c.DATE, activity_date])
-                        triples.append([dossier_uri, c.HAS_ACTIVITY, activity_uri])
-
-                        #if 'meeting_id' in activity:
-                        #    if activity['meeting_id'] != None:
-                        #        activity_id = int(activity['meeting_id'])
-
-                        if 'body' in activity:
-                            if activity['body'] != None:
-                                activity_body = Literal(str(activity['body']), datatype=c.STRING)
-                                triples.append([activity_uri, c.HAS_BODY, activity_body])
-
-                        if 'title' in activity:
-                            activity_title = Literal(str(activity['title']), datatype=c.STRING)
-                            triples.append([activity_uri, c.HAS_TITLE, activity_title])
-
-                        if 'docs' in activity:
-                            for doc in activity['docs']:
-                                doc_title = Literal(str(doc['title']), datatype=c.STRING)
-                                doc_uri = URIRef(self.name_to_dbr(activity_id+'#'+doc_title))
-
-                                triples.append([activity_uri, c.HAS_DOC, doc_uri])
-                                triples.append([doc_uri, c.HAS_TITLE, doc_title])
-
-                                if 'url' in doc:
-                                    if doc['url']:
-                                        doc_url = Literal(str(doc['url']), datatype=c.URI)
-                                        triples.append([doc_uri, c.URI, doc_url])
-
-                                if 'type' in doc:
-                                    if doc['type']:
-                                        doc_type = Literal(str(doc['type']), datatype=c.STRING)
-                                        triples.append([doc_uri, c.HAS_TYPE, doc_type])
-                    else:
-                        print ("Activity type is none!")
-                else:
-                    print ("Activity has not type field!")
-            #print(dossier_id)
-        except Exception as ex:
-            print (ex)
-
-        return [dossier_id, dossier_uri, triples]
-
-    # TODO: See if there is a better dossier url to use instead of dossier['meta']['source']
-    # TODO: See if there is a better dossier text to use instead of dossier['procedure']['title']
-    def convert_dossiers(self, path, num_threads, limit):
-        json_data = io.load_json(path)
-
-        print (fmt.WAIT_SYMBOL, "Mining dossiers...")
-
-        start = timer()
-        counter = 0
-        num_triples = 0
-
-        try:
-            input_data = islice(json_data, 0, limit)
-            pool = Pool(num_threads)
-            results = pool.map(self.process_dossier, input_data)
-
-            dataset = DatasetGenerator.get_dataset()
-            for dossier in results:
-                self.dict_dossier[dossier[0]].append(dossier[1])
-
-                for triple in dossier[2]:
-                    dataset.add((triple[0], triple[1], triple[2]))
-
-                num_triples += len(dossier[2])
-                counter += 1
-
-                # Max 1000 dossiers per request
-                if (counter % 1000) == 0 and counter != 0:
-                    # reset dataset
-                    self.sparql_endpoint.import_dataset(dataset)
-                    print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
-                    dataset = DatasetGenerator.get_dataset()
-
-
-
-            # Import any left over from the last (incomplete) batch
-            self.sparql_endpoint.import_dataset(dataset)
-            print(fmt.OK_SYMBOL, "Total of", counter, "dossiers imported.")
-
-        finally:
-            pool.close()
-            pool.join()
-
-        end = timer()
-        return num_triples, counter, get_elapsed_seconds(start, end)
-
-    def process_votes(self, votes):
-        vote_dict = {'Abstain':c.ABSTAINS, 'For':c.VOTES_FOR, 'Against':c.VOTES_AGAINST}
-        counter = 0
-        failed = 0
-        triples = []
-
-        if 'dossierid' in votes:
-            dossier_id = votes['dossierid']
-
-            # If this dossier is in our dictionary of useful dossiers, continue
-            if dossier_id in self.dict_dossier:
-                dossier_uri = URIRef(self.dict_dossier[dossier_id][0])
-                # title = votes['title']
-                # url = dossier['url']
-                # ep_title = dossier['eptitle']
-
-                for vote_type in vote_dict:
-                    if vote_type in votes:
-                        for group in votes[vote_type]['groups']:
-                            # group_name = group['group']
-                            for vote in group['votes']:
-                                try:
-                                    voter_id = int(vote['ep_id'])
-                                except Exception as ex:
-                                    #logging.error("Skipping vote of type "+vote_type+" on dossier "+dossier_uri+" Invalid MEP id.")
-                                    failed += 1
-                                    continue
-
-                                if voter_id in self.dict_mep:
-                                    voter_uri = URIRef(self.dict_mep[voter_id][0])
-                                    try:
-                                        triples.append([voter_uri, vote_dict[vote_type], dossier_uri])
-                                    except Exception as ex:
-                                        print (ex)
-                                        continue
-                                else:
-                                    try:
-                                        triples.append([c.MEMBER_OF_EU, vote_dict[vote_type], dossier_uri])
-                                    except Exception as ex:
-                                        print (ex)
-                                        continue
-                                counter += 1
-
-        return [counter, failed, triples]
-
-    def convert_votes(self, path, num_threads, limit):
-        json_data = io.load_json(path)
-
-        print (fmt.WAIT_SYMBOL, 'Mining votes...')
-
-        start = timer()
-        counter = 0
-        failed = 0
-        num_triples = 0
-
-        try:
-            input_data = islice(json_data, 0, limit)
-            pool = Pool(num_threads)
-            results = pool.map(self.process_votes, input_data)
-
-            dataset = DatasetGenerator.get_dataset()
-            for result in results:
-                failed += result[1]
-
-                for triple in result[2]:
-                    if triple[0] != None:
-                        dataset.add((triple[0], triple[1], triple[2]))
-                    else:
-                        print (triple)
-
-                counter += result[0]
-                num_triples += len(result[2])
-
-                if (counter % 1000) == 0 and counter != 0:
-                    # reset dataset
-                    self.sparql_endpoint.import_dataset(dataset)
-                    print (fmt.INFO_SYMBOL, counter, "votes imported.")
-                    dataset = DatasetGenerator.get_dataset()
-
-            # Import any left over from the last (incomplete) batch
-            self.sparql_endpoint.import_dataset(dataset)
-            print(fmt.OK_SYMBOL, "Total of", counter, "votes imported.")
-
-        finally:
-            pool.close()
-            pool.join()
-
-        end = timer()
-        return num_triples, counter, failed, get_elapsed_seconds(start, end)
-
     def convert_meps(self, path, limit):
         role_dict = {'Member':[c.MEMBER_OF, c.WAS_MEMBER_OF], 'Member of the Bureau':[c.BUREAU_MEMBER_OF, c.WAS_BUREAU_MEMBER_OF], 'Vice-Chair':[c.VICE_CHAIR_OF, c.WAS_VICE_CHAIR_OF], 'Treasurer':[c.TREASURER_OF, c.WAS_TREASURER_OF], 'President':[c.PRESIDENT_OF, c.WAS_PRESIDENT_OF], 'Chair':[c.CHAIR_OF, c.WAS_CHAIR_OF], 'Co-Chair':[c.CO_CHAIR_OF, c.WAS_CO_CHAIR_OF], 'Chair of the Bureau':[c.BUREAU_CHAIR_OF, c.WAS_BUREAU_CHAIR_OF], 'Co-treasurer':[c.CO_TREASURER_OF, c.WAS_CO_TREASURER_OF], 'Observer':[c.OBSERVER_OF, c.WAS_OBSERVER_OF], 'Deputy Chair':[c.DEPUTY_CHAIR_OF, c.WAS_DEPUTY_CHAIR_OF], 'Vice-Chair/Member of the Bureau':[c.BUREAU_VICE_CHAIR_OF, c.WAS_BUREAU_VICE_CHAIR_OF], 'Deputy Treasurer':[c.DEPUTY_TREASURER_OF, c.WAS_DEPUTY_TREASURER_OF],'Substitute':[c.SUBSTITUTE_OF, c.WAS_SUBSTITUTE_OF]}
         json_data = io.load_json(path)
@@ -316,6 +96,7 @@ class Miner(object):
         for mep in islice(json_data, 0, limit):
             # Get raw values
             user_id = int(mep['UserID'])
+            #user_id = str(mep['_id'])
             full_name = Literal(str(mep['Name']['full'].lower().title().strip()), datatype=c.STRING)
             profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
             mep_uri = self.name_to_dbr(full_name)
@@ -443,3 +224,255 @@ class Miner(object):
         end = timer()
 
         return dataset.__len__(), counter, get_elapsed_seconds(start, end)
+
+    def process_dossier(self, dossier):
+        triples = []
+
+        dossier_id = dossier['_id']
+        dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
+
+        procedure = dossier['procedure']
+
+        dossier_title = Literal(str(procedure['title'].strip()), datatype=c.STRING)
+        dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
+        dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
+
+        dossier_uri = URIRef(self.name_to_dbr(dossier_title))
+
+        try:
+            triples.append([dossier_uri, c.REACHED_STAGE, dossier_stage])
+            #triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
+            triples.append([dossier_uri, c.DOSSIER_TITLE, dossier_title])
+            triples.append([dossier_uri, c.URI, dossier_url])
+            triples.append([dossier_uri, c.PROCESSED_BY, c.EUROPEAN_PARLIAMENT])
+
+            # dataset.add((dossier_uri, RDF.type, DOSSIER))
+
+            if 'geographical_area' in procedure:
+                if procedure['geographical_area']:
+                    geo_areas = procedure['geographical_area']
+                    for geo_area in geo_areas:
+                        dossier_geo = URIRef(self.name_to_dbr(geo_area))
+                        triples.append([dossier_uri, c.GEO_AREA, dossier_geo])
+
+            for activity in dossier['activities']:
+                if 'type' in activity:
+                    if activity['type'] != None:
+                        activity_id = dossier_title+'#'+activity['type']
+                        activity_uri = URIRef(self.name_to_dbr(activity_id))
+                        activity_type = Literal(str(activity['type']), datatype=c.STRING)
+                        activity_date = Literal(
+                            datetime.strptime(activity['date'].split('T')[0], '%Y-%m-%d').date(),
+                            datatype=c.DATE)
+
+                        triples.append([activity_uri, c.HAS_TYPE, activity_type])
+                        triples.append([activity_uri, c.DATE, activity_date])
+                        triples.append([dossier_uri, c.HAS_ACTIVITY, activity_uri])
+
+                        #if 'meeting_id' in activity:
+                        #    if activity['meeting_id'] != None:
+                        #        activity_id = int(activity['meeting_id'])
+
+                        if 'body' in activity:
+                            if activity['body'] != None:
+                                activity_body = str(activity['body'])
+                                if activity_body == "EP":
+                                    triples.append([activity_uri, c.HAS_BODY, c.EUROPEAN_PARLIAMENT])
+                                elif activity_body == "EC":
+                                    triples.append([activity_uri, c.HAS_BODY, c.EUROPEAN_COUNCIL])
+                                #else:
+                                #    print ("Unknown activity body:", activity_body)
+
+                        if 'title' in activity:
+                            activity_title = Literal(str(activity['title']), datatype=c.STRING)
+                            triples.append([activity_uri, c.HAS_TITLE, activity_title])
+
+                        if 'docs' in activity:
+                            for doc in activity['docs']:
+                                doc_title = Literal(str(doc['title']), datatype=c.STRING)
+                                doc_uri = URIRef(self.name_to_dbr(activity_id+'#'+doc_title))
+
+                                triples.append([activity_uri, c.HAS_DOC, doc_uri])
+                                triples.append([doc_uri, c.HAS_TITLE, doc_title])
+
+                                if 'url' in doc:
+                                    if doc['url']:
+                                        doc_url = Literal(str(doc['url']), datatype=c.URI)
+                                        triples.append([doc_uri, c.URI, doc_url])
+
+                                if 'type' in doc:
+                                    if doc['type']:
+                                        doc_type = Literal(str(doc['type']), datatype=c.STRING)
+                                        triples.append([doc_uri, c.HAS_TYPE, doc_type])
+                    else:
+                        print ("Activity type is none!")
+                else:
+                    print ("Activity has not type field!")
+
+                for committee in dossier['committees']:
+                    committee_title = committee['committee_full']
+                    committee_id = self.format_name_string(committee_title)
+                    committee_uri = self.id_to_iri(committee_id)
+                    committee_body = committee['body']
+                    committee_responsible = bool(committee['responsible'])
+
+                    if committee_responsible:
+                        triples.append([committee_uri, c.IS_RESPONSIBLE, dossier_uri])
+                    else:
+                        triples.append([committee_uri, c.IS_INVOLVED, dossier_uri])
+
+                    #TODO Figure out ID troubles (ID doesn't match current dictionary)
+                    """
+                    if 'rapporteur' in committee:
+                        for rapporteur in committee['rapporteur']:
+                            committee_rapporteur_id = str(rapporteur['mepref'])
+
+                            if committee_rapporteur_id in self.dict_mep:
+                                mep_uri = URIRef(self.dict_mep[committee_rapporteur_id][0])
+                                triples.append([committee_uri, c.HAS_RAPPORTEUR , mep_uri])
+                                print (mep_uri)
+                            else:
+                                print ("MEP not found:", committee_rapporteur_id)
+                                print (json.dumps(rapporteur, indent=2), "\n")
+                    """
+
+        except Exception as ex:
+            print ("Exception:", ex)
+
+        return [dossier_id, dossier_uri, triples]
+
+    # TODO: See if there is a better dossier url to use instead of dossier['meta']['source']
+    # TODO: See if there is a better dossier text to use instead of dossier['procedure']['title']
+    def convert_dossiers(self, path, num_threads, limit):
+        json_data = io.load_json(path)
+
+        print (fmt.WAIT_SYMBOL, "Mining dossiers...")
+
+        start = timer()
+        counter = 0
+        num_triples = 0
+
+        try:
+            input_data = islice(json_data, 0, limit)
+            pool = Pool(num_threads)
+            results = pool.map(self.process_dossier, input_data)
+
+            dataset = DatasetGenerator.get_dataset()
+            for dossier in results:
+                self.dict_dossier[dossier[0]].append(dossier[1])
+
+                for triple in dossier[2]:
+                    dataset.add((triple[0], triple[1], triple[2]))
+
+                num_triples += len(dossier[2])
+                counter += 1
+
+                # Max 1000 dossiers per request
+                if (counter % 1000) == 0 and counter != 0:
+                    # reset dataset
+                    self.sparql_endpoint.import_dataset(dataset)
+                    print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
+                    dataset = DatasetGenerator.get_dataset()
+
+            # Import any left over from the last (incomplete) batch
+            self.sparql_endpoint.import_dataset(dataset)
+            print(fmt.OK_SYMBOL, "Total of", counter, "dossiers imported.")
+
+        finally:
+            pool.close()
+            pool.join()
+
+        end = timer()
+        return num_triples, counter, get_elapsed_seconds(start, end)
+
+    def process_votes(self, votes):
+        vote_dict = {'Abstain':c.ABSTAINS, 'For':c.VOTES_FOR, 'Against':c.VOTES_AGAINST}
+        counter = 0
+        failed = 0
+        triples = []
+
+        if 'dossierid' in votes:
+            dossier_id = votes['dossierid']
+
+            # If this dossier is in our dictionary of useful dossiers, continue
+            if dossier_id in self.dict_dossier:
+                dossier_uri = URIRef(self.dict_dossier[dossier_id][0])
+                # title = votes['title']
+                # url = dossier['url']
+                # ep_title = dossier['eptitle']
+
+                for vote_type in vote_dict:
+                    if vote_type in votes:
+                        for group in votes[vote_type]['groups']:
+                            # group_name = group['group']
+                            for vote in group['votes']:
+                                try:
+                                    voter_id = int(vote['ep_id'])
+                                    #voter_id = str(vote['id'])
+                                except Exception as ex:
+                                    #logging.error("Skipping vote of type "+vote_type+" on dossier "+dossier_uri+" Invalid MEP id.")
+                                    failed += 1
+                                    continue
+
+                                if voter_id in self.dict_mep:
+                                    voter_uri = URIRef(self.dict_mep[voter_id][0])
+                                    try:
+                                        triples.append([voter_uri, vote_dict[vote_type], dossier_uri])
+                                    except Exception as ex:
+                                        print (ex)
+                                        continue
+                                else:
+                                    print (voter_id)
+                                    try:
+                                        triples.append([c.MEMBER_OF_EU, vote_dict[vote_type], dossier_uri])
+                                    except Exception as ex:
+                                        print (ex)
+                                        continue
+                                counter += 1
+
+        return [counter, failed, triples]
+
+    def convert_votes(self, path, num_threads, limit):
+        json_data = io.load_json(path)
+
+        print (fmt.WAIT_SYMBOL, 'Mining votes...')
+
+        start = timer()
+        counter = 0
+        failed = 0
+        num_triples = 0
+
+        try:
+            input_data = islice(json_data, 0, limit)
+            pool = Pool(num_threads)
+            results = pool.map(self.process_votes, input_data)
+
+            dataset = DatasetGenerator.get_dataset()
+            for result in results:
+                failed += result[1]
+
+                for triple in result[2]:
+                    if triple[0] != None:
+                        dataset.add((triple[0], triple[1], triple[2]))
+                    else:
+                        print (triple)
+
+                counter += result[0]
+                num_triples += len(result[2])
+
+                if (counter % 1000) == 0 and counter != 0:
+                    # reset dataset
+                    self.sparql_endpoint.import_dataset(dataset)
+                    print (fmt.INFO_SYMBOL, counter, "votes imported.")
+                    dataset = DatasetGenerator.get_dataset()
+
+            # Import any left over from the last (incomplete) batch
+            self.sparql_endpoint.import_dataset(dataset)
+            print(fmt.OK_SYMBOL, "Total of", counter, "votes imported.")
+
+        finally:
+            pool.close()
+            pool.join()
+
+        end = timer()
+        return num_triples, counter, failed, get_elapsed_seconds(start, end)
