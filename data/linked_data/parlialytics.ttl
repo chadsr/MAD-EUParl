@@ -87,6 +87,19 @@ epv:geoArea a owl:ObjectProperty ;
 	rdfs:domain epv:Dossier ;
 	rdfs:range dbo:Place .
 # 
+# http://localhost:5820/databases/parlialytics#hasActivity
+
+epv:hasActivity a owl:ObjectProperty ;
+	rdfs:subPropertyOf owl:topObjectProperty ;
+	rdfs:domain epv:Dossier ;
+	rdfs:range epv:Activity .
+# 
+# http://localhost:5820/databases/parlialytics#hasBody
+
+epv:hasBody a owl:ObjectProperty ;
+	rdfs:domain epv:Activity ;
+	rdfs:range dbo:Organisation .
+# 
 # http://localhost:5820/databases/parlialytics#hasMeeting
 
 epv:hasMeeting a owl:ObjectProperty ;
@@ -99,6 +112,12 @@ epv:hasMember a owl:ObjectProperty ;
 	owl:inverseOf epv:isMemberOf ;
 	rdfs:domain epv:Group ;
 	rdfs:range dbo:Person .
+# 
+# http://localhost:5820/databases/parlialytics#hasRapporteur
+
+epv:hasRapporteur a owl:ObjectProperty ;
+	rdfs:domain epv:Committee ;
+	rdfs:range epv:MEP .
 # 
 # http://localhost:5820/databases/parlialytics#hasText
 
@@ -117,6 +136,11 @@ epv:hasVoter a owl:ObjectProperty ;
 	owl:inverseOf epv:votesIn ;
 	rdfs:domain epv:VotingAssembly ;
 	rdfs:range epv:Voter .
+# 
+# http://localhost:5820/databases/parlialytics#involves
+
+epv:involves a owl:ObjectProperty ;
+	owl:inverseOf epv:isInvolvedIn .
 # 
 # http://localhost:5820/databases/parlialytics#isBureauChairOf
 
@@ -158,10 +182,16 @@ epv:isDeputyChairOf a owl:ObjectProperty ;
 epv:isDeputyTreasurerOf a owl:ObjectProperty ;
 	rdfs:subPropertyOf epv:isMemberOf .
 # 
+# http://localhost:5820/databases/parlialytics#isInvolvedIn
+
+epv:isInvolvedIn a owl:ObjectProperty ;
+	rdfs:domain epv:Committee ;
+	rdfs:range epv:Dossier .
+# 
 # http://localhost:5820/databases/parlialytics#isMemberOf
 
 epv:isMemberOf a owl:ObjectProperty ;
-	rdfs:domain dbo:Person ;
+	rdfs:domain epv:MEP ;
 	rdfs:range epv:Group ;
 	owl:propertyDisjointWith epv:wasMemberOf .
 # 
@@ -174,6 +204,11 @@ epv:isObserverOf a owl:ObjectProperty ;
 
 epv:isPresidentOf a owl:ObjectProperty ;
 	rdfs:subPropertyOf epv:isMemberOf .
+# 
+# http://localhost:5820/databases/parlialytics#isResponsibleIn
+
+epv:isResponsibleIn a owl:ObjectProperty ;
+	rdfs:subPropertyOf epv:isInvolvedIn .
 # 
 # http://localhost:5820/databases/parlialytics#isSubstituteOf
 
@@ -299,7 +334,9 @@ epv:wasDeputyTreasurerOf a owl:ObjectProperty ;
 # 
 # http://localhost:5820/databases/parlialytics#wasMemberOf
 
-epv:wasMemberOf a owl:ObjectProperty .
+epv:wasMemberOf a owl:ObjectProperty ;
+	rdfs:domain epv:MEP ;
+	rdfs:range epv:Group .
 # 
 # http://localhost:5820/databases/parlialytics#wasObserverOf
 
@@ -379,7 +416,12 @@ foaf:name a owl:DatatypeProperty .
 # 
 # http://dbpedia.org/ontology/Legislature
 
-dbo:Legislature a owl:Class .
+dbo:Legislature a owl:Class ;
+	rdfs:subClassOf dbo:Organisation .
+# 
+# http://dbpedia.org/ontology/Organisation
+
+dbo:Organisation a owl:Class .
 # 
 # http://dbpedia.org/ontology/Person
 
@@ -393,6 +435,10 @@ dbo:Place a owl:Class .
 # http://dbpedia.org/ontology/PoliticalParty
 
 dbo:PoliticalParty a owl:Class .
+# 
+# http://localhost:5820/databases/parlialytics#Activity
+
+epv:Activity a owl:Class .
 # 
 # http://localhost:5820/databases/parlialytics#Agent
 
@@ -415,46 +461,20 @@ _:genid2 a owl:Restriction ;
 	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
 	owl:onClass epv:VotingAssembly .
 # 
-# http://localhost:5820/databases/parlialytics#FemaleVoter
+# http://localhost:5820/databases/parlialytics#FemaleMEP
 
-epv:FemaleVoter a owl:Class ;
+epv:FemaleMEP a owl:Class ;
 	owl:equivalentClass _:genid3 .
 
-_:genid3 owl:intersectionOf _:genid8 .
-
-_:genid8 a rdf:List ;
-	rdf:first _:genid9 .
-
-_:genid9 a owl:Class ;
-	owl:unionOf _:genid12 .
-
-_:genid12 a rdf:List ;
-	rdf:first _:genid13 .
-
-_:genid13 a owl:Restriction ;
-	owl:onProperty dbo:gender ;
-	owl:hasValue dbr:Female .
-
-_:genid12 rdf:rest _:genid10 .
-
-_:genid10 a rdf:List ;
-	rdf:first _:genid11 .
-
-_:genid11 a owl:Restriction ;
-	owl:onProperty foaf:gender ;
-	owl:hasValue "female" .
-
-_:genid10 rdf:rest rdf:nil .
-
-_:genid8 rdf:rest _:genid6 .
+_:genid3 a owl:Class ;
+	owl:unionOf _:genid6 .
 
 _:genid6 a rdf:List ;
 	rdf:first _:genid7 .
 
 _:genid7 a owl:Restriction ;
-	owl:onProperty epv:reactsToVote ;
-	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-	owl:onClass epv:Dossier .
+	owl:onProperty dbo:gender ;
+	owl:hasValue dbr:Female .
 
 _:genid6 rdf:rest _:genid4 .
 
@@ -462,16 +482,12 @@ _:genid4 a rdf:List ;
 	rdf:first _:genid5 .
 
 _:genid5 a owl:Restriction ;
-	owl:onProperty epv:votesIn ;
-	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-	owl:onClass epv:VotingAssembly .
+	owl:onProperty foaf:gender ;
+	owl:hasValue "female" .
 
 _:genid4 rdf:rest rdf:nil .
 
-_:genid3 a owl:Class .
-
-epv:FemaleVoter rdfs:subClassOf epv:Voter ;
-	rdfs:label "FemaleVoter"@en .
+epv:FemaleMEP rdfs:subClassOf epv:MEP .
 # 
 # http://localhost:5820/databases/parlialytics#Group
 
@@ -483,63 +499,33 @@ epv:Group a owl:Class ;
 epv:MEP a owl:Class ;
 	rdfs:subClassOf dbo:Person .
 # 
-# http://localhost:5820/databases/parlialytics#MaleVoter
+# http://localhost:5820/databases/parlialytics#MaleMEP
 
-epv:MaleVoter a owl:Class ;
-	owl:equivalentClass _:genid14 .
+epv:MaleMEP a owl:Class ;
+	owl:equivalentClass _:genid8 .
 
-_:genid14 owl:intersectionOf _:genid19 .
+_:genid8 a owl:Class ;
+	owl:unionOf _:genid11 .
 
-_:genid19 a rdf:List ;
-	rdf:first _:genid20 .
+_:genid11 a rdf:List ;
+	rdf:first _:genid12 .
 
-_:genid20 a owl:Class ;
-	owl:unionOf _:genid23 .
-
-_:genid23 a rdf:List ;
-	rdf:first _:genid24 .
-
-_:genid24 a owl:Restriction ;
+_:genid12 a owl:Restriction ;
 	owl:onProperty dbo:gender ;
 	owl:hasValue dbr:Male .
 
-_:genid23 rdf:rest _:genid21 .
+_:genid11 rdf:rest _:genid9 .
 
-_:genid21 a rdf:List ;
-	rdf:first _:genid22 .
+_:genid9 a rdf:List ;
+	rdf:first _:genid10 .
 
-_:genid22 a owl:Restriction ;
+_:genid10 a owl:Restriction ;
 	owl:onProperty foaf:gender ;
 	owl:hasValue "male" .
 
-_:genid21 rdf:rest rdf:nil .
+_:genid9 rdf:rest rdf:nil .
 
-_:genid19 rdf:rest _:genid17 .
-
-_:genid17 a rdf:List ;
-	rdf:first _:genid18 .
-
-_:genid18 a owl:Restriction ;
-	owl:onProperty epv:reactsToVote ;
-	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-	owl:onClass epv:Dossier .
-
-_:genid17 rdf:rest _:genid15 .
-
-_:genid15 a rdf:List ;
-	rdf:first _:genid16 .
-
-_:genid16 a owl:Restriction ;
-	owl:onProperty epv:votesIn ;
-	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-	owl:onClass epv:VotingAssembly .
-
-_:genid15 rdf:rest rdf:nil .
-
-_:genid14 a owl:Class .
-
-epv:MaleVoter rdfs:subClassOf epv:Voter ;
-	rdfs:label "MaleVoter"@en .
+epv:MaleMEP rdfs:subClassOf epv:MEP .
 # 
 # http://localhost:5820/databases/parlialytics#Meeting
 
@@ -549,59 +535,6 @@ epv:Meeting a owl:Class .
 
 epv:Member a owl:Class ;
 	rdfs:subClassOf dbo:Person .
-# 
-# http://localhost:5820/databases/parlialytics#MiddleAgedVoter
-
-epv:MiddleAgedVoter a owl:Class ;
-	owl:equivalentClass _:genid25 .
-
-_:genid25 a owl:Restriction ;
-	owl:onProperty foaf:age ;
-	owl:someValuesFrom _:genid26 .
-
-_:genid26 a rdfs:Datatype ;
-	owl:onDatatype xsd:integer ;
-	owl:withRestrictions _:genid29 .
-
-_:genid29 a rdf:List ;
-	rdf:first _:genid30 .
-
-_:genid30 xsd:minInclusive "40"^^xsd:integer .
-
-_:genid29 rdf:rest _:genid27 .
-
-_:genid27 a rdf:List ;
-	rdf:first _:genid28 .
-
-_:genid28 xsd:maxExclusive "60"^^xsd:integer .
-
-_:genid27 rdf:rest rdf:nil .
-
-epv:MiddleAgedVoter rdfs:subClassOf epv:Voter ;
-	rdfs:label "MiddleAgedVoter"@en .
-# 
-# http://localhost:5820/databases/parlialytics#OldVoter
-
-epv:OldVoter a owl:Class ;
-	owl:equivalentClass _:genid31 .
-
-_:genid31 a owl:Restriction ;
-	owl:onProperty foaf:age ;
-	owl:someValuesFrom _:genid32 .
-
-_:genid32 a rdfs:Datatype ;
-	owl:onDatatype xsd:integer ;
-	owl:withRestrictions _:genid33 .
-
-_:genid33 a rdf:List ;
-	rdf:first _:genid34 .
-
-_:genid34 xsd:minInclusive "60"^^xsd:integer .
-
-_:genid33 rdf:rest rdf:nil .
-
-epv:OldVoter rdfs:subClassOf epv:Voter ;
-	rdfs:label "OldVoter"@en .
 # 
 # http://localhost:5820/databases/parlialytics#Party
 
@@ -623,31 +556,31 @@ epv:TemporaryCommittee a owl:Class ;
 # http://localhost:5820/databases/parlialytics#Voter
 
 epv:Voter a owl:Class ;
-	owl:equivalentClass _:genid35 .
+	owl:equivalentClass _:genid13 .
 
-_:genid35 owl:intersectionOf _:genid38 .
+_:genid13 owl:intersectionOf _:genid16 .
 
-_:genid38 a rdf:List ;
-	rdf:first _:genid39 .
+_:genid16 a rdf:List ;
+	rdf:first _:genid17 .
 
-_:genid39 a owl:Restriction ;
+_:genid17 a owl:Restriction ;
 	owl:onProperty epv:reactsToVote ;
 	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
 	owl:onClass epv:Dossier .
 
-_:genid38 rdf:rest _:genid36 .
+_:genid16 rdf:rest _:genid14 .
 
-_:genid36 a rdf:List ;
-	rdf:first _:genid37 .
+_:genid14 a rdf:List ;
+	rdf:first _:genid15 .
 
-_:genid37 a owl:Restriction ;
+_:genid15 a owl:Restriction ;
 	owl:onProperty epv:votesIn ;
 	owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
 	owl:onClass epv:VotingAssembly .
 
-_:genid36 rdf:rest rdf:nil .
+_:genid14 rdf:rest rdf:nil .
 
-_:genid35 a owl:Class .
+_:genid13 a owl:Class .
 
 epv:Voter rdfs:subClassOf epv:Agent .
 # 
@@ -656,29 +589,6 @@ epv:Voter rdfs:subClassOf epv:Agent .
 epv:VotingAssembly a owl:Class ;
 	rdfs:subClassOf epv:Agent ;
 	rdfs:label "VotingAssembly"@en .
-# 
-# http://localhost:5820/databases/parlialytics#YoungVoter
-
-epv:YoungVoter a owl:Class ;
-	owl:equivalentClass _:genid40 .
-
-_:genid40 a owl:Restriction ;
-	owl:onProperty foaf:age ;
-	owl:someValuesFrom _:genid41 .
-
-_:genid41 a rdfs:Datatype ;
-	owl:onDatatype xsd:integer ;
-	owl:withRestrictions _:genid42 .
-
-_:genid42 a rdf:List ;
-	rdf:first _:genid43 .
-
-_:genid43 xsd:maxExclusive "40"^^xsd:integer .
-
-_:genid42 rdf:rest rdf:nil .
-
-epv:YoungVoter rdfs:subClassOf epv:Voter ;
-	rdfs:label "YoungVoter"@en .
 # 
 # http://xmlns.com/foaf/0.1/Agent
 
