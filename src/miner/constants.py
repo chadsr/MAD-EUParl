@@ -48,6 +48,9 @@ DBR = Namespace(dbr)
 dbp = 'http://dbpedia.org/property/'
 DBP = Namespace(dbp)
 
+rdf = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+RDF = Namespace(rdf)
+
 foaf = 'http://xmlns.com/foaf/0.1/'
 FOAF = Namespace(foaf)
 
@@ -59,6 +62,8 @@ HAS_ACTIVITY = ONT['hasActivity']
 REACHED_STAGE = ONT['reachedStage']
 PROCEDURE_TYPE = ONT['procedureType']
 GEO_AREA = ONT['geoArea']
+
+IS_ACTIVE = ONT['isActive']
 
 HAS_TITLE = ONT['hasTitle']
 
@@ -78,38 +83,24 @@ HAS_BODY = ONT['hasBody']
 
 PARTY = DBO['party']
 
-MEMBER_OF = ONT['isMemberOf']
-CHAIR_OF = ONT['isChairOf']
-CO_CHAIR_OF = ONT['isCoChairOf']
-TREASURER_OF = ONT['isTreasurerOf']
-VICE_CHAIR_OF = ONT['isViceChairOf']
-PRESIDENT_OF = ONT['isPresidentOf']
-CO_TREASURER_OF = ONT['isCoTreasurerOf']
-DEPUTY_CHAIR_OF = ONT['isDeputyChairOf']
-OBSERVER_OF = ONT['isObserverOf']
-DEPUTY_TREASURER_OF = ONT['isDeputyTreasurerOf']
-SUBSTITUTE_OF = ONT['isSubstituteOf']
+REPRESENTS_COUNTRY = ONT['representsCountry']
 
-BUREAU_MEMBER_OF = ONT['isBureauMemberOf']
-BUREAU_CHAIR_OF = ONT['isBureauChairOf']
-BUREAU_VICE_CHAIR_OF = ONT['isBureauViceChairOf']
-
-
-WAS_MEMBER_OF = ONT['wasMemberOf']
-WAS_CHAIR_OF = ONT['wasChairOf']
-WAS_CO_CHAIR_OF = ONT['wasCoChairOf']
-WAS_TREASURER_OF = ONT['wasTreasurerOf']
-WAS_VICE_CHAIR_OF = ONT['wasViceChairOf']
-WAS_PRESIDENT_OF = ONT['wasPresidentOf']
-WAS_CO_TREASURER_OF = ONT['wasCoTreasurerOf']
-WAS_DEPUTY_CHAIR_OF = ONT['wasDeputyChairOf']
-WAS_OBSERVER_OF = ONT['wasObserverOf']
-WAS_DEPUTY_TREASURER_OF = ONT['wasDeputyTreasurerOf']
-WAS_SUBSTITUTE_OF = ONT['wasSubstituteOf']
-
-WAS_BUREAU_MEMBER_OF = ONT['wasBureauMemberOf']
-WAS_BUREAU_CHAIR_OF = ONT['wasBureauChairOf']
-WAS_BUREAU_VICE_CHAIR_OF = ONT['wasBureauViceChairOf']
+IS_WITHIN = ONT['isWithin']
+HAS_MEMBERSHIP = ONT['hasMembership']
+MEMBER = ONT['Membership']
+SUBSTITUTE = ONT['Substitute']
+DEPUTY_TREASURER = ONT['DeputyTreasurer']
+VICE_CHAIR = ONT['ViceChair']
+CO_CHAIR = ONT['CoChair']
+BUREAU_VICE_CHAIR = ONT['ViceChairOfTheBureau']
+CO_TREASURER = ONT['CoTreasurer']
+DEPUTY_CHAIR = ONT['DeputyChair']
+OBSERVER = ONT['Observer']
+BUREAU_CHAIR = ONT['ChairOfTheBureau']
+CHAIR = ONT['Chair']
+PRESIDENT = ONT['President']
+TREASURER = ONT['Treasurer']
+BUREAU_MEMBER = ONT['MemberOfTheBureau']
 
 GENDER = DBO['gender']
 MALE = DBR['Male']
@@ -134,3 +125,6 @@ DEATH_DATE = DBO['deathDate']
 URI = XSD['anyURI']
 STRING = XSD['string']
 DATE = XSD['date']
+BOOLEAN = XSD.boolean
+
+TYPE = RDF['type']
