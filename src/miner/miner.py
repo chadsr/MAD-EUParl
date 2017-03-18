@@ -103,21 +103,22 @@ class Miner(object):
         return iri
 
     def convert_meps(self, path, limit):
-        membership_dict = {'Member': c.MEMBER,
-                           'Member of the Bureau': c.BUREAU_MEMBER,
-                           'Vice-Chair': c.VICE_CHAIR,
-                           'Treasurer': c.TREASURER,
-                           'President': c.PRESIDENT,
-                           'Chair': c.CHAIR,
-                           'Co-Chair': c.CO_CHAIR,
-                           'Chair of the Bureau': c.BUREAU_CHAIR,
-                           'Co-treasurer': c.CO_TREASURER,
-                           'Observer': c.OBSERVER,
-                           'Deputy Chair': c.DEPUTY_CHAIR,
-                           'Vice-Chair/Member of the Bureau': c.BUREAU_VICE_CHAIR,
-                           'Deputy Treasurer': c.DEPUTY_TREASURER,
-                           'Substitute': c.SUBSTITUT
-                           }
+        membership_dict = {
+            'Member': c.MEMBER,
+            'Member of the Bureau': c.BUREAU_MEMBER,
+            'Vice-Chair': c.VICE_CHAIR,
+            'Treasurer': c.TREASURER,
+            'President': c.PRESIDENT,
+            'Chair': c.CHAIR,
+            'Co-Chair': c.CO_CHAIR,
+            'Chair of the Bureau': c.BUREAU_CHAIR,
+            'Co-treasurer': c.CO_TREASURER,
+            'Observer': c.OBSERVER,
+            'Deputy Chair': c.DEPUTY_CHAIR,
+            'Vice-Chair/Member of the Bureau': c.BUREAU_VICE_CHAIR,
+            'Deputy Treasurer': c.DEPUTY_TREASURER,
+            'Substitute': c.SUBSTITUTE
+            }
 
         json_data = io.load_json(path)
         json_length = len(json_data) - 1
@@ -216,10 +217,9 @@ class Miner(object):
                     if end_date < date_now:
                         dataset.add((membership_uri, c.IS_ACTIVE,
                                      Literal(False, datatype=c.BOOLEAN)))
-                    # else:
-                    #    dataset.add((membership_uri, c.IS_ACTIVE, Literal(
-                    #                 True,
-                    #                 datatype=c.BOOLEAN)))
+                    else:
+                        dataset.add((membership_uri, c.IS_ACTIVE,
+                                     Literal(True, datatype=c.BOOLEAN)))
 
                     start_date = Literal(start_date, datatype=c.DATE)
                     end_date = Literal(end_date, datatype=c.DATE)
@@ -289,6 +289,8 @@ class Miner(object):
                     dataset.add((mep_uri, c.GENDER, c.FEMALE))
                 else:
                     print("Unknown gender:", gender)
+            else:
+                logging.info('No gender found: %s', profile_url)
 
             """
             if 'Financial Declarations' in mep:

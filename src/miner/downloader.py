@@ -43,8 +43,7 @@ def download_datasets():
                 else:
                     print("%s" % e)
         else:
-            print(fmt.WARNING_SYMBOL, file_name, "already the latest version.
-                  skipping.")
+            print(fmt.WARNING_SYMBOL, file_name, "already the latest version. skipping.")
 
 
 def extract_dataset(path):
