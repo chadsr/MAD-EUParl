@@ -10,6 +10,7 @@ class SparqlServer(object):
         self.sparql = SPARQLWrapper(c.SPARQL_ENDPOINT)
         if start_server:
             subprocess.Popen(c.SERVER_START, shell=True)
+            subprocess.Popen(c.SERVER_IMPORT_ONT, shell=True)
 
     def import_graph(self, graph):
         print (fmt.WAIT_SYMBOL, "Importing graph to", c.SPARQL_ENDPOINT)

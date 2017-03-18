@@ -7,10 +7,12 @@ DIR = os.path.dirname(
 LOG_DIR = DIR + '/logs/'
 DATA_DIR = DIR + '/data/'
 
+MAIN_LOG = LOG_DIR + 'parlialytics.log'
+
 JSON_DIR = DATA_DIR + 'json/'
 LD_DIR = DATA_DIR + 'linked_data/'
 
-DATA_OUTPUT = LD_DIR + 'parltrack-data.ttl'
+DATA_OUTPUT = LD_DIR + 'parlialytics.ttl'
 GRAPH_OUTPUT = LD_DIR + 'parltrack-graph.ttl'
 
 DATA_MEP = JSON_DIR + 'ep_meps_current.json'
@@ -21,7 +23,8 @@ DICT_PARTIES = JSON_DIR + 'dict_parties.json'
 DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
-SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics '+LD_DIR+"parlialytics.ttl"
+SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security'
+SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics "'+LD_DIR+'parlialytics.ttl"'
 SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
 
 DOWNLOAD_TIMEOUT = 30
@@ -56,7 +59,7 @@ FOAF = Namespace(foaf)
 
 DOSSIER = ONT['Dossier']
 ACTIVITY = ONT['Activity']
-DOSSIER_TITLE = ONT['dossier_title']
+DOSSIER_TITLE = ONT['dossierTitle']
 PROCESSED_BY = ONT['processedBy']
 HAS_ACTIVITY = ONT['hasActivity']
 REACHED_STAGE = ONT['reachedStage']

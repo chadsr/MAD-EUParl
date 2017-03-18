@@ -14,6 +14,8 @@ import io_handler as io
 import constants as c
 import formatting as fmt
 
+import logging
+
 from timeit import default_timer as timer
 from timing import get_elapsed_seconds
 
@@ -42,6 +44,8 @@ class Miner(object):
             self.dict_party = io.json_to_defaultdict(json_str)
 
         self.total_triples = 0
+
+        logging.basicConfig(filename=c.MAIN_LOG,level=logging.INFO, format='[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
 
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
         mep_triples, count, time = self.convert_meps(c.DATA_MEP, mep_limit)
@@ -86,14 +90,20 @@ class Miner(object):
     def convert_meps(self, path, limit):
         membership_dict = {'Member':c.MEMBER, 'Member of the Bureau':c.BUREAU_MEMBER, 'Vice-Chair':c.VICE_CHAIR, 'Treasurer':c.TREASURER, 'President':c.PRESIDENT, 'Chair':c.CHAIR, 'Co-Chair':c.CO_CHAIR, 'Chair of the Bureau':c.BUREAU_CHAIR, 'Co-treasurer':c.CO_TREASURER, 'Observer':c.OBSERVER, 'Deputy Chair':c.DEPUTY_CHAIR, 'Vice-Chair/Member of the Bureau':c.BUREAU_VICE_CHAIR, 'Deputy Treasurer':c.DEPUTY_TREASURER,'Substitute':c.SUBSTITUTE}
         json_data = io.load_json(path)
+        json_length = len(json_data) - 1
         dataset = DatasetGenerator.get_dataset()
         counter = 0
         date_now = datetime.now().date()
 
         print (fmt.WAIT_SYMBOL, "Mining MEPS...")
 
+        if limit == None:
+            limit = json_length
+
         start = timer()
-        for mep in islice(json_data, 0, limit):
+        start_pos = json_length-limit
+        end_pos = json_length
+        for mep in islice(json_data, start_pos, end_pos):
             # Get raw values
             user_id = int(mep['UserID'])
             #user_id = str(mep['_id'])
@@ -159,8 +169,8 @@ class Miner(object):
                     # If end date has passed
                     if end_date < date_now:
                         dataset.add((membership_uri, c.IS_ACTIVE, Literal(False, datatype=c.BOOLEAN)))
-                    else:
-                        dataset.add((membership_uri, c.IS_ACTIVE, Literal(True, datatype=c.BOOLEAN)))
+                    #else:
+                    #    dataset.add((membership_uri, c.IS_ACTIVE, Literal(True, datatype=c.BOOLEAN)))
 
                     start_date = Literal(start_date, datatype=c.DATE)
                     end_date = Literal(end_date, datatype=c.DATE)
@@ -173,18 +183,15 @@ class Miner(object):
                         country_dbr = URIRef(self.name_to_dbr(country))
                         dataset.add((membership_uri, c.REPRESENTS_COUNTRY, country_dbr))
 
-                    if 'role' in group:
+                    if 'role' in group and group['role']:
                         role = str(group['role'])
 
-                        if role != "":
-                            if role in membership_dict:
-                                dataset.add((membership_uri, c.TYPE, membership_dict[role]))
-                            else:
-                                print ("Unknown role:", role)
+                        if role in membership_dict:
+                            dataset.add((membership_uri, c.TYPE, membership_dict[role]))
                         else:
-                            print ("Role empty")
+                            logging.info("Unknown role: %s", role)
                     else:
-                        print ("No role found")
+                        logging.info("No role found: %s %s %s", profile_url, group['start'], party_title)
 
                     dataset.add((c.EUROPEAN_PARLIAMENT, c.IN_LEGISLATURE, party_uri))
 
@@ -367,6 +374,10 @@ class Miner(object):
     # TODO: See if there is a better dossier text to use instead of dossier['procedure']['title']
     def convert_dossiers(self, path, num_threads, limit):
         json_data = io.load_json(path)
+        json_length = len(json_data) - 1
+
+        if limit == None:
+            limit = json_length
 
         print (fmt.WAIT_SYMBOL, "Mining dossiers...")
 
@@ -374,8 +385,11 @@ class Miner(object):
         counter = 0
         num_triples = 0
 
+        start_pos = json_length-limit
+        end_pos = json_length
+
         try:
-            input_data = islice(json_data, 0, limit)
+            input_data = islice(json_data, start_pos, end_pos)
             pool = Pool(num_threads)
             results = pool.map(self.process_dossier, input_data)
 
@@ -456,6 +470,10 @@ class Miner(object):
 
     def convert_votes(self, path, num_threads, limit):
         json_data = io.load_json(path)
+        json_length = len(json_data) - 1
+
+        if limit == None:
+            limit = json_length
 
         print (fmt.WAIT_SYMBOL, 'Mining votes...')
 
@@ -464,8 +482,11 @@ class Miner(object):
         failed = 0
         num_triples = 0
 
+        start_pos = json_length-limit
+        end_pos = json_length
+
         try:
-            input_data = islice(json_data, 0, limit)
+            input_data = islice(json_data, start_pos, end_pos)
             pool = Pool(num_threads)
             results = pool.map(self.process_votes, input_data)
 
@@ -491,6 +512,9 @@ class Miner(object):
             # Import any left over from the last (incomplete) batch
             self.sparql_endpoint.import_dataset(dataset)
             print(fmt.OK_SYMBOL, "Total of", counter, "votes imported.")
+
+            if failed > 0:
+                logging.warning('%s out of %s had no MEP ID', str(failed), str(counter))
 
         finally:
             pool.close()

@@ -6,8 +6,9 @@ class DatasetGenerator(object):
         raise NotImplementedError()
 
     @staticmethod
-    def get_dataset():
+    def get_dataset(ont=c.DATA_OUTPUT):
         ds = Dataset()
+        ds.parse(ont, format='turtle')
         ds.bind(c.PREFIX, c.ONT)
         ds.bind('dbo', c.DBO)
         ds.bind('dbr', c.DBR)
