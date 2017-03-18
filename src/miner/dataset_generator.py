@@ -1,6 +1,7 @@
 from rdflib import Dataset
 import constants as c
 
+
 class DatasetGenerator(object):
     def __init__(self):
         raise NotImplementedError()

@@ -24,7 +24,8 @@ DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
 SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security'
-SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics "'+LD_DIR+'parlialytics.ttl"'
+SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics "' + \
+    LD_DIR + 'parlialytics.ttl"'
 SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
 
 DOWNLOAD_TIMEOUT = 30
@@ -32,7 +33,7 @@ DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']
 
-DATABASE = 'http://localhost:5820/databases/parlialytics#' # Database endpoint
+DATABASE = 'http://localhost:5820/databases/parlialytics#'  # Database endpoint
 NAMESPACE = DATABASE
 
 ont = NAMESPACE
@@ -118,7 +119,7 @@ ORGANISATION = DBO['Organisation']
 OFFICE = DBP['office']
 MEMBER_OF_EU = DBR['Member_of_the_European_Parliament']
 THUMBNAIL = DBO['thumbnail']
-IMAGE  = DBO['Image']
+IMAGE = DBO['Image']
 
 FULL_NAME = FOAF['name']
 BIRTH_DATE = DBO['birthDate']
