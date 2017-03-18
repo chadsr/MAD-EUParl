@@ -40,7 +40,7 @@ ont = NAMESPACE
 ONT = Namespace(ont)
 PREFIX = 'epv'
 
-#DOSSIER_TYPE = 'Legislative proposal published'
+# DOSSIER_TYPE = 'Legislative proposal published'
 
 # eo = 'http://www.w3.org/2003/01/geo/wgs84_pos#'
 # GEO = Namespace(geo)

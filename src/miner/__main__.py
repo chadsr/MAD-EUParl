@@ -4,7 +4,7 @@
 
 import argparse
 from timeit import default_timer as timer
-from timing import get_elapsed_seconds
+from timing_handler import get_elapsed_seconds
 import os
 from miner import Miner
 from logger import Logger

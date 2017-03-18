@@ -3,7 +3,7 @@ from rdflib import py3compat as compat
 import constants as c
 import formatting as fmt
 from timeit import default_timer as timer
-from timing import get_elapsed_seconds
+from timing_handler import get_elapsed_seconds
 import subprocess
 
 
@@ -27,12 +27,12 @@ class SparqlServer(object):
               get_elapsed_seconds(start, end), "seconds")
 
     def import_dataset(self, dataset):
-        #print (fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
-        #start = timer()
+        # print (fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
+        # start = timer()
         ds = dataset.serialize(format='turtle')
         query_string = ds.decode('utf-8')
         self.sparql.setQuery('INSERT DATA { %s }' % query_string)
         self.sparql.method = 'POST'
         self.sparql.query()
-        #end = timer()
-        #print (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")
+        # end = timer()
+        # sprint (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")

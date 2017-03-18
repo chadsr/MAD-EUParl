@@ -7,7 +7,7 @@ import time
 import constants as c
 import formatting as fmt
 from timeit import default_timer as timer
-from timing import get_elapsed_seconds
+from timing_handler import get_elapsed_seconds
 
 
 def download_datasets():

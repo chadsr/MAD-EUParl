@@ -1,7 +1,7 @@
 import json as json
 from collections import defaultdict, OrderedDict
 from timeit import default_timer as timer
-from timing import get_elapsed_seconds
+from timing_handler import get_elapsed_seconds
 import formatting as fmt
 
 

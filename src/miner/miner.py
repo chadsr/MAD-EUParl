@@ -2,14 +2,12 @@ import re
 from collections import defaultdict
 from datetime import datetime
 from itertools import islice
-import json
 import urllib.parse as urlparse
 
 from SPARQLEndpoint import SparqlServer
 
 from packages.iribaker.iribaker import to_iri
 from rdflib import URIRef, Literal
-import random
 import io_handler as io
 import constants as c
 import formatting as fmt
@@ -17,7 +15,7 @@ import formatting as fmt
 import logging
 
 from timeit import default_timer as timer
-from timing import get_elapsed_seconds
+from timing_handler import get_elapsed_seconds
 
 from multiprocessing import Pool
 from dataset_generator import DatasetGenerator
@@ -27,6 +25,8 @@ from dataset_generator import DatasetGenerator
 
 
 class Miner(object):
+    """Miner module."""
+
     def __init__(self):
         # These are currently dict(lists), because there is a possibility of
         # multiple iris per key in the future
@@ -47,10 +47,15 @@ class Miner(object):
 
         self.total_triples = 0
 
-        logging.basicConfig(filename=c.MAIN_LOG, level=logging.INFO,
-                            format='[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=c.MAIN_LOG,
+                            level=logging.INFO,
+                            format='[%(asctime)s] [%(levelname)s] %(message)s',
+                            datefmt='%d/%m/%Y %I:%M:%S %p'
+                            )
 
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
+        """Starts the miner class with the given configuration."""
+
         mep_triples, count, time = self.convert_meps(c.DATA_MEP, mep_limit)
         print(fmt.OK_SYMBOL, "Mined", count, "MEPs (" +
               str(mep_triples), "triples). Took ", time, "seconds\n")
@@ -65,12 +70,14 @@ class Miner(object):
 
         vote_triples, count, fails, time = self.convert_votes(
             c.DATA_VOTES, num_threads, vote_limit)
-        print(fmt.OK_SYMBOL, "Mined", count, "related votes (" + str(vote_triples), "triples)",
-              fails, "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n")
+        print(fmt.OK_SYMBOL, "Mined", count,
+              "related votes (" + str(vote_triples), "triples)", fails,
+              "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n"
+              )
 
         self.total_triples = mep_triples + dossier_triples + vote_triples
-        #io.save_graph(c.GRAPH_OUTPUT, graph)
-        #io.save_dataset(c.DATA_OUTPUT, miner.dataset)
+        # io.save_graph(c.GRAPH_OUTPUT, graph)
+        # io.save_dataset(c.DATA_OUTPUT, miner.dataset)
 
     # def mepid_to_profile_iri(id):
     # return URIRef(to_iri('http://www.europarl.europa.eu/meps/en/' + str(id)
@@ -92,12 +99,26 @@ class Miner(object):
     def name_to_dbr(name):
         formatted = Miner.format_name_string(name)
         iri = to_iri(c.dbr + formatted)
-        #uriref = URIRef(iri)
+        # uriref = URIRef(iri)
         return iri
 
     def convert_meps(self, path, limit):
-        membership_dict = {'Member': c.MEMBER, 'Member of the Bureau': c.BUREAU_MEMBER, 'Vice-Chair': c.VICE_CHAIR, 'Treasurer': c.TREASURER, 'President': c.PRESIDENT, 'Chair': c.CHAIR, 'Co-Chair': c.CO_CHAIR, 'Chair of the Bureau': c.BUREAU_CHAIR,
-                           'Co-treasurer': c.CO_TREASURER, 'Observer': c.OBSERVER, 'Deputy Chair': c.DEPUTY_CHAIR, 'Vice-Chair/Member of the Bureau': c.BUREAU_VICE_CHAIR, 'Deputy Treasurer': c.DEPUTY_TREASURER, 'Substitute': c.SUBSTITUTE}
+        membership_dict = {'Member': c.MEMBER,
+                           'Member of the Bureau': c.BUREAU_MEMBER,
+                           'Vice-Chair': c.VICE_CHAIR,
+                           'Treasurer': c.TREASURER,
+                           'President': c.PRESIDENT,
+                           'Chair': c.CHAIR,
+                           'Co-Chair': c.CO_CHAIR,
+                           'Chair of the Bureau': c.BUREAU_CHAIR,
+                           'Co-treasurer': c.CO_TREASURER,
+                           'Observer': c.OBSERVER,
+                           'Deputy Chair': c.DEPUTY_CHAIR,
+                           'Vice-Chair/Member of the Bureau': c.BUREAU_VICE_CHAIR,
+                           'Deputy Treasurer': c.DEPUTY_TREASURER,
+                           'Substitute': c.SUBSTITUT
+                           }
+
         json_data = io.load_json(path)
         json_length = len(json_data) - 1
         dataset = DatasetGenerator.get_dataset()
@@ -106,7 +127,7 @@ class Miner(object):
 
         print(fmt.WAIT_SYMBOL, "Mining MEPS...")
 
-        if limit == None:
+        if limit is None:
             limit = json_length
 
         start = timer()
@@ -115,9 +136,12 @@ class Miner(object):
         for mep in islice(json_data, start_pos, end_pos):
             # Get raw values
             user_id = int(mep['UserID'])
-            #user_id = str(mep['_id'])
+            # user_id = str(mep['_id'])
             full_name = Literal(
-                str(mep['Name']['full'].lower().title().strip()), datatype=c.STRING)
+                str(mep['Name']['full'].lower().title().strip()),
+                datatype=c.STRING
+                )
+
             profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
             mep_uri = self.name_to_dbr(full_name)
 
@@ -134,8 +158,13 @@ class Miner(object):
                 if 'date' in mep['Birth']:
                     birth_date = mep['Birth']['date']
                     if birth_date != '':
-                        birth_date = Literal(datetime.strptime(birth_date.split('T')[0], '%Y-%m-%d').date(),
-                                             datatype=c.DATE)
+                        birth_date = Literal(
+                            datetime.strptime(
+                                birth_date.split('T')[0], '%Y-%m-%d'
+                                ).date(),
+                            datatype=c.DATE
+                            )
+
                         dataset.add((mep_uri, c.BIRTH_DATE, birth_date))
 
                 if 'place' in mep['Birth']:
@@ -188,7 +217,9 @@ class Miner(object):
                         dataset.add((membership_uri, c.IS_ACTIVE,
                                      Literal(False, datatype=c.BOOLEAN)))
                     # else:
-                    #    dataset.add((membership_uri, c.IS_ACTIVE, Literal(True, datatype=c.BOOLEAN)))
+                    #    dataset.add((membership_uri, c.IS_ACTIVE, Literal(
+                    #                 True,
+                    #                 datatype=c.BOOLEAN)))
 
                     start_date = Literal(start_date, datatype=c.DATE)
                     end_date = Literal(end_date, datatype=c.DATE)
@@ -200,14 +231,16 @@ class Miner(object):
                         country = group['country']
                         country_dbr = URIRef(self.name_to_dbr(country))
                         dataset.add(
-                            (membership_uri, c.REPRESENTS_COUNTRY, country_dbr))
+                            (membership_uri, c.REPRESENTS_COUNTRY, country_dbr)
+                            )
 
                     if 'role' in group and group['role']:
                         role = str(group['role'])
 
                         if role in membership_dict:
                             dataset.add(
-                                (membership_uri, c.TYPE, membership_dict[role]))
+                                (membership_uri, c.TYPE, membership_dict[role])
+                                )
                         else:
                             logging.info("Unknown role: %s", role)
                     else:
@@ -288,13 +321,13 @@ class Miner(object):
             str(procedure['title'].strip()), datatype=c.STRING)
         dossier_stage = Literal(
             str(procedure['stage_reached']), datatype=c.STRING)
-        dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
+        # dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
 
         dossier_uri = URIRef(self.name_to_dbr(dossier_title))
 
         try:
             triples.append([dossier_uri, c.REACHED_STAGE, dossier_stage])
-            #triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
+            # triples.append([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
             triples.append([dossier_uri, c.DOSSIER_TITLE, dossier_title])
             triples.append([dossier_uri, c.URI, dossier_url])
             triples.append(
@@ -311,7 +344,7 @@ class Miner(object):
 
             for activity in dossier['activities']:
                 if 'type' in activity:
-                    if activity['type'] != None:
+                    if activity['type'] is not None:
                         activity_id = dossier_title + '#' + activity['type']
                         activity_uri = URIRef(self.name_to_dbr(activity_id))
                         activity_type = Literal(
@@ -332,14 +365,22 @@ class Miner(object):
                         #        activity_id = int(activity['meeting_id'])
 
                         if 'body' in activity:
-                            if activity['body'] != None:
+                            if activity['body'] is not None:
                                 activity_body = str(activity['body'])
                                 if activity_body == "EP":
                                     triples.append(
-                                        [activity_uri, c.HAS_BODY, c.EUROPEAN_PARLIAMENT])
+                                        [
+                                            activity_uri,
+                                            c.HAS_BODY,
+                                            c.EUROPEAN_PARLIAMENT
+                                        ])
                                 elif activity_body == "EC":
                                     triples.append(
-                                        [activity_uri, c.HAS_BODY, c.EUROPEAN_COUNCIL])
+                                        [
+                                            activity_uri,
+                                            c.HAS_BODY,
+                                            c.EUROPEAN_COUNCIL
+                                        ])
                                 # else:
                                 #    print ("Unknown activity body:", activity_body)
 
@@ -371,7 +412,10 @@ class Miner(object):
                                 if 'type' in doc:
                                     if doc['type']:
                                         doc_type = Literal(
-                                            str(doc['type']), datatype=c.STRING)
+                                            str(doc['type']),
+                                            datatype=c.STRING
+                                            )
+
                                         triples.append(
                                             [doc_uri, c.HAS_TYPE, doc_type])
                     else:
@@ -383,7 +427,7 @@ class Miner(object):
                     committee_title = committee['committee_full']
                     committee_id = self.format_name_string(committee_title)
                     committee_uri = self.id_to_iri(committee_id)
-                    committee_body = committee['body']
+                    # committee_body = committee['body']
                     committee_responsible = bool(committee['responsible'])
 
                     if committee_responsible:
@@ -393,7 +437,7 @@ class Miner(object):
                         triples.append(
                             [committee_uri, c.IS_INVOLVED, dossier_uri])
 
-                    # TODO Figure out ID troubles (ID doesn't match current
+                    # TODO () Figure out ID troubles (ID doesn't match current
                     # dictionary)
                     """
                     if 'rapporteur' in committee:
@@ -421,7 +465,7 @@ class Miner(object):
         json_data = io.load_json(path)
         json_length = len(json_data) - 1
 
-        if limit == None:
+        if limit is None:
             limit = json_length
 
         print(fmt.WAIT_SYMBOL, "Mining dossiers...")
@@ -490,9 +534,9 @@ class Miner(object):
                             for vote in group['votes']:
                                 try:
                                     voter_id = int(vote['ep_id'])
-                                    #voter_id = str(vote['id'])
+                                    # voter_id = str(vote['id'])
                                 except Exception as ex:
-                                    #logging.error("Skipping vote of type "+vote_type+" on dossier "+dossier_uri+" Invalid MEP id.")
+                                    # logging.error("Skipping vote of type "+vote_type+" on dossier "+dossier_uri+" Invalid MEP id.")
                                     failed += 1
                                     continue
 
@@ -501,7 +545,11 @@ class Miner(object):
                                         self.dict_mep[voter_id][0])
                                     try:
                                         triples.append(
-                                            [voter_uri, vote_dict[vote_type], dossier_uri])
+                                            [
+                                                voter_uri,
+                                                vote_dict[vote_type],
+                                                dossier_uri
+                                            ])
                                     except Exception as ex:
                                         print(ex)
                                         continue
@@ -509,7 +557,11 @@ class Miner(object):
                                     print(voter_id)
                                     try:
                                         triples.append(
-                                            [c.MEMBER_OF_EU, vote_dict[vote_type], dossier_uri])
+                                            [
+                                                c.MEMBER_OF_EU,
+                                                vote_dict[vote_type],
+                                                dossier_uri
+                                            ])
                                     except Exception as ex:
                                         print(ex)
                                         continue
@@ -521,7 +573,7 @@ class Miner(object):
         json_data = io.load_json(path)
         json_length = len(json_data) - 1
 
-        if limit == None:
+        if limit is None:
             limit = json_length
 
         print(fmt.WAIT_SYMBOL, 'Mining votes...')
@@ -544,7 +596,7 @@ class Miner(object):
                 failed += result[1]
 
                 for triple in result[2]:
-                    if triple[0] != None:
+                    if triple[0] is not None:
                         dataset.add((triple[0], triple[1], triple[2]))
                     else:
                         print(triple)
