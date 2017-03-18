@@ -30,13 +30,15 @@ dbo:PoliticalParty rdf:type owl:ObjectProperty .
 
 
 ###  http://dbpedia.org/ontology/birthPlace
-dbo:birthPlace rdf:type owl:ObjectProperty ;
+dbo:birthPlace rdf:type owl:ObjectProperty ,
+                        owl:FunctionalProperty ;
                rdfs:domain dbo:Person ;
                rdfs:range dbo:Place .
 
 
 ###  http://dbpedia.org/ontology/gender
-dbo:gender rdf:type owl:ObjectProperty .
+dbo:gender rdf:type owl:ObjectProperty ,
+                    owl:FunctionalProperty .
 
 
 ###  http://dbpedia.org/ontology/party
@@ -112,10 +114,11 @@ epv:hasRapporteur rdf:type owl:ObjectProperty ;
 
 
 ###  http://localhost:5820/databases/parlialytics#hasText
-epv:hasText rdf:type owl:ObjectProperty ;
+epv:hasText rdf:type owl:ObjectProperty ,
+                     owl:FunctionalProperty ;
             rdfs:domain epv:Dossier ;
             rdfs:range [ rdf:type owl:Restriction ;
-                         owl:onProperty epv:bill_text ;
+                         owl:onProperty epv:dossierTItle ;
                          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
                          owl:onDataRange xsd:string
                        ] .
@@ -194,7 +197,8 @@ epv:represents rdf:type owl:ObjectProperty ;
 
 
 ###  http://localhost:5820/databases/parlialytics#representsCountry
-epv:representsCountry rdf:type owl:ObjectProperty ;
+epv:representsCountry rdf:type owl:ObjectProperty ,
+                               owl:FunctionalProperty ;
                       rdfs:domain epv:Membership ;
                       rdfs:range dbo:Country .
 
@@ -232,32 +236,36 @@ epv:votesOn rdf:type owl:ObjectProperty ;
 #################################################################
 
 ###  http://dbpedia.org/ontology/birthDate
-dbo:birthDate rdf:type owl:DatatypeProperty ;
+dbo:birthDate rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty ;
               rdfs:domain dbo:Person ;
               rdfs:range xsd:date .
 
 
 ###  http://dbpedia.org/ontology/deathDate
-dbo:deathDate rdf:type owl:DatatypeProperty ;
+dbo:deathDate rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty ;
               rdfs:domain dbo:Person ;
               rdfs:range xsd:date .
 
 
-###  http://localhost:5820/databases/parlialytics#bill_text
-epv:bill_text rdf:type owl:DatatypeProperty ;
-              rdfs:domain epv:Dossier ;
-              rdfs:range xsd:string ;
-              rdfs:label "bill_text"@en .
+###  http://localhost:5820/databases/parlialytics#dossierTItle
+epv:dossierTItle rdf:type owl:DatatypeProperty ,
+                          owl:FunctionalProperty ;
+                 rdfs:domain epv:Dossier ;
+                 rdfs:range xsd:string .
 
 
 ###  http://localhost:5820/databases/parlialytics#isActive
-epv:isActive rdf:type owl:DatatypeProperty ;
+epv:isActive rdf:type owl:DatatypeProperty ,
+                      owl:FunctionalProperty ;
              rdfs:domain owl:Thing ;
              rdfs:range xsd:boolean .
 
 
 ###  http://localhost:5820/databases/parlialytics#startDate
-epv:startDate rdf:type owl:DatatypeProperty .
+epv:startDate rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty .
 
 
 ###  http://xmlns.com/foaf/0.1/age
@@ -323,9 +331,15 @@ epv:ActiveMEP rdf:type owl:Class ;
 
 ###  http://localhost:5820/databases/parlialytics#ActiveMembership
 epv:ActiveMembership rdf:type owl:Class ;
-                     owl:equivalentClass [ rdf:type owl:Restriction ;
-                                           owl:onProperty epv:isActive ;
-                                           owl:hasValue "true"^^xsd:boolean
+                     owl:equivalentClass [ owl:intersectionOf ( epv:Membership
+                                                                [ rdf:type owl:Class ;
+                                                                  owl:complementOf [ rdf:type owl:Restriction ;
+                                                                                     owl:onProperty epv:isActive ;
+                                                                                     owl:hasValue "false"^^xsd:boolean
+                                                                                   ]
+                                                                ]
+                                                              ) ;
+                                           rdf:type owl:Class
                                          ] ;
                      rdfs:subClassOf epv:Membership .
 
@@ -425,9 +439,13 @@ epv:InactiveMEP rdf:type owl:Class ;
 
 ###  http://localhost:5820/databases/parlialytics#InactiveMembership
 epv:InactiveMembership rdf:type owl:Class ;
-                       owl:equivalentClass [ rdf:type owl:Restriction ;
-                                             owl:onProperty epv:isActive ;
-                                             owl:hasValue "false"^^xsd:boolean
+                       owl:equivalentClass [ owl:intersectionOf ( epv:Membership
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty epv:isActive ;
+                                                                    owl:hasValue "false"^^xsd:boolean
+                                                                  ]
+                                                                ) ;
+                                             rdf:type owl:Class
                                            ] ;
                        rdfs:subClassOf epv:Membership .
 
