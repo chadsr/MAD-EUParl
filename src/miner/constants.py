@@ -1,4 +1,4 @@
-from rdflib import Namespace, XSD
+from rdflib import Namespace, XSD, Literal
 import os
 
 DIR = os.path.dirname(
@@ -24,8 +24,8 @@ DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
 SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security'
-SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o reasoning.type=DL reasoning.sameas=FULL -n parlialytics "' + \
-    LD_DIR + 'parlialytics.ttl"'
+SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o icv.enabled=true icv.reasoning.enabled=true reasoning.type=DL reasoning.sameas=FULL -n parlialytics "' + \
+    LD_DIR + 'parlialytics.owl"'
 SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
 
 DOWNLOAD_TIMEOUT = 30
@@ -67,7 +67,8 @@ REACHED_STAGE = ONT['reachedStage']
 PROCEDURE_TYPE = ONT['procedureType']
 GEO_AREA = ONT['geoArea']
 
-IS_ACTIVE = ONT['isActive']
+START_DATE = ONT['startDate']
+END_DATE = ONT['endDate']
 
 HAS_TITLE = ONT['hasTitle']
 
@@ -106,8 +107,8 @@ PRESIDENT = ONT['President']
 TREASURER = ONT['Treasurer']
 BUREAU_MEMBER = ONT['MemberOfTheBureau']
 
-GENDER = DBO['gender']
-MALE = DBR['Male']
+GENDER = FOAF['gender']
+MALE = Literal('male', datatype=XSD.string)
 FEMALE = DBR['Female']
 EUROPEAN_PARLIAMENT = DBR['European_Parliament']
 EUROPEAN_COUNCIL = DBR['European_Council']
@@ -126,9 +127,9 @@ BIRTH_DATE = DBO['birthDate']
 BIRTH_PLACE = DBO['birthPlace']
 DEATH_DATE = DBO['deathDate']
 
-URI = XSD['anyURI']
-STRING = XSD['string']
-DATE = XSD['date']
+URI = XSD.anyURI
+STRING = XSD.string
+DATE = XSD.date
 BOOLEAN = XSD.boolean
 
-TYPE = RDF['type']
+TYPE = RDF.type

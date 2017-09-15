@@ -212,17 +212,13 @@ class Miner(object):
                     membership_uri = self.id_to_iri(
                         full_name + "_" + party_id + "_" + str(start_date))
 
-                    # Experimental
-                    # If end date has passed
-                    if end_date < date_now:
-                        dataset.add((membership_uri, c.IS_ACTIVE,
-                                     Literal(False, datatype=c.BOOLEAN)))
-                    else:
-                        dataset.add((membership_uri, c.IS_ACTIVE,
-                                     Literal(True, datatype=c.BOOLEAN)))
+                    dataset.add((membership_uri, c.START_DATE,
+                                Literal(start_date, datatype=c.DATE)))
 
-                    start_date = Literal(start_date, datatype=c.DATE)
-                    end_date = Literal(end_date, datatype=c.DATE)
+                    # If end date has passed
+                    if end_date <= date_now:
+                        dataset.add((membership_uri, c.END_DATE,
+                                     Literal(end_date, datatype=c.DATE)))
 
                     dataset.add((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
                     dataset.add((membership_uri, c.IS_WITHIN, party_uri))
