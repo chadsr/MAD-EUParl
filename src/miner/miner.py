@@ -36,8 +36,8 @@ class Miner(object):
     """Miner module."""
 
     def __init__(self):
-        manager = DictManager()
-        manager.start()
+        self.manager = DictManager()
+        self.manager.start()
 
         # These are currently dict(lists), because there is a possibility of
         # multiple iris per key in the future
