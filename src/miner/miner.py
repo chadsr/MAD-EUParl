@@ -320,8 +320,8 @@ class Miner(object):
         end = timer()
         """
 
-        input_json = io.load_json(path)
-        json_length = len(input_json) - 1
+        json_data = io.load_json(path)
+        json_length = len(json_data) - 1
 
         if limit is None:
             limit = json_length
@@ -330,7 +330,9 @@ class Miner(object):
         end_pos = json_length
 
         input_dict = self.manager.defaultdict(list)
-        input_dict.update(islice(input_json, start_pos, end_pos))
+
+        for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
+            input_dict[i] = obj
 
         counter = 0
 
@@ -543,7 +545,8 @@ class Miner(object):
         end_pos = json_length
 
         input_dict = self.manager.defaultdict(list)
-        input_dict.update(islice(json_data, start_pos, end_pos))
+        for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
+            input_dict[i] = obj
 
         try:
             pool = Pool(num_threads)
@@ -659,7 +662,10 @@ class Miner(object):
         try:
             pool = Pool(num_threads)
             input_dict = self.manager.defaultdict(list)
-            input_dict.update(islice(json_data, start_pos, end_pos))
+
+            for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
+                input_dict[i] = obj
+
             results = pool.map(self.process_votes, input_dict)
 
             dataset = DatasetGenerator.get_dataset()
