@@ -1,17 +1,15 @@
-@prefix : <http://localhost:5820/databases/parlialytics##> .
 @prefix dbo: <http://dbpedia.org/ontology/> .
 @prefix dbp: <http://dbpedia.org/property/> .
 @prefix dbr: <http://dbpedia.org/resource/> .
-@prefix epv: <http://localhost:5820/databases/parlialytics#> .
+@prefix epv: <http://localhost:7200/parlialytics#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@base <http://localhost:5820/databases/parlialytics#> .
 
-<http://localhost:5820/databases/parlialytics#> rdf:type owl:Ontology .
+<http://localhost:7200/parlialytics#> rdf:type owl:Ontology .
 
 #################################################################
 #    Datatypes
@@ -62,58 +60,58 @@ dbp:houses rdf:type owl:ObjectProperty ;
 dbp:office rdf:type owl:ObjectProperty .
 
 
-###  http://localhost:5820/databases/parlialytics#abstains
+###  http://localhost:7200/parlialytics#abstains
 epv:abstains rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf epv:reactsToVote ;
              rdfs:domain epv:Voter ;
              rdfs:range epv:Dossier .
 
 
-###  http://localhost:5820/databases/parlialytics#geoArea
+###  http://localhost:7200/parlialytics#geoArea
 epv:geoArea rdf:type owl:ObjectProperty ;
             rdfs:domain epv:Dossier ;
             rdfs:range dbo:Place .
 
 
-###  http://localhost:5820/databases/parlialytics#hasActivity
+###  http://localhost:7200/parlialytics#hasActivity
 epv:hasActivity rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf owl:topObjectProperty ;
                 rdfs:domain epv:Dossier ;
                 rdfs:range epv:Activity .
 
 
-###  http://localhost:5820/databases/parlialytics#hasBody
+###  http://localhost:7200/parlialytics#hasBody
 epv:hasBody rdf:type owl:ObjectProperty ;
             rdfs:domain epv:Activity ;
             rdfs:range dbo:Organisation .
 
 
-###  http://localhost:5820/databases/parlialytics#hasMeeting
+###  http://localhost:7200/parlialytics#hasMeeting
 epv:hasMeeting rdf:type owl:ObjectProperty ;
                rdfs:domain epv:Committee ;
                rdfs:range epv:Meeting .
 
 
-###  http://localhost:5820/databases/parlialytics#hasMember
+###  http://localhost:7200/parlialytics#hasMember
 epv:hasMember rdf:type owl:ObjectProperty ;
               rdfs:domain epv:Group ;
               rdfs:range dbo:Person .
 
 
-###  http://localhost:5820/databases/parlialytics#hasMembership
+###  http://localhost:7200/parlialytics#hasMembership
 epv:hasMembership rdf:type owl:ObjectProperty ;
                   owl:inverseOf epv:membershipOf ;
                   rdfs:domain epv:MEP ;
                   rdfs:range epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#hasRapporteur
+###  http://localhost:7200/parlialytics#hasRapporteur
 epv:hasRapporteur rdf:type owl:ObjectProperty ;
                   rdfs:domain epv:Committee ;
                   rdfs:range epv:MEP .
 
 
-###  http://localhost:5820/databases/parlialytics#hasText
+###  http://localhost:7200/parlialytics#hasText
 epv:hasText rdf:type owl:ObjectProperty ,
                      owl:FunctionalProperty ;
             rdfs:domain epv:Dossier ;
@@ -124,40 +122,40 @@ epv:hasText rdf:type owl:ObjectProperty ,
                        ] .
 
 
-###  http://localhost:5820/databases/parlialytics#hasVoter
+###  http://localhost:7200/parlialytics#hasVoter
 epv:hasVoter rdf:type owl:ObjectProperty ;
              owl:inverseOf epv:votesIn ;
              rdfs:domain epv:VotingAssembly ;
              rdfs:range epv:Voter .
 
 
-###  http://localhost:5820/databases/parlialytics#involves
+###  http://localhost:7200/parlialytics#involves
 epv:involves rdf:type owl:ObjectProperty ;
              owl:inverseOf epv:isInvolvedIn .
 
 
-###  http://localhost:5820/databases/parlialytics#isInvolvedIn
+###  http://localhost:7200/parlialytics#isInvolvedIn
 epv:isInvolvedIn rdf:type owl:ObjectProperty ;
                  rdfs:domain epv:Committee ;
                  rdfs:range epv:Dossier .
 
 
-###  http://localhost:5820/databases/parlialytics#isResponsibleIn
+###  http://localhost:7200/parlialytics#isResponsibleIn
 epv:isResponsibleIn rdf:type owl:ObjectProperty ;
                     rdfs:subPropertyOf epv:isInvolvedIn .
 
 
-###  http://localhost:5820/databases/parlialytics#isWithin
+###  http://localhost:7200/parlialytics#isWithin
 epv:isWithin rdf:type owl:ObjectProperty ;
              rdfs:domain epv:Membership ;
              rdfs:range epv:Group .
 
 
-###  http://localhost:5820/databases/parlialytics#membershipOf
+###  http://localhost:7200/parlialytics#membershipOf
 epv:membershipOf rdf:type owl:ObjectProperty .
 
 
-###  http://localhost:5820/databases/parlialytics#processed
+###  http://localhost:7200/parlialytics#processed
 epv:processed rdf:type owl:ObjectProperty ;
               owl:inverseOf epv:processedBy ;
               rdfs:domain epv:VotingAssembly ;
@@ -165,66 +163,66 @@ epv:processed rdf:type owl:ObjectProperty ;
               rdfs:label "processed"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#processedBy
+###  http://localhost:7200/parlialytics#processedBy
 epv:processedBy rdf:type owl:ObjectProperty ;
                 rdfs:domain epv:Dossier ;
                 rdfs:range epv:VotingAssembly ;
                 rdfs:label "processedBy"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#processesFor
+###  http://localhost:7200/parlialytics#processesFor
 epv:processesFor rdf:type owl:ObjectProperty ;
                  rdfs:domain epv:VotingAssembly .
 
 
-###  http://localhost:5820/databases/parlialytics#reactsToVote
+###  http://localhost:7200/parlialytics#reactsToVote
 epv:reactsToVote rdf:type owl:ObjectProperty ;
                  rdfs:domain epv:Voter ;
                  rdfs:range epv:Dossier .
 
 
-###  http://localhost:5820/databases/parlialytics#representedBy
+###  http://localhost:7200/parlialytics#representedBy
 epv:representedBy rdf:type owl:ObjectProperty ;
                   owl:inverseOf epv:represents ;
                   rdfs:range epv:Voter ;
                   rdfs:label "representedBy"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#represents
+###  http://localhost:7200/parlialytics#represents
 epv:represents rdf:type owl:ObjectProperty ;
                rdfs:domain epv:Voter ;
                rdfs:label "represents"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#representsCountry
+###  http://localhost:7200/parlialytics#representsCountry
 epv:representsCountry rdf:type owl:ObjectProperty ,
                                owl:FunctionalProperty ;
                       rdfs:domain epv:Membership ;
                       rdfs:range dbo:Country .
 
 
-###  http://localhost:5820/databases/parlialytics#votesAgainst
+###  http://localhost:7200/parlialytics#votesAgainst
 epv:votesAgainst rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf epv:votesOn ;
                  rdfs:domain epv:Voter ;
                  rdfs:range epv:Dossier .
 
 
-###  http://localhost:5820/databases/parlialytics#votesFor
+###  http://localhost:7200/parlialytics#votesFor
 epv:votesFor rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf epv:votesOn ;
              rdfs:domain epv:Voter ;
              rdfs:range epv:Dossier .
 
 
-###  http://localhost:5820/databases/parlialytics#votesIn
+###  http://localhost:7200/parlialytics#votesIn
 epv:votesIn rdf:type owl:ObjectProperty ;
             rdfs:domain epv:Voter ;
             rdfs:range epv:VotingAssembly ;
             rdfs:label "votesIn"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#votesOn
+###  http://localhost:7200/parlialytics#votesOn
 epv:votesOn rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf epv:reactsToVote ;
             rdfs:domain epv:Voter ;
@@ -249,23 +247,25 @@ dbo:deathDate rdf:type owl:DatatypeProperty ,
               rdfs:range xsd:date .
 
 
-###  http://localhost:5820/databases/parlialytics#dossierTItle
+###  http://localhost:7200/parlialytics#dossierTItle
 epv:dossierTItle rdf:type owl:DatatypeProperty ,
                           owl:FunctionalProperty ;
                  rdfs:domain epv:Dossier ;
                  rdfs:range xsd:string .
 
 
-###  http://localhost:5820/databases/parlialytics#isActive
-epv:isActive rdf:type owl:DatatypeProperty ,
-                      owl:FunctionalProperty ;
-             rdfs:domain owl:Thing ;
-             rdfs:range xsd:boolean .
+###  http://localhost:7200/parlialytics#endDate
+epv:endDate rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            rdfs:domain epv:Membership ;
+            rdfs:range xsd:date .
 
 
-###  http://localhost:5820/databases/parlialytics#startDate
+###  http://localhost:7200/parlialytics#startDate
 epv:startDate rdf:type owl:DatatypeProperty ,
-                       owl:FunctionalProperty .
+                       owl:FunctionalProperty ;
+              rdfs:domain epv:Membership ;
+              rdfs:range xsd:date .
 
 
 ###  http://xmlns.com/foaf/0.1/age
@@ -287,6 +287,10 @@ foaf:name rdf:type owl:DatatypeProperty .
 #################################################################
 #    Classes
 #################################################################
+
+###  epv:Activity
+epv:Activity rdf:type owl:Class .
+
 
 ###  http://dbpedia.org/ontology/Country
 dbo:Country rdf:type owl:Class ;
@@ -315,7 +319,7 @@ dbo:Place rdf:type owl:Class .
 dbo:PoliticalParty rdf:type owl:Class .
 
 
-###  http://localhost:5820/databases/parlialytics#ActiveMEP
+###  http://localhost:7200/parlialytics#ActiveMEP
 epv:ActiveMEP rdf:type owl:Class ;
               owl:equivalentClass [ owl:intersectionOf ( epv:MEP
                                                          [ rdf:type owl:Restriction ;
@@ -329,67 +333,54 @@ epv:ActiveMEP rdf:type owl:Class ;
               owl:disjointWith epv:InactiveMEP .
 
 
-###  http://localhost:5820/databases/parlialytics#ActiveMembership
+###  http://localhost:7200/parlialytics#ActiveMembership
 epv:ActiveMembership rdf:type owl:Class ;
-                     owl:equivalentClass [ owl:intersectionOf ( epv:Membership
-                                                                [ rdf:type owl:Class ;
-                                                                  owl:complementOf [ rdf:type owl:Restriction ;
-                                                                                     owl:onProperty epv:isActive ;
-                                                                                     owl:hasValue "false"^^xsd:boolean
-                                                                                   ]
-                                                                ]
-                                                              ) ;
-                                           rdf:type owl:Class
-                                         ] ;
-                     rdfs:subClassOf epv:Membership .
+                     rdfs:subClassOf epv:Membership ;
+                     owl:disjointWith epv:InactiveMembership .
 
 
-###  http://localhost:5820/databases/parlialytics#Activity
-epv:Activity rdf:type owl:Class .
-
-
-###  http://localhost:5820/databases/parlialytics#Agent
+###  http://localhost:7200/parlialytics#Agent
 epv:Agent rdf:type owl:Class ;
           owl:equivalentClass foaf:Agent ;
           rdfs:label "Agent"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#Chair
+###  http://localhost:7200/parlialytics#Chair
 epv:Chair rdf:type owl:Class ;
           rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#ChairOfTheBureau
+###  http://localhost:7200/parlialytics#ChairOfTheBureau
 epv:ChairOfTheBureau rdf:type owl:Class ;
                      rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#CoChair
+###  http://localhost:7200/parlialytics#CoChair
 epv:CoChair rdf:type owl:Class ;
             rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#CoTreasurer
+###  http://localhost:7200/parlialytics#CoTreasurer
 epv:CoTreasurer rdf:type owl:Class ;
                 rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#Committee
+###  http://localhost:7200/parlialytics#Committee
 epv:Committee rdf:type owl:Class ;
               rdfs:subClassOf epv:Group .
 
 
-###  http://localhost:5820/databases/parlialytics#DeputyChair
+###  http://localhost:7200/parlialytics#DeputyChair
 epv:DeputyChair rdf:type owl:Class ;
                 rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#DeputyTreasurer
+###  http://localhost:7200/parlialytics#DeputyTreasurer
 epv:DeputyTreasurer rdf:type owl:Class ;
                     rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#Dossier
+###  http://localhost:7200/parlialytics#Dossier
 epv:Dossier rdf:type owl:Class ;
             owl:equivalentClass [ rdf:type owl:Restriction ;
                                   owl:onProperty epv:processedBy ;
@@ -398,19 +389,12 @@ epv:Dossier rdf:type owl:Class ;
                                 ] .
 
 
-###  http://localhost:5820/databases/parlialytics#FemaleMEP
+###  http://localhost:7200/parlialytics#FemaleMEP
 epv:FemaleMEP rdf:type owl:Class ;
               owl:equivalentClass [ owl:intersectionOf ( epv:MEP
-                                                         [ rdf:type owl:Class ;
-                                                           owl:unionOf ( [ rdf:type owl:Restriction ;
-                                                                           owl:onProperty dbo:gender ;
-                                                                           owl:hasValue dbr:Female
-                                                                         ]
-                                                                         [ rdf:type owl:Restriction ;
-                                                                           owl:onProperty foaf:gender ;
-                                                                           owl:hasValue "female"
-                                                                         ]
-                                                                       )
+                                                         [ rdf:type owl:Restriction ;
+                                                           owl:onProperty foaf:gender ;
+                                                           owl:hasValue "female"^^xsd:string
                                                          ]
                                                        ) ;
                                     rdf:type owl:Class
@@ -418,12 +402,12 @@ epv:FemaleMEP rdf:type owl:Class ;
               rdfs:subClassOf epv:MEP .
 
 
-###  http://localhost:5820/databases/parlialytics#Group
+###  http://localhost:7200/parlialytics#Group
 epv:Group rdf:type owl:Class ;
           rdfs:subClassOf epv:Agent .
 
 
-###  http://localhost:5820/databases/parlialytics#InactiveMEP
+###  http://localhost:7200/parlialytics#InactiveMEP
 epv:InactiveMEP rdf:type owl:Class ;
                 owl:equivalentClass [ owl:intersectionOf ( epv:MEP
                                                            [ rdf:type owl:Restriction ;
@@ -437,12 +421,12 @@ epv:InactiveMEP rdf:type owl:Class ;
                 rdfs:subClassOf epv:MEP .
 
 
-###  http://localhost:5820/databases/parlialytics#InactiveMembership
+###  http://localhost:7200/parlialytics#InactiveMembership
 epv:InactiveMembership rdf:type owl:Class ;
                        owl:equivalentClass [ owl:intersectionOf ( epv:Membership
                                                                   [ rdf:type owl:Restriction ;
-                                                                    owl:onProperty epv:isActive ;
-                                                                    owl:hasValue "false"^^xsd:boolean
+                                                                    owl:onProperty epv:endDate ;
+                                                                    owl:someValuesFrom xsd:date
                                                                   ]
                                                                 ) ;
                                              rdf:type owl:Class
@@ -450,24 +434,17 @@ epv:InactiveMembership rdf:type owl:Class ;
                        rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#MEP
+###  http://localhost:7200/parlialytics#MEP
 epv:MEP rdf:type owl:Class ;
         rdfs:subClassOf dbo:Person .
 
 
-###  http://localhost:5820/databases/parlialytics#MaleMEP
+###  http://localhost:7200/parlialytics#MaleMEP
 epv:MaleMEP rdf:type owl:Class ;
             owl:equivalentClass [ owl:intersectionOf ( epv:MEP
-                                                       [ rdf:type owl:Class ;
-                                                         owl:unionOf ( [ rdf:type owl:Restriction ;
-                                                                         owl:onProperty dbo:gender ;
-                                                                         owl:hasValue dbr:Male
-                                                                       ]
-                                                                       [ rdf:type owl:Restriction ;
-                                                                         owl:onProperty foaf:gender ;
-                                                                         owl:hasValue "male"
-                                                                       ]
-                                                                     )
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty foaf:gender ;
+                                                         owl:hasValue "male"^^xsd:string
                                                        ]
                                                      ) ;
                                   rdf:type owl:Class
@@ -475,68 +452,68 @@ epv:MaleMEP rdf:type owl:Class ;
             rdfs:subClassOf epv:MEP .
 
 
-###  http://localhost:5820/databases/parlialytics#Meeting
+###  http://localhost:7200/parlialytics#Meeting
 epv:Meeting rdf:type owl:Class .
 
 
-###  http://localhost:5820/databases/parlialytics#MemberOfTheBureau
+###  http://localhost:7200/parlialytics#MemberOfTheBureau
 epv:MemberOfTheBureau rdf:type owl:Class ;
                       rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#Membership
+###  http://localhost:7200/parlialytics#Membership
 epv:Membership rdf:type owl:Class ;
                rdfs:comment "A type of membership within a epv:Group"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#Observer
+###  http://localhost:7200/parlialytics#Observer
 epv:Observer rdf:type owl:Class ;
              rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#Party
+###  http://localhost:7200/parlialytics#Party
 epv:Party rdf:type owl:Class ;
           rdfs:subClassOf epv:Group ;
           rdfs:comment "A collection of relatively likeminded Voters" ;
           rdfs:label "Party"@en .
 
 
-###  http://localhost:5820/databases/parlialytics#President
+###  http://localhost:7200/parlialytics#President
 epv:President rdf:type owl:Class ;
               rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#SubCommittee
+###  http://localhost:7200/parlialytics#SubCommittee
 epv:SubCommittee rdf:type owl:Class ;
                  rdfs:subClassOf epv:Committee .
 
 
-###  http://localhost:5820/databases/parlialytics#Substitute
+###  http://localhost:7200/parlialytics#Substitute
 epv:Substitute rdf:type owl:Class ;
                rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#TemporaryCommittee
+###  http://localhost:7200/parlialytics#TemporaryCommittee
 epv:TemporaryCommittee rdf:type owl:Class ;
                        rdfs:subClassOf epv:Committee .
 
 
-###  http://localhost:5820/databases/parlialytics#Treasurer
+###  http://localhost:7200/parlialytics#Treasurer
 epv:Treasurer rdf:type owl:Class ;
               rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#ViceChair
+###  http://localhost:7200/parlialytics#ViceChair
 epv:ViceChair rdf:type owl:Class ;
               rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#ViceChairOfTheBureau
+###  http://localhost:7200/parlialytics#ViceChairOfTheBureau
 epv:ViceChairOfTheBureau rdf:type owl:Class ;
                          rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:5820/databases/parlialytics#Voter
+###  http://localhost:7200/parlialytics#Voter
 epv:Voter rdf:type owl:Class ;
           owl:equivalentClass [ owl:intersectionOf ( [ rdf:type owl:Restriction ;
                                                        owl:onProperty epv:reactsToVote ;
@@ -554,7 +531,7 @@ epv:Voter rdf:type owl:Class ;
           rdfs:subClassOf epv:Agent .
 
 
-###  http://localhost:5820/databases/parlialytics#VotingAssembly
+###  http://localhost:7200/parlialytics#VotingAssembly
 epv:VotingAssembly rdf:type owl:Class ;
                    rdfs:subClassOf epv:Agent ;
                    rdfs:label "VotingAssembly"@en .
@@ -562,18 +539,3 @@ epv:VotingAssembly rdf:type owl:Class ;
 
 ###  http://xmlns.com/foaf/0.1/Agent
 foaf:Agent rdf:type owl:Class .
-
-
-#################################################################
-#    Individuals
-#################################################################
-
-###  http://dbpedia.org/resource/Female
-dbr:Female rdf:type owl:NamedIndividual .
-
-
-###  http://dbpedia.org/resource/Male
-dbr:Male rdf:type owl:NamedIndividual .
-
-
-###  Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi

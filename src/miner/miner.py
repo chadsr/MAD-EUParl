@@ -18,24 +18,42 @@ from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 
 from multiprocessing import Pool
+from multiprocessing.managers import BaseManager, DictProxy
 from dataset_generator import DatasetGenerator
 
 # TODO () Look into addN() function for adding multiple triples in one go
 # https://rdflib.readthedocs.io/en/stable/_modules/rdflib/graph.html#ConjunctiveGraph.addN
 
 
+class DictManager(BaseManager):
+    pass
+
+
+DictManager.register('defaultdict', defaultdict, DictProxy)
+
+
 class Miner(object):
     """Miner module."""
 
     def __init__(self):
+        manager = DictManager()
+        manager.start()
+
         # These are currently dict(lists), because there is a possibility of
         # multiple iris per key in the future
+        """
         self.dict_mep = defaultdict(list)
         self.dict_party = defaultdict(list)
         self.dict_dossier = defaultdict(list)
         self.dict_committees = defaultdict(list)
+        """
 
-        self.sparql_endpoint = SparqlServer()
+        self.dict_mep = manager.defaultdict(list)
+        self.dict_party = manager.defaultdict(list)
+        self.dict_dossier = manager.defaultdict(list)
+        self.dict_committees = manager.defaultdict(list)
+
+        self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
 
         json_str = io.load_json(c.DICT_MEPS)
         if json_str is not None:
@@ -56,24 +74,34 @@ class Miner(object):
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
         """Starts the miner class with the given configuration."""
 
-        mep_triples, count, time = self.convert_meps(c.DATA_MEP, mep_limit)
-        print(fmt.OK_SYMBOL, "Mined", count, "MEPs (" +
-              str(mep_triples), "triples). Took ", time, "seconds\n")
+        results = self.convert_meps(c.DATA_MEP, num_threads, mep_limit)
+        if results:
+            mep_triples, count, time = results
+            print(fmt.OK_SYMBOL, "Mined", count, "MEPs (" +
+                  str(mep_triples), "triples). Took ", time, "seconds\n")
+        else:
+            return False
 
         io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
         io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
 
-        dossier_triples, count, time = self.convert_dossiers(
-            c.DATA_DOSSIER, num_threads, dossier_limit)
-        print(fmt.OK_SYMBOL, "Mined", count, "dossiers (" +
-              str(dossier_triples), "triples). Took ", time, "seconds\n")
+        results = self.convert_dossiers(c.DATA_DOSSIER, num_threads, dossier_limit)
+        if results:
+            dossier_triples, count, time = results
+            print(fmt.OK_SYMBOL, "Mined", count, "dossiers (" +
+                  str(dossier_triples), "triples). Took ", time, "seconds\n")
+        else:
+            return False
 
-        vote_triples, count, fails, time = self.convert_votes(
-            c.DATA_VOTES, num_threads, vote_limit)
-        print(fmt.OK_SYMBOL, "Mined", count,
-              "related votes (" + str(vote_triples), "triples)", fails,
-              "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n"
-              )
+        results = self.convert_votes(c.DATA_VOTES, num_threads, vote_limit)
+        if results:
+            vote_triples, count, fails, time = results
+            print(fmt.OK_SYMBOL, "Mined", count,
+                  "related votes (" + str(vote_triples), "triples)", fails,
+                  "votes failed to be parsed (No MEP ID). Took ", time, "seconds\n"
+                  )
+        else:
+            return False
 
         self.total_triples = mep_triples + dossier_triples + vote_triples
         # io.save_graph(c.GRAPH_OUTPUT, graph)
@@ -102,24 +130,174 @@ class Miner(object):
         # uriref = URIRef(iri)
         return iri
 
-    def convert_meps(self, path, limit):
-        membership_dict = {
-            'Member': c.MEMBER,
-            'Member of the Bureau': c.BUREAU_MEMBER,
-            'Vice-Chair': c.VICE_CHAIR,
-            'Treasurer': c.TREASURER,
-            'President': c.PRESIDENT,
-            'Chair': c.CHAIR,
-            'Co-Chair': c.CO_CHAIR,
-            'Chair of the Bureau': c.BUREAU_CHAIR,
-            'Co-treasurer': c.CO_TREASURER,
-            'Observer': c.OBSERVER,
-            'Deputy Chair': c.DEPUTY_CHAIR,
-            'Vice-Chair/Member of the Bureau': c.BUREAU_VICE_CHAIR,
-            'Deputy Treasurer': c.DEPUTY_TREASURER,
-            'Substitute': c.SUBSTITUTE
-            }
+    def process_mep(self, mep):
+        triples = []
 
+        date_now = datetime.now().date()
+
+        # Get raw values
+        mep_id = int(mep['UserID'])
+        # user_id = str(mep['_id'])
+        full_name = Literal(
+            str(mep['Name']['full'].lower().title().strip()),
+            datatype=c.STRING
+        )
+
+        profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
+        mep_uri = self.name_to_dbr(full_name)
+
+        mep_uri = URIRef(mep_uri)
+
+        if 'Photo' in mep:
+            photo_url = Literal(str(mep['Photo']), datatype=c.IMAGE)
+            triples.append((mep_uri, c.THUMBNAIL, photo_url))
+
+        if 'Birth' in mep:
+            if 'date' in mep['Birth']:
+                birth_date = mep['Birth']['date']
+                if birth_date != '':
+                    birth_date = Literal(
+                        datetime.strptime(
+                            birth_date.split('T')[0], '%Y-%m-%d'
+                        ).date(),
+                        datatype=c.DATE
+                    )
+
+                    triples.append((mep_uri, c.BIRTH_DATE, birth_date))
+
+            if 'place' in mep['Birth']:
+                birth_place = URIRef(self.name_to_dbr(
+                    str(mep['Birth']['place'].strip())))
+
+                triples.append((mep_uri, c.BIRTH_PLACE, birth_place))
+
+        if 'Death' in mep:
+            death_date = str(mep['Death'])
+            death_date = Literal(datetime.strptime(death_date.split('T')[
+                                 0], '%Y-%m-%d').date(), datatype=c.DATE)
+
+            triples.append((mep_uri, c.DEATH_DATE, death_date))
+
+        # if 'active' in mep: active = mep['active'] # interesting but
+        # unused atm
+
+        # twitter = mep['Twitter']
+
+        if 'Groups' in mep:
+            for group in mep['Groups']:
+                party_id = group['groupid']
+                party_title = str(group['Organization'])
+                party_dbr = self.name_to_dbr(party_title)
+
+                if type(party_id) is list:
+                    for pid in party_id:
+                        if party_dbr not in self.dict_party[pid]:
+                            self.dict_party[pid].append(party_dbr)
+                    party_id = party_id[0]
+                elif party_dbr not in self.dict_party[party_id]:
+                    self.dict_party[party_id].append(party_dbr)
+
+                start_date = datetime.strptime(
+                    group['start'].split('T')[0], '%Y-%m-%d').date()
+                end_date = datetime.strptime(
+                    group['end'].split('T')[0], '%Y-%m-%d').date()
+
+                # If a valid iri was added manually, it's always first, so
+                # just take the first
+                party_uri = URIRef(str(self.dict_party[party_id][0]))
+
+                membership_uri = self.id_to_iri(
+                    full_name + "_" + party_id + "_" + str(start_date))
+
+                triples.append((membership_uri, c.START_DATE, Literal(start_date, datatype=c.DATE)))
+
+                # If end date has passed
+                if end_date <= date_now:
+                    triples.append((membership_uri, c.END_DATE, Literal(end_date, datatype=c.DATE)))
+
+                triples.append((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
+                triples.append((membership_uri, c.IS_WITHIN, party_uri))
+
+                if 'country' in group:
+                    country = group['country']
+                    country_dbr = URIRef(self.name_to_dbr(country))
+                    triples.append(
+                        (membership_uri, c.REPRESENTS_COUNTRY, country_dbr)
+                    )
+
+                if 'role' in group and group['role']:
+                    role = str(group['role'])
+
+                    if role in c.MEMBERSHIPS:
+                        triples.append(
+                            (membership_uri, c.TYPE, c.MEMBERSHIPS[role])
+                        )
+                    else:
+                        logging.warning("Unknown role: %s", role)
+                else:
+                    logging.warning("No role found: %s %s %s",
+                                    profile_url, group['start'], party_title)
+
+                triples.append(
+                    (c.EUROPEAN_PARLIAMENT, c.IN_LEGISLATURE, party_uri))
+
+        """
+        if 'Committees' in mep:
+            mep_committees = []
+
+            for committee in mep['Committees']:
+                committee_title = committee['Organization']
+                # Since IDs are not always available, we use a formatted title string for now
+                committee_id = self.format_name_string(committee_title)
+                committee_uri = self.id_to_iri(committee_id)
+
+                if committee_uri not in self.dict_committees[committee_id]:
+                    self.dict_committees[committee_id].append(committee_uri)
+
+                if 'role' in committee:
+                    role = str(committee['role'])
+
+                    if role != "":
+                        if committee_id not in mep_committees:
+                            mep_committees.append(committee_id)
+                            #start_date = group['start']
+                            end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
+
+                            if role in role_dict:
+                                # If end_date has passed
+                                if end_date <= date_now:
+                                    triples.append((mep_uri, role_dict[role][1], committee_uri))
+                                else:
+                                    triples.append((mep_uri, role_dict[role][0], committee_uri))
+                            else:
+                                print ("Unknown role:", role)
+        """
+        if 'Gender' in mep:
+            gender = str(mep['Gender'])
+            if gender == 'M':
+                triples.append((mep_uri, c.GENDER, c.MALE))
+            elif gender == 'F':
+                triples.append((mep_uri, c.GENDER, c.FEMALE))
+            else:
+                print("Unknown gender:", gender)
+        else:
+            logging.warning('No gender found: %s', profile_url)
+
+        """
+        if 'Financial Declarations' in mep:
+            declarations = mep['Financial Declarations']
+            if declarations:
+                print (json.dumps(declarations, indent=2))
+        """
+
+        triples.append((mep_uri, c.FULL_NAME, full_name))
+        triples.append((mep_uri, c.URI, profile_url))
+        triples.append((mep_uri, c.OFFICE, c.MEMBER_OF_EU))
+
+        return [mep_id, mep_uri, triples]
+
+    def convert_meps(self, path, num_threads, limit):
+        """
         json_data = io.load_json(path)
         json_length = len(json_data) - 1
         dataset = DatasetGenerator.get_dataset()
@@ -135,173 +313,62 @@ class Miner(object):
         start_pos = json_length - limit
         end_pos = json_length
         for mep in islice(json_data, start_pos, end_pos):
-            # Get raw values
-            user_id = int(mep['UserID'])
-            # user_id = str(mep['_id'])
-            full_name = Literal(
-                str(mep['Name']['full'].lower().title().strip()),
-                datatype=c.STRING
-                )
 
-            profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
-            mep_uri = self.name_to_dbr(full_name)
+        if not self.sparql_endpoint.import_dataset(dataset):
+            return False
 
-            # append to global dictionary
-            if not self.dict_mep[user_id]:
-                self.dict_mep[user_id].append(mep_uri)
-            mep_uri = URIRef(mep_uri)
+        end = timer()
+        """
 
-            if 'Photo' in mep:
-                photo_url = Literal(str(mep['Photo']), datatype=c.IMAGE)
-                dataset.add((mep_uri, c.THUMBNAIL, photo_url))
+        input_json = io.load_json(path)
+        json_length = len(input_json) - 1
 
-            if 'Birth' in mep:
-                if 'date' in mep['Birth']:
-                    birth_date = mep['Birth']['date']
-                    if birth_date != '':
-                        birth_date = Literal(
-                            datetime.strptime(
-                                birth_date.split('T')[0], '%Y-%m-%d'
-                                ).date(),
-                            datatype=c.DATE
-                            )
+        if limit is None:
+            limit = json_length
 
-                        dataset.add((mep_uri, c.BIRTH_DATE, birth_date))
+        start_pos = json_length - limit
+        end_pos = json_length
 
-                if 'place' in mep['Birth']:
-                    birth_place = URIRef(self.name_to_dbr(
-                        str(mep['Birth']['place'].strip())))
+        input_dict = self.manager.defaultdict(list)
+        input_dict.update(islice(input_json, start_pos, end_pos))
 
-                    dataset.add((mep_uri, c.BIRTH_PLACE, birth_place))
+        counter = 0
 
-            if 'Death' in mep:
-                death_date = str(mep['Death'])
-                death_date = Literal(datetime.strptime(death_date.split('T')[
-                                     0], '%Y-%m-%d').date(), datatype=c.DATE)
+        start = timer()
 
-                dataset.add((mep_uri, c.DEATH_DATE, death_date))
+        try:
+            pool = Pool(num_threads)
+            results = pool.map(self.process_mep, input_dict)
 
-            # if 'active' in mep: active = mep['active'] # interesting but
-            # unused atm
+            dataset = DatasetGenerator.get_dataset()
+            for mep in results:
+                # append to global dictionary
+                if not self.dict_mep[mep[0]].append(mep[1]):
+                    self.dict_mep[mep[0]].append(mep[1])
 
-            # twitter = mep['Twitter']
+                for triple in mep[2]:
+                    dataset.add((triple[0], triple[1], triple[2]))
 
-            if 'Groups' in mep:
-                for group in mep['Groups']:
-                    party_id = group['groupid']
-                    party_title = str(group['Organization'])
-                    party_dbr = self.name_to_dbr(party_title)
+                counter += 1
 
-                    if type(party_id) is list:
-                        for pid in party_id:
-                            if party_dbr not in self.dict_party[pid]:
-                                self.dict_party[pid].append(party_dbr)
-                        party_id = party_id[0]
-                    elif party_dbr not in self.dict_party[party_id]:
-                        self.dict_party[party_id].append(party_dbr)
+                # Max 1000 MEPs per request
+                if (counter % 1000) == 0 and counter != 0:
+                    # reset dataset
+                    if not self.sparql_endpoint.import_dataset(dataset):
+                        return False
 
-                    start_date = datetime.strptime(
-                        group['start'].split('T')[0], '%Y-%m-%d').date()
-                    end_date = datetime.strptime(
-                        group['end'].split('T')[0], '%Y-%m-%d').date()
+                    print(fmt.INFO_SYMBOL, counter, "MEPs imported.")
+                    dataset = DatasetGenerator.get_dataset()
 
-                    # If a valid iri was added manually, it's always first, so
-                    # just take the first
-                    party_uri = URIRef(str(self.dict_party[party_id][0]))
+            # Import any left over from the last (incomplete) batch
+            if not self.sparql_endpoint.import_dataset(dataset):
+                    return False
 
-                    membership_uri = self.id_to_iri(
-                        full_name + "_" + party_id + "_" + str(start_date))
+            print(fmt.OK_SYMBOL, "Total of", counter, "MEPs imported.")
 
-                    dataset.add((membership_uri, c.START_DATE,
-                                Literal(start_date, datatype=c.DATE)))
-
-                    # If end date has passed
-                    if end_date <= date_now:
-                        dataset.add((membership_uri, c.END_DATE,
-                                     Literal(end_date, datatype=c.DATE)))
-
-                    dataset.add((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
-                    dataset.add((membership_uri, c.IS_WITHIN, party_uri))
-
-                    if 'country' in group:
-                        country = group['country']
-                        country_dbr = URIRef(self.name_to_dbr(country))
-                        dataset.add(
-                            (membership_uri, c.REPRESENTS_COUNTRY, country_dbr)
-                            )
-
-                    if 'role' in group and group['role']:
-                        role = str(group['role'])
-
-                        if role in membership_dict:
-                            dataset.add(
-                                (membership_uri, c.TYPE, membership_dict[role])
-                                )
-                        else:
-                            logging.info("Unknown role: %s", role)
-                    else:
-                        logging.info("No role found: %s %s %s",
-                                     profile_url, group['start'], party_title)
-
-                    dataset.add(
-                        (c.EUROPEAN_PARLIAMENT, c.IN_LEGISLATURE, party_uri))
-
-            """
-            if 'Committees' in mep:
-                mep_committees = []
-
-                for committee in mep['Committees']:
-                    committee_title = committee['Organization']
-                    # Since IDs are not always available, we use a formatted title string for now
-                    committee_id = self.format_name_string(committee_title)
-                    committee_uri = self.id_to_iri(committee_id)
-
-                    if committee_uri not in self.dict_committees[committee_id]:
-                        self.dict_committees[committee_id].append(committee_uri)
-
-                    if 'role' in committee:
-                        role = str(committee['role'])
-
-                        if role != "":
-                            if committee_id not in mep_committees:
-                                mep_committees.append(committee_id)
-                                #start_date = group['start']
-                                end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
-
-                                if role in role_dict:
-                                    # If end_date has passed
-                                    if end_date <= date_now:
-                                        dataset.add((mep_uri, role_dict[role][1], committee_uri))
-                                    else:
-                                        dataset.add((mep_uri, role_dict[role][0], committee_uri))
-                                else:
-                                    print ("Unknown role:", role)
-            """
-            if 'Gender' in mep:
-                gender = str(mep['Gender'])
-                if gender == 'M':
-                    dataset.add((mep_uri, c.GENDER, c.MALE))
-                elif gender == 'F':
-                    dataset.add((mep_uri, c.GENDER, c.FEMALE))
-                else:
-                    print("Unknown gender:", gender)
-            else:
-                logging.info('No gender found: %s', profile_url)
-
-            """
-            if 'Financial Declarations' in mep:
-                declarations = mep['Financial Declarations']
-                if declarations:
-                    print (json.dumps(declarations, indent=2))
-            """
-
-            dataset.add((mep_uri, c.FULL_NAME, full_name))
-            dataset.add((mep_uri, c.URI, profile_url))
-            dataset.add((mep_uri, c.OFFICE, c.MEMBER_OF_EU))
-
-            counter += 1
-
-        self.sparql_endpoint.import_dataset(dataset)
+        finally:
+            pool.close()
+            pool.join()
 
         end = timer()
 
@@ -412,7 +479,7 @@ class Miner(object):
                                         doc_type = Literal(
                                             str(doc['type']),
                                             datatype=c.STRING
-                                            )
+                                        )
 
                                         triples.append(
                                             [doc_uri, c.HAS_TYPE, doc_type])
@@ -476,9 +543,8 @@ class Miner(object):
         end_pos = json_length
 
         try:
-            input_data = islice(json_data, start_pos, end_pos)
             pool = Pool(num_threads)
-            results = pool.map(self.process_dossier, input_data)
+            results = pool.map(self.process_dossier, islice(json_data, start_pos, end_pos))
 
             dataset = DatasetGenerator.get_dataset()
             for dossier in results:
@@ -493,12 +559,16 @@ class Miner(object):
                 # Max 1000 dossiers per request
                 if (counter % 1000) == 0 and counter != 0:
                     # reset dataset
-                    self.sparql_endpoint.import_dataset(dataset)
+                    if not self.sparql_endpoint.import_dataset(dataset):
+                        return False
+
                     print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
                     dataset = DatasetGenerator.get_dataset()
 
             # Import any left over from the last (incomplete) batch
-            self.sparql_endpoint.import_dataset(dataset)
+            if not self.sparql_endpoint.import_dataset(dataset):
+                    return False
+
             print(fmt.OK_SYMBOL, "Total of", counter, "dossiers imported.")
 
         finally:
@@ -509,8 +579,6 @@ class Miner(object):
         return num_triples, counter, get_elapsed_seconds(start, end)
 
     def process_votes(self, votes):
-        vote_dict = {'Abstain': c.ABSTAINS,
-                     'For': c.VOTES_FOR, 'Against': c.VOTES_AGAINST}
         counter = 0
         failed = 0
         triples = []
@@ -525,7 +593,7 @@ class Miner(object):
                 # url = dossier['url']
                 # ep_title = dossier['eptitle']
 
-                for vote_type in vote_dict:
+                for vote_type in c.VOTES:
                     if vote_type in votes:
                         for group in votes[vote_type]['groups']:
                             # group_name = group['group']
@@ -545,19 +613,20 @@ class Miner(object):
                                         triples.append(
                                             [
                                                 voter_uri,
-                                                vote_dict[vote_type],
+                                                c.VOTES[vote_type],
                                                 dossier_uri
                                             ])
                                     except Exception as ex:
                                         print(ex)
                                         continue
                                 else:
-                                    print(voter_id)
+                                    logging.warning("MEP not found. Using their ID instead. (%i)", voter_id)
+
                                     try:
                                         triples.append(
                                             [
                                                 c.MEMBER_OF_EU,
-                                                vote_dict[vote_type],
+                                                c.VOTES[vote_type],
                                                 dossier_uri
                                             ])
                                     except Exception as ex:
@@ -585,9 +654,10 @@ class Miner(object):
         end_pos = json_length
 
         try:
-            input_data = islice(json_data, start_pos, end_pos)
             pool = Pool(num_threads)
-            results = pool.map(self.process_votes, input_data)
+            input_dict = self.manager.defaultdict
+            input_dict.update(islice(json_data, start_pos, end_pos))
+            results = pool.map(self.process_votes, input_dict)
 
             dataset = DatasetGenerator.get_dataset()
             for result in results:
@@ -604,12 +674,16 @@ class Miner(object):
 
                 if (counter % 1000) == 0 and counter != 0:
                     # reset dataset
-                    self.sparql_endpoint.import_dataset(dataset)
+                    if not self.sparql_endpoint.import_dataset(dataset):
+                        return False
+
                     print(fmt.INFO_SYMBOL, counter, "votes imported.")
                     dataset = DatasetGenerator.get_dataset()
 
             # Import any left over from the last (incomplete) batch
-            self.sparql_endpoint.import_dataset(dataset)
+            if not self.sparql_endpoint.import_dataset(dataset):
+                return False
+
             print(fmt.OK_SYMBOL, "Total of", counter, "votes imported.")
 
             if failed > 0:

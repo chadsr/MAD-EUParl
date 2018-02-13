@@ -1,52 +1,86 @@
-from SPARQLWrapper import SPARQLWrapper
-from rdflib import py3compat as compat
+from SPARQLWrapper import SPARQLWrapper, BASIC, URLENCODED, POSTDIRECTLY
 import constants as c
 import formatting as fmt
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
-import subprocess
+import urllib
 
 
 class SparqlServer(object):
-    def __init__(self, start_server=True):
-        self.sparql = SPARQLWrapper(c.SPARQL_ENDPOINT)
+    def __init__(self, endpoint_url, username=None, password=None, ):
+        self.username = username
+        self.password = password
+        self.sparql = SPARQLWrapper(endpoint_url)
 
-        if start_server:
-            subprocess.Popen(c.SERVER_START, shell=True)
-            subprocess.Popen(c.SERVER_IMPORT_ONT, shell=True)
+    def __query__(self, http_method, request_method, query_string):
+        if self.username and self.password:
+            self.sparql.setHTTPAuth(BASIC)
+            self.sparql.setCredentials(self.username, self.password)
 
-    def postQuery(self, query_string):
         self.sparql.setQuery('INSERT DATA { %s }' % query_string)
-        self.sparql.method = 'POST'
+        self.sparql.setRequestMethod(request_method)
+        self.sparql.method = http_method
+        self.sparql.setReturnFormat('json')
 
         try:
             self.sparql.query()
-        except (error.URLError) as e:
+            return True
+        except urllib.error.URLError as e:
             if e.code == 404:
-                print('404 Error whilst connecting to endpoint')
+                print('404 Error: Endpoint not found')
             elif e.code == 401:
                 print('401 Error: Unauthorized access to endpoint')
+            elif e.code == 400:
+                print('400 Error: ')
             else:
                 print('Error:', e)
 
-    def import_graph(self, graph):
+            return False
+        except Exception as e:
+            print('Error:', e)
+            return False
+
+    def put(self, query_string, post_directly=True):
+        if post_directly:
+            request_method = POSTDIRECTLY
+        else:
+            request_method = URLENCODED
+
+        return self.__query__("PUT", request_method, query_string)
+
+    def post(self, query_string, post_directly=True):
+        if post_directly:
+            request_method = POSTDIRECTLY
+        else:
+            request_method = URLENCODED
+
+        return self.__query__("POST", request_method, query_string)
+
+    def import_graph(self, graph, format_type='turtle'):
         print(fmt.WAIT_SYMBOL, "Importing graph to", c.SPARQL_ENDPOINT)
         start = timer()
-        gs = graph.serialize(format='nt')
+        gs = graph.serialize(format=format_type)
         query_string = gs.decode('utf-8')
 
-        self.postQuery(query_string)
+        if self.post(query_string):
+            end = timer()
+            print(fmt.OK_SYMBOL, "Import complete. Took",
+                  get_elapsed_seconds(start, end), "seconds")
 
-        end = timer()
-        print(fmt.OK_SYMBOL, "Import complete. Took",
-              get_elapsed_seconds(start, end), "seconds")
+            return True
+        else:
+            print(fmt.ERROR_SYMBOL, "Import failed.")
+            return False
 
-    def import_dataset(self, dataset):
-        # print (fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
-        # start = timer()
-        ds = dataset.serialize(format='turtle')
+    def import_dataset(self, dataset, format_type='turtle'):
+        print(fmt.WAIT_SYMBOL, "Importing dataset to", c.SPARQL_ENDPOINT)
+        start = timer()
+        ds = dataset.serialize(format=format_type)
         query_string = ds.decode('utf-8')
 
-        self.postQuery(query_string)
-        # end = timer()
-        # sprint (fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")
+        if self.post(query_string):
+            end = timer()
+            print(fmt.OK_SYMBOL, "Import complete. Took", get_elapsed_seconds(start, end), "seconds")
+            return True
+        else:
+            return False

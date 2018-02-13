@@ -1,3 +1,6 @@
 [submodule "src/miner/packages/iribaker"]
 	path = src/miner/packages/iribaker
 	url = git@github.com:Chadsr/iribaker.git
+[submodule "src/miner/packages/sparqlwrapper"]
+	path = src/miner/packages/sparqlwrapper
+	url = git@github.com:RDFLib/sparqlwrapper.git

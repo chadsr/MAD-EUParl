@@ -1,7 +1,6 @@
-#!/usr/bin/python3
+"""The initiation of the miner."""
 
-"""The initiation of the miner and sparql server."""
-
+import memory_profiler
 import argparse
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
@@ -47,12 +46,14 @@ else:
 start = timer()
 
 miner = Miner()
-miner.start(num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)
+
+mem_usage = memory_profiler.memory_usage((miner.start, (num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)))
+max_mem_usage = max(mem_usage)
 
 end = timer()
 
 total_time = get_elapsed_seconds(start, end)
 print(fmt.INFO_SYMBOL, "Total execution time:", total_time, "seconds")
 
-logger.log_run(num_threads, miner.total_triples, total_time)
+logger.log_run(num_threads, miner.total_triples, total_time, int(round(max_mem_usage)))
 logger.save()

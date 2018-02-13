@@ -5,21 +5,21 @@ from timing_handler import get_elapsed_seconds
 import formatting as fmt
 
 
-def save_dataset(filename, dataset):
+def save_dataset(filename, dataset, format_type='turtle'):
     with open(filename, 'wb') as f:
         print(fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
-        dataset.serialize(f, format='turtle')
+        dataset.serialize(f, format=format_type)
         end = timer()
     print(fmt.OK_SYMBOL, 'Saved. Took:',
           get_elapsed_seconds(start, end), "seconds\n")
 
 
-def save_graph(filename, graph):
+def save_graph(filename, graph, format_type='nt'):
     with open(filename, 'wb') as f:
         print(fmt.WAIT_SYMBOL, 'Saving:', filename)
         start = timer()
-        graph.serialize(f, format='nt')
+        graph.serialize(f, format=format_type)
         end = timer()
     print(fmt.OK_SYMBOL, 'Saved. Took:',
           get_elapsed_seconds(start, end), "seconds\n")

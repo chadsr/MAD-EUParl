@@ -23,17 +23,14 @@ DICT_PARTIES = JSON_DIR + 'dict_parties.json'
 DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
-SERVER_START = 'cd $STARDOG_HOME/bin && ./stardog-admin server start --disable-security'
-SERVER_IMPORT_ONT = 'cd $STARDOG_HOME/bin && ./stardog-admin db create -o icv.enabled=true icv.reasoning.enabled=true reasoning.type=DL reasoning.sameas=FULL -n parlialytics "' + \
-    LD_DIR + 'parlialytics.owl"'
-SPARQL_ENDPOINT = 'http://localhost:5820/parlialytics/query'
+SPARQL_ENDPOINT = 'http://localhost:7200/repositories/parlialytics/statements'
 
 DOWNLOAD_TIMEOUT = 30
 DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
              'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']
 
-DATABASE = 'http://localhost:5820/databases/parlialytics#'  # Database endpoint
+DATABASE = 'http://localhost:7200/parlialytics#'  # Database endpoint
 NAMESPACE = DATABASE
 
 ont = NAMESPACE
@@ -133,3 +130,22 @@ DATE = XSD.date
 BOOLEAN = XSD.boolean
 
 TYPE = RDF.type
+
+MEMBERSHIPS = {
+    'Member': MEMBER,
+    'Member of the Bureau': BUREAU_MEMBER,
+    'Vice-Chair': VICE_CHAIR,
+    'Treasurer': TREASURER,
+    'President': PRESIDENT,
+    'Chair': CHAIR,
+    'Co-Chair': CO_CHAIR,
+    'Chair of the Bureau': BUREAU_CHAIR,
+    'Co-treasurer': CO_TREASURER,
+    'Observer': OBSERVER,
+    'Deputy Chair': DEPUTY_CHAIR,
+    'Vice-Chair/Member of the Bureau': BUREAU_VICE_CHAIR,
+    'Deputy Treasurer': DEPUTY_TREASURER,
+    'Substitute': SUBSTITUTE
+}
+
+VOTES = {'Abstain': ABSTAINS, 'For': VOTES_FOR, 'Against': VOTES_AGAINST}
