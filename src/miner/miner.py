@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime
 from itertools import islice
 import urllib.parse as urlparse
+import ijson
 
 from SPARQLEndpoint import SparqlServer
 
@@ -297,46 +298,22 @@ class Miner(object):
         return [mep_id, mep_uri, triples]
 
     def convert_meps(self, path, num_threads, limit):
-        """
-        json_data = io.load_json(path)
-        json_length = len(json_data) - 1
-        dataset = DatasetGenerator.get_dataset()
-        counter = 0
-        date_now = datetime.now().date()
-
-        print(fmt.WAIT_SYMBOL, "Mining MEPS...")
-
-        if limit is None:
-            limit = json_length
-
         start = timer()
-        start_pos = json_length - limit
-        end_pos = json_length
-        for mep in islice(json_data, start_pos, end_pos):
-
-        if not self.sparql_endpoint.import_dataset(dataset):
-            return False
-
-        end = timer()
-        """
-
-        json_data = io.load_json(path)
-        json_length = len(json_data) - 1
-
-        if limit is None:
-            limit = json_length
-
-        start_pos = json_length - limit
-        end_pos = json_length
-
+        counter = 0
         input_dict = self.manager.defaultdict(list)
 
-        for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
-            input_dict[i] = obj
+        print(fmt.WAIT_SYMBOL, "Getting relevant dataset...")
 
-        counter = 0
+        with open(path) as f:
+            objects = ijson.items(f, 'item')
+            objects = islice(objects, limit)
 
-        start = timer()
+            for i, obj in enumerate(objects):
+                input_dict[i] = obj
+
+        f.close()
+
+        print(fmt.WAIT_SYMBOL, "Mining MEPs...")
 
         try:
             pool = Pool(num_threads)
@@ -529,24 +506,24 @@ class Miner(object):
     # TODO: See if there is a better dossier text to use instead of
     # dossier['procedure']['title']
     def convert_dossiers(self, path, num_threads, limit):
-        json_data = io.load_json(path)
-        json_length = len(json_data) - 1
-
-        if limit is None:
-            limit = json_length
-
-        print(fmt.WAIT_SYMBOL, "Mining dossiers...")
-
         start = timer()
         counter = 0
         num_triples = 0
 
-        start_pos = json_length - limit
-        end_pos = json_length
-
         input_dict = self.manager.defaultdict(list)
-        for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
-            input_dict[i] = obj
+
+        print(fmt.WAIT_SYMBOL, "Getting relevant dataset...")
+
+        with open(path) as f:
+            objects = ijson.items(f, 'item')
+            objects = islice(objects, limit)
+
+            for i, obj in enumerate(objects):
+                input_dict[i] = obj
+
+        f.close()
+
+        print(fmt.WAIT_SYMBOL, "Mining Dossiers...")
 
         try:
             pool = Pool(num_threads)
@@ -643,28 +620,27 @@ class Miner(object):
         return [counter, failed, triples]
 
     def convert_votes(self, path, num_threads, limit):
-        json_data = io.load_json(path)
-        json_length = len(json_data) - 1
-
-        if limit is None:
-            limit = json_length
-
-        print(fmt.WAIT_SYMBOL, 'Mining votes...')
-
         start = timer()
         counter = 0
         failed = 0
         num_triples = 0
+        input_dict = self.manager.defaultdict(list)
 
-        start_pos = json_length - limit
-        end_pos = json_length
+        print(fmt.WAIT_SYMBOL, "Getting relevant dataset...")
+
+        with open(path) as f:
+            objects = ijson.items(f, 'item')
+            objects = islice(objects, limit)
+
+            for i, obj in enumerate(objects):
+                input_dict[i] = obj
+
+        f.close()
+
+        print(fmt.WAIT_SYMBOL, 'Mining votes...')
 
         try:
             pool = Pool(num_threads)
-            input_dict = self.manager.defaultdict(list)
-
-            for i, obj in enumerate(islice(json_data, start_pos, end_pos)):
-                input_dict[i] = obj
 
             results = pool.map(self.process_votes, input_dict)
 
