@@ -542,9 +542,12 @@ class Miner(object):
         start_pos = json_length - limit
         end_pos = json_length
 
+        input_dict = self.manager.defaultdict(list)
+        input_dict.update(islice(json_data, start_pos, end_pos))
+
         try:
             pool = Pool(num_threads)
-            results = pool.map(self.process_dossier, islice(json_data, start_pos, end_pos))
+            results = pool.map(self.process_dossier, input_dict)
 
             dataset = DatasetGenerator.get_dataset()
             for dossier in results:
@@ -655,7 +658,7 @@ class Miner(object):
 
         try:
             pool = Pool(num_threads)
-            input_dict = self.manager.defaultdict
+            input_dict = self.manager.defaultdict(list)
             input_dict.update(islice(json_data, start_pos, end_pos))
             results = pool.map(self.process_votes, input_dict)
 
