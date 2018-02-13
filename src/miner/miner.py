@@ -48,10 +48,10 @@ class Miner(object):
         self.dict_committees = defaultdict(list)
         """
 
-        self.dict_mep = manager.defaultdict(list)
-        self.dict_party = manager.defaultdict(list)
-        self.dict_dossier = manager.defaultdict(list)
-        self.dict_committees = manager.defaultdict(list)
+        self.dict_mep = self.manager.defaultdict(list)
+        self.dict_party = self.manager.defaultdict(list)
+        self.dict_dossier = self.manager.defaultdict(list)
+        self.dict_committees = self.manager.defaultdict(list)
 
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
 
