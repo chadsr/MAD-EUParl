@@ -10,6 +10,7 @@ data/json/*.json
 data/json/*.xz
 !data/json/dict_meps.json
 !data/json/dict_parties.json
+!data/json/dict_committees.json
 !data/json/.gitkeep
 __pycache__
 
