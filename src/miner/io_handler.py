@@ -1,8 +1,11 @@
 import json as json
+import ijson.backends.yajl2 as ijson
 from collections import defaultdict, OrderedDict
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 import formatting as fmt
+import random
+from itertools import islice
 
 
 def save_dataset(filename, dataset, format_type='turtle'):
@@ -45,16 +48,47 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
           get_elapsed_seconds(start, end), "seconds\n")
 
 
-def load_json(path):
+def get_dataset_indexes(path, count):
+    selected_objects = []
+    print(fmt.WAIT_SYMBOL, "Gathering information on the dataset...")
+    with open(path, 'rb') as f:
+        objects = ijson.items(f, 'item')
+        num_objects = sum(1 for _ in objects)
+
+        if count:
+            print(fmt.WAIT_SYMBOL, "Indexing", count, "random data objects...")
+            for i in range(0, count):
+                choice = random.randint(0, num_objects)
+                selected_objects.append(choice)
+        else:
+            print(fmt.WAIT_SYMBOL, "Indexing dataset...")
+            selected_objects.extend(range(0, num_objects))
+
+    return selected_objects
+
+
+def load_json(path, index=None, verbose=True):
     try:
-        f = open(path, 'r')
-        print(fmt.WAIT_SYMBOL, 'Loading file:', path)
+        f = open(path, 'rb')
+
+        if verbose:
+            print(fmt.WAIT_SYMBOL, 'Loading file:', path)
         try:
             start = timer()
-            json_data = json.load(f)
+
+            if index:
+                objects = ijson.items(f, 'item')
+
+                for obj in islice(objects, index, index + 1):
+                    # Only loads one object always, so this is messy but works
+                    json_data = obj
+
+            else:
+                json_data = json.load(f)
             end = timer()
-            print(fmt.OK_SYMBOL, 'Loaded. Took:',
-                  get_elapsed_seconds(start, end), "seconds")
+
+            if verbose:
+                print(fmt.OK_SYMBOL, 'Loaded. Took:', get_elapsed_seconds(start, end), "seconds")
         except (ValueError) as error:
             print(error)
             return None

@@ -5,12 +5,21 @@ import argparse
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 import os
+from collections import defaultdict
+from multiprocessing.managers import BaseManager, DictProxy
 from miner import Miner
 from logger import Logger
 
 import constants as c
 import downloader as dl
 import formatting as fmt
+
+
+class DictManager(BaseManager):
+    pass
+
+
+DictManager.register('defaultdict', defaultdict, DictProxy)
 
 logger = Logger("runtime.json")
 
@@ -45,7 +54,9 @@ else:
 
 start = timer()
 
-miner = Miner()
+manager = DictManager()
+manager.start()
+miner = Miner(manager)
 
 mem_usage = memory_profiler.memory_usage((miner.start, (num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)))
 max_mem_usage = max(mem_usage)
