@@ -1,8 +1,7 @@
 from rdflib import Namespace, XSD, Literal
 import os
 
-DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 LOG_DIR = DIR + '/logs/'
 DATA_DIR = DIR + '/data/'

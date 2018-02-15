@@ -256,7 +256,7 @@ class Miner(object):
                         end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
 
                         if role in c.MEMBERSHIPS:
-                            triples.append((mep_uri, c.MEMBERSHIPS[role], self.dict_committees[committee_id][0]))
+                            triples.append((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id][0])))
                             # If end_date has passed
                             if end_date <= date_now:
                                 pass  # TODO: add end date

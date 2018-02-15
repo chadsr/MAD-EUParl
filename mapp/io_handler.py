@@ -6,6 +6,7 @@ from timing_handler import get_elapsed_seconds
 import formatting as fmt
 import random
 from itertools import islice
+import profiler
 
 
 def save_dataset(filename, dataset, format_type='turtle'):
@@ -48,6 +49,7 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
           get_elapsed_seconds(start, end), "seconds\n")
 
 
+@profiler.do_profile()
 def get_dataset_indexes(path, count):
     selected_objects = []
     print(fmt.WAIT_SYMBOL, "Gathering information on the dataset...")
@@ -67,6 +69,7 @@ def get_dataset_indexes(path, count):
     return selected_objects
 
 
+@profiler.do_profile()
 def load_json(path, index=None, verbose=True):
     try:
         f = open(path, 'rb')
