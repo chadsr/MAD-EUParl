@@ -13,6 +13,7 @@ from logger import Logger
 import constants as c
 import downloader as dl
 import formatting as fmt
+import io_handler as io
 
 
 class DictManager(BaseManager):
@@ -48,7 +49,7 @@ print(fmt.INFO_SYMBOL, "Using", num_threads, "thread(s).\n")
 
 if args.update:
     print(fmt.WAIT_SYMBOL, "Downloading latest datasets...")
-    dl.download_datasets()
+    dl.prepare_datasets()
 else:
     print(fmt. WARNING_SYMBOL, "Using existing datasets")
 

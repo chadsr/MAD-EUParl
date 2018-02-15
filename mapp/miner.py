@@ -1,22 +1,19 @@
 import re
 from datetime import datetime
 import urllib.parse as urlparse
-from functools import partial
 from SPARQLEndpoint import SparqlServer
-
 from packages.iribaker.iribaker import to_iri
 from rdflib import URIRef, Literal
+import logging
+from timeit import default_timer as timer
+from timing_handler import get_elapsed_seconds
+from multiprocessing import Pool
+from dataset_generator import DatasetGenerator
+import os
+
 import io_handler as io
 import constants as c
 import formatting as fmt
-
-import logging
-
-from timeit import default_timer as timer
-from timing_handler import get_elapsed_seconds
-
-from multiprocessing import Pool
-from dataset_generator import DatasetGenerator
 
 # TODO () Look into addN() function for adding multiple triples in one go
 # https://rdflib.readthedocs.io/en/stable/_modules/rdflib/graph.html#ConjunctiveGraph.addN
@@ -38,7 +35,7 @@ class Miner(object):
         self.dict_mep = manager.defaultdict(list)
         self.dict_party = manager.defaultdict(list)
         self.dict_dossier = manager.defaultdict(list)
-        self.dict_committees = manager.defaultdict(list)
+        self.dict_committees = manager.defaultdict()
 
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
 
@@ -49,10 +46,6 @@ class Miner(object):
         json_str = io.load_json(c.DICT_PARTIES)
         if json_str is not None:
             self.dict_party = io.json_to_defaultdict(json_str)
-
-        json_str = io.load_json(c.DICT_COMMITTEES)
-        if json_str is not None:
-            self.dict_committees = io.json_to_defaultdict(json_str)
 
         self.total_triples = 0
 
@@ -65,7 +58,7 @@ class Miner(object):
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
         """Starts the miner class with the given configuration."""
 
-        results = self.convert_meps(c.DATA_MEP, num_threads, mep_limit)
+        results = self.convert_meps(c.DIR_MEPS, num_threads, mep_limit)
         if results:
             mep_triples, count, time = results
             print(fmt.OK_SYMBOL, "Mined", count, "MEPs (" +
@@ -75,9 +68,8 @@ class Miner(object):
 
         io.save_dict_to_json(c.DICT_MEPS, self.dict_mep)
         io.save_dict_to_json(c.DICT_PARTIES, self.dict_party)
-        io.save_dict_to_json(c.DICT_COMMITTEES, self.dict_committees)
 
-        results = self.convert_dossiers(c.DATA_DOSSIER, num_threads, dossier_limit)
+        results = self.convert_dossiers(c.DIR_DOSSIERS, num_threads, dossier_limit)
         if results:
             dossier_triples, count, time = results
             print(fmt.OK_SYMBOL, "Mined", count, "dossiers (" +
@@ -85,7 +77,7 @@ class Miner(object):
         else:
             return False
 
-        results = self.convert_votes(c.DATA_VOTES, num_threads, vote_limit)
+        results = self.convert_votes(c.DIR_VOTES, num_threads, vote_limit)
         if results:
             vote_triples, count, fails, time = results
             print(fmt.OK_SYMBOL, "Mined", count,
@@ -122,10 +114,10 @@ class Miner(object):
         # uriref = URIRef(iri)
         return iri
 
-    def process_mep(self, index, path):
+    def process_mep(self, index):
         triples = []
 
-        mep = io.load_json(path, index, verbose=False)
+        mep = io.load_json(os.path.join(c.DIR_MEPS, str(index) + '.json'), verbose=False)
 
         date_now = datetime.now().date()
 
@@ -242,8 +234,8 @@ class Miner(object):
                 committee_id = self.format_name_string(committee_title)
                 committee_uri = self.id_to_iri(committee_id)
 
-                if committee_uri not in self.dict_committees[committee_id]:
-                    self.dict_committees[committee_id].append(committee_uri)
+                if committee_id not in self.dict_committees:
+                    self.dict_committees[committee_id] = committee_uri
 
                 if 'role' in committee:
                     role = str(committee['role'])
@@ -256,7 +248,7 @@ class Miner(object):
                         end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
 
                         if role in c.MEMBERSHIPS:
-                            triples.append((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id][0])))
+                            triples.append((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id])))
                             # If end_date has passed
                             if end_date <= date_now:
                                 pass  # TODO: add end date
@@ -297,7 +289,7 @@ class Miner(object):
 
         try:
             pool = Pool(num_threads)
-            results = pool.map(partial(self.process_mep, path=path), selected_meps)
+            results = pool.map(self.process_mep, selected_meps)
 
             dataset = DatasetGenerator.get_dataset()
             for mep in results:
@@ -333,10 +325,10 @@ class Miner(object):
 
         return dataset.__len__(), counter, get_elapsed_seconds(start, end)
 
-    def process_dossier(self, index, path):
+    def process_dossier(self, index):
         triples = []
 
-        dossier = io.load_json(path, index, verbose=False)
+        dossier = io.load_json(os.path.join(c.DIR_DOSSIERS, str(index) + '.json'), verbose=False)
 
         dossier_id = dossier['_id']
         dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
@@ -498,7 +490,7 @@ class Miner(object):
 
         try:
             pool = Pool(num_threads)
-            results = pool.map(partial(self.process_dossier, path=path), selected_dossiers)
+            results = pool.map(self.process_dossier, selected_dossiers)
 
             dataset = DatasetGenerator.get_dataset()
             for dossier in results:
@@ -533,12 +525,12 @@ class Miner(object):
         end = timer()
         return num_triples, counter, get_elapsed_seconds(start, end)
 
-    def process_votes(self, index, path):
+    def process_votes(self, index):
         counter = 0
         failed = 0
         triples = []
 
-        votes = io.load_json(path, index, verbose=False)
+        votes = io.load_json(os.path.join(c.DIR_VOTES, str(index) + '.json'), verbose=False)
 
         if 'dossierid' in votes:
             dossier_id = votes['dossierid']
@@ -606,7 +598,7 @@ class Miner(object):
         try:
             pool = Pool(num_threads)
 
-            results = pool.map(partial(self.process_votes, path=path), selected_votes)
+            results = pool.map(self.process_votes, selected_votes)
 
             dataset = DatasetGenerator.get_dataset()
             for result in results:

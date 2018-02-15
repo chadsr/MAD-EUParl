@@ -14,6 +14,10 @@ LD_DIR = DATA_DIR + 'linked_data/'
 DATA_OUTPUT = LD_DIR + 'parlialytics.ttl'
 GRAPH_OUTPUT = LD_DIR + 'parltrack-graph.ttl'
 
+DIR_MEPS = os.path.join(JSON_DIR, 'mep_chunks')
+DIR_DOSSIERS = os.path.join(JSON_DIR, 'dossier_chunks')
+DIR_VOTES = os.path.join(JSON_DIR, 'vote_chunks')
+
 DATA_MEP = JSON_DIR + 'ep_meps_current.json'
 DATA_VOTES = JSON_DIR + 'ep_votes.json'
 DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
@@ -25,9 +29,9 @@ DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 SPARQL_ENDPOINT = 'http://localhost:7200/repositories/parlialytics/statements'
 
 DOWNLOAD_TIMEOUT = 30
-DATA_URLS = ['http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
-             'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
-             'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz']
+DATA_URLS = {DIR_VOTES: 'http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
+             DIR_MEPS: 'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
+             DIR_DOSSIERS: 'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz'}
 
 DATABASE = 'http://localhost:7200/parlialytics#'  # Database endpoint
 NAMESPACE = DATABASE

@@ -5,7 +5,10 @@ from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 import formatting as fmt
 import random
+import glob
 from itertools import islice
+import os
+
 import profiler
 
 
@@ -49,10 +52,39 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
           get_elapsed_seconds(start, end), "seconds\n")
 
 
+def split_dataset(path, output_dir):
+    print("Splitting '%s' to '%s'" % (path, output_dir))
+
+    f = open(path, 'rb')
+
+    objects = ijson.items(f, 'item')
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for i, obj in enumerate(objects):
+        path = os.path.join(output_dir, str(i) + '.json')
+        with open(path, 'w') as out:
+            json.dump(obj, out, indent=2)
+        out.close()
+
+
 @profiler.do_profile()
-def get_dataset_indexes(path, count):
-    selected_objects = []
+# TODO: Change to new file structure
+def get_dataset_indexes(path, count=None):
+    datasets = []
     print(fmt.WAIT_SYMBOL, "Gathering information on the dataset...")
+
+    for f in os.listdir(path):
+        if f.endswith(".json"):
+            datasets.append(int(f.split('.')[0]))
+
+    if count:
+        return random.sample(datasets, count)
+    else:
+        return datasets
+
+    """
     with open(path, 'rb') as f:
         objects = ijson.items(f, 'item')
         num_objects = sum(1 for _ in objects)
@@ -65,8 +97,7 @@ def get_dataset_indexes(path, count):
         else:
             print(fmt.WAIT_SYMBOL, "Indexing dataset...")
             selected_objects.extend(range(0, num_objects))
-
-    return selected_objects
+    """
 
 
 @profiler.do_profile()

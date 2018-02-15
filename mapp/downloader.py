@@ -7,11 +7,13 @@ import time
 import constants as c
 import formatting as fmt
 from timeit import default_timer as timer
+
 from timing_handler import get_elapsed_seconds
+import io_handler as io
 
 
-def download_datasets():
-    for url in c.DATA_URLS:
+def prepare_datasets():
+    for folder, url in c.DATA_URLS.items():
         uo = request.urlopen(url, timeout=c.DOWNLOAD_TIMEOUT)
         modified_date = uo.headers['last-modified']
         remote_unix = time.mktime(datetime.datetime.strptime(
@@ -36,6 +38,9 @@ def download_datasets():
                 end = timer()
                 print(fmt.OK_SYMBOL, "Extracted. Took",
                       get_elapsed_seconds(start, end), 'seconds')
+
+                io.split_dataset(path, folder)
+
             except (error.URLError) as e:
                 if e.code == 404:
                     print(fmt.ERROR_SYMBOL, "Resource", url,
@@ -50,6 +55,6 @@ def extract_dataset(path):
     dir_path, filename = os.path.split(path)
     name = os.path.splitext(filename)[0]
 
-    with lzma.open(path) as f, open(c.JSON_DIR + name, 'wb') as fout:
+    with lzma.open(path) as f, open(os.path.join(c.JSON_DIR, name), 'wb') as fout:
         file_content = f.read()
         fout.write(file_content)
