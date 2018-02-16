@@ -103,7 +103,7 @@ def get_dataset_indexes(path, count=None):
 @profiler.do_profile()
 def load_json(path, index=None, verbose=True):
     try:
-        f = open(path, 'rb')
+        f = open(path, 'r')
 
         if verbose:
             print(fmt.WAIT_SYMBOL, 'Loading file:', path)
