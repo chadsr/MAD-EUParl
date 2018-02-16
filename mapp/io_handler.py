@@ -47,14 +47,13 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
         start = timer()
         json.dump(data, f, indent=indent_num)
         end = timer()
-    print(fmt.OK_SYMBOL, 'Saved. Took:',
-          get_elapsed_seconds(start, end), "seconds\n")
+    print(fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
 
 
 def split_dataset(path, output_dir):
-    print("Splitting '%s' to '%s'" % (path, output_dir))
-
-    f = open(path, 'r')
+    print(fmt.WAIT_SYMBOL, "Splitting dataset ", path, "to", output_dir)
+    start = timer()
+    f = open(path, 'rb')
 
     objects = ijson.items(f, 'item')
 
@@ -63,9 +62,14 @@ def split_dataset(path, output_dir):
 
     for i, obj in enumerate(objects):
         path = os.path.join(output_dir, str(i) + '.json')
+
         with open(path, 'w') as out:
             json.dump(obj, out, indent=2)
         out.close()
+
+    end = timer()
+    print(fmt.OK_SYMBOL, "Finished splitting. Took",
+          get_elapsed_seconds(start, end), 'seconds')
 
 
 @profiler.do_profile()
