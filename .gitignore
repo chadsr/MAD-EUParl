@@ -1,5 +1,6 @@
 catalog-v001.xml
 
+*.lprof
 logs/runtime.json
 
 !data/linked_data/.gitkeep
