@@ -26,12 +26,15 @@ class SparqlServer(object):
             self.sparql.query()
             return True
         except urllib.error.URLError as e:
-            if e.code == 404:
-                print('404 Error: Endpoint not found')
-            elif e.code == 401:
-                print('401 Error: Unauthorized access to endpoint')
-            elif e.code == 400:
-                print('400 Error: ')
+            if hasattr(e, 'code'):
+                if e.code == 404:
+                    print('404 Error: Endpoint not found')
+                elif e.code == 401:
+                    print('401 Error: Unauthorized access to endpoint')
+                elif e.code == 400:
+                    print('400 Error: ')
+                else:
+                    print('HTTP Error:', e)
             else:
                 print('Error:', e)
 

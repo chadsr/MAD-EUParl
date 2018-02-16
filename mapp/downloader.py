@@ -46,9 +46,12 @@ def __prepare_dataset__(info):
             return True
 
         except (error.URLError) as e:
-            if e.code == 404:
-                print(fmt.ERROR_SYMBOL, "Resource", url,
-                      "could not be found")
+            if hasattr(e, 'code'):
+                if e.code == 404:
+                    print(fmt.ERROR_SYMBOL, "Resource", url,
+                          "could not be found")
+                else:
+                    print("HTTP Error:", e)
             else:
                 print("%s" % e)
 
