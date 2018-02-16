@@ -101,6 +101,7 @@ BUREAU_VICE_CHAIR = ONT['ViceChairOfTheBureau']
 CO_TREASURER = ONT['CoTreasurer']
 DEPUTY_CHAIR = ONT['DeputyChair']
 OBSERVER = ONT['Observer']
+SUBSTITUTE_OBSERVER = ONT['SubstituteObserver']
 BUREAU_CHAIR = ONT['ChairOfTheBureau']
 CHAIR = ONT['Chair']
 PRESIDENT = ONT['President']
@@ -109,7 +110,7 @@ BUREAU_MEMBER = ONT['MemberOfTheBureau']
 
 GENDER = FOAF['gender']
 MALE = Literal('male', datatype=XSD.string)
-FEMALE = DBR['Female']
+FEMALE = Literal('female', datatype=XSD.string)
 EUROPEAN_PARLIAMENT = DBR['European_Parliament']
 EUROPEAN_COUNCIL = DBR['European_Council']
 EUROPEAN_PARLIAMENT_GROUP = DBO['europeanParliamentGroup']
@@ -148,7 +149,8 @@ MEMBERSHIPS = {
     'Deputy Chair': DEPUTY_CHAIR,
     'Vice-Chair/Member of the Bureau': BUREAU_VICE_CHAIR,
     'Deputy Treasurer': DEPUTY_TREASURER,
-    'Substitute': SUBSTITUTE
+    'Substitute': SUBSTITUTE,
+    'Substitute observer': SUBSTITUTE_OBSERVER
 }
 
 VOTES = {'Abstain': ABSTAINS, 'For': VOTES_FOR, 'Against': VOTES_AGAINST}
