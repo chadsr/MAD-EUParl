@@ -1,6 +1,5 @@
 import lzma
 from urllib import error, request, parse
-from os.path import basename
 import os
 import datetime
 import time
@@ -13,6 +12,9 @@ import io_handler as io
 
 
 def prepare_datasets():
+    if not os.path.exists(c.JSON_DIR):
+        os.makedirs(c.JSON_DIR)
+
     for folder, url in c.DATA_URLS.items():
         uo = request.urlopen(url, timeout=c.DOWNLOAD_TIMEOUT)
         modified_date = uo.headers['last-modified']
@@ -20,7 +22,7 @@ def prepare_datasets():
             modified_date, '%a, %d %b %Y %X GMT').timetuple())
 
         disassembled = parse.urlparse(url)
-        file_name = basename(disassembled.path)
+        file_name = os.path.basename(disassembled.path)
         path = c.JSON_DIR + file_name
 
         if os.path.isfile(path):
@@ -56,5 +58,5 @@ def extract_dataset(path):
     name = os.path.splitext(filename)[0]
 
     with lzma.open(path) as f, open(os.path.join(c.JSON_DIR, name), 'wb') as fout:
-        file_content = f.read()
+        file_content = f.read().encode('utf-8')
         fout.write(file_content)
