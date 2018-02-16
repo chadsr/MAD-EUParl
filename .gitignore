@@ -12,6 +12,10 @@ data/json/*.xz
 !data/json/dict_parties.json
 !data/json/dict_committees.json
 !data/json/.gitkeep
+data/json/mep_chunks
+data/json/dossier_chunks
+data/json/vote_chunks
+
 __pycache__
 
 # Byte-compiled / optimized / DLL files
