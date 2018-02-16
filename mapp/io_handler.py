@@ -5,7 +5,6 @@ from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 import formatting as fmt
 import random
-import glob
 from itertools import islice
 import os
 
@@ -55,7 +54,7 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
 def split_dataset(path, output_dir):
     print("Splitting '%s' to '%s'" % (path, output_dir))
 
-    f = open(path, 'rb')
+    f = open(path, 'r')
 
     objects = ijson.items(f, 'item')
 
