@@ -36,12 +36,12 @@ def prepare_datasets():
                 request.urlretrieve(url, path)
                 print(fmt.WAIT_SYMBOL, "Extracting ", path)
                 start = timer()
-                extract_dataset(path)
+                output_path = extract_dataset(path)
                 end = timer()
                 print(fmt.OK_SYMBOL, "Extracted. Took",
                       get_elapsed_seconds(start, end), 'seconds')
 
-                io.split_dataset(path, folder)
+                io.split_dataset(output_path, folder)
 
             except (error.URLError) as e:
                 if e.code == 404:
@@ -56,7 +56,12 @@ def prepare_datasets():
 def extract_dataset(path):
     dir_path, filename = os.path.split(path)
     name = os.path.splitext(filename)[0]
+    output_path = os.path.join(c.JSON_DIR, name)
 
-    with lzma.open(path) as f, open(os.path.join(c.JSON_DIR, name), 'wb') as fout:
-        file_content = f.read().encode('utf-8')
+    with lzma.open(path) as f, open(output_path, 'wb') as fout:
+        file_content = f.read()
         fout.write(file_content)
+    f.close()
+    fout.close()
+
+    return output_path
