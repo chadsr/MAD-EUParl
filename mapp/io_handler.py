@@ -7,8 +7,24 @@ import formatting as fmt
 import random
 from itertools import islice
 import os
+import requests
 
 import profiler
+
+
+def get_request(url, return_type='json', timeout=10):
+    headers = {}
+    if return_type:
+        headers['Accept'] = 'application/' + return_type.lower()
+
+    try:
+        resp = requests.get(url, timeout=timeout, headers=headers)
+        if resp.status_code == requests.codes.ok:
+            return json.loads(resp.text)
+        else:
+            return None
+    except Exception as ex:
+        return None
 
 
 def save_dataset(filename, dataset, format_type='turtle'):
@@ -38,9 +54,11 @@ def get_key(key):
         return key
 
 
-def save_dict_to_json(filename, data, ordered=True, indent_num=2):
+def save_dict_to_json(filename, data, ordered=False, indent_num=2):
+    data = data.copy()
+
     if ordered:
-        data = OrderedDict(sorted(data.items(), key=lambda d: get_key(d[0])))
+        data = OrderedDict(sorted(data.items(), key=lambda d: int(get_key(d[0]))))
 
     with open(filename, 'w') as f:
         print(fmt.WAIT_SYMBOL, 'Saving:', filename)

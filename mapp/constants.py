@@ -1,4 +1,6 @@
-from rdflib import Namespace, XSD, Literal
+# https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#module-rdflib.namespace
+from rdflib import Namespace, Literal
+from rdflib.namespace import XSD, RDF, OWL, FOAF
 import os
 
 DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -21,8 +23,11 @@ DIR_VOTES = os.path.join(JSON_DIR, 'vote_chunks')
 DATA_MEP = JSON_DIR + 'ep_meps_current.json'
 DATA_VOTES = JSON_DIR + 'ep_votes.json'
 DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
-DICT_MEPS = JSON_DIR + 'dict_meps.json'
-DICT_PARTIES = JSON_DIR + 'dict_parties.json'
+
+EXTERNAL_MEP_URIS = JSON_DIR + 'mep_uris.json'
+EXTERNAL_PARTY_URIS = JSON_DIR + 'party_uris.json'
+EXTERNAL_PLACES_URIS = JSON_DIR + 'places_uris.json'
+
 DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
 DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
 
@@ -35,6 +40,32 @@ DATA_URLS = {DIR_VOTES: 'http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
 
 DATABASE = 'http://localhost:7200/parlialytics#'  # Database endpoint
 NAMESPACE = DATABASE
+
+URL_DBPEDIA_LOOKUP = 'http://lookup.dbpedia.org/api/search/KeywordSearch?'
+URL_DBPEDIA_SPOTLIGHT = 'http://localhost:2222/rest/annotate'
+
+
+FILTER_PERSON = {
+    'policy': "whitelist",
+    'types': "DBpedia:Person",
+    'coreferenceResolution': False
+}
+FILTER_PLACE = {
+    'policy': "whitelist",
+    'types': "DBpedia:Place",
+    'coreferenceResolution': False
+}
+FILTER_COUNTRY = {
+    'policy': "whitelist",
+    'types': "DBpedia:Country",
+    'coreferenceResolution': False
+}
+FILTER_POLITICAL_PARTY = {
+    'policy': "whitelist",
+    'types': "DBpedia:PoliticalParty,DBpedia:Organisation",
+    'coreferenceResolution': False
+}
+
 
 ont = NAMESPACE
 ONT = Namespace(ont)
@@ -51,12 +82,6 @@ dbr = 'http://dbpedia.org/resource/'
 DBR = Namespace(dbr)
 dbp = 'http://dbpedia.org/property/'
 DBP = Namespace(dbp)
-
-rdf = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
-RDF = Namespace(rdf)
-
-foaf = 'http://xmlns.com/foaf/0.1/'
-FOAF = Namespace(foaf)
 
 DOSSIER = ONT['Dossier']
 ACTIVITY = ONT['Activity']
@@ -108,7 +133,7 @@ PRESIDENT = ONT['President']
 TREASURER = ONT['Treasurer']
 BUREAU_MEMBER = ONT['MemberOfTheBureau']
 
-GENDER = FOAF['gender']
+GENDER = FOAF.gender
 MALE = Literal('male', datatype=XSD.string)
 FEMALE = Literal('female', datatype=XSD.string)
 EUROPEAN_PARLIAMENT = DBR['European_Parliament']
@@ -123,7 +148,7 @@ MEMBER_OF_EU = DBR['Member_of_the_European_Parliament']
 THUMBNAIL = DBO['thumbnail']
 IMAGE = DBO['Image']
 
-FULL_NAME = FOAF['name']
+FULL_NAME = FOAF.name
 BIRTH_DATE = DBO['birthDate']
 BIRTH_PLACE = DBO['birthPlace']
 DEATH_DATE = DBO['deathDate']
@@ -134,6 +159,7 @@ DATE = XSD.date
 BOOLEAN = XSD.boolean
 
 TYPE = RDF.type
+SAME_AS = OWL.sameAs
 
 MEMBERSHIPS = {
     'Member': MEMBER,
