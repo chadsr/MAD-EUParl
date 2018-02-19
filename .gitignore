@@ -9,9 +9,9 @@ data/linked_data/*.ttl
 
 data/json/*.json
 data/json/*.xz
-!data/json/dict_meps.json
-!data/json/dict_parties.json
-!data/json/dict_committees.json
+!data/json/mep_uris.json
+!data/json/party_uris.json
+!data/json/places_uris.json
 !data/json/.gitkeep
 data/json/mep_chunks
 data/json/dossier_chunks
