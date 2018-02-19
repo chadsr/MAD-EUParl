@@ -1,6 +1,6 @@
 import json as json
 import ijson.backends.yajl2 as ijson
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
 import formatting as fmt
@@ -24,6 +24,7 @@ def get_request(url, return_type='json', timeout=10):
         else:
             return None
     except Exception as ex:
+        print(ex)
         return None
 
 
@@ -54,7 +55,7 @@ def get_key(key):
         return key
 
 
-def save_dict_to_json(filename, data, ordered=False, indent_num=2):
+def save_dict_to_json(filename, data, ordered=True, indent_num=2):
     data = data.copy()
 
     if ordered:
@@ -105,21 +106,6 @@ def get_dataset_indexes(path, count=None):
     else:
         return datasets
 
-    """
-    with open(path, 'rb') as f:
-        objects = ijson.items(f, 'item')
-        num_objects = sum(1 for _ in objects)
-
-        if count:
-            print(fmt.WAIT_SYMBOL, "Indexing", count, "random data objects...")
-            for i in range(0, count):
-                choice = random.randint(0, num_objects)
-                selected_objects.append(choice)
-        else:
-            print(fmt.WAIT_SYMBOL, "Indexing dataset...")
-            selected_objects.extend(range(0, num_objects))
-    """
-
 
 @profiler.do_profile()
 def load_json(path, index=None, verbose=True):
@@ -152,22 +138,3 @@ def load_json(path, index=None, verbose=True):
     except (IOError) as error:
         print(error)
         return None
-
-# TODO: There is probably a better way to get from json to a defaultdict,
-# but this works..
-
-
-def json_to_defaultdict(json_str):
-    def_dict = defaultdict(list)
-
-    print(fmt.WAIT_SYMBOL, 'Converting JSON to Dict...')
-    start = timer()
-    for key in json_str:
-        dict_key = get_key(key)
-
-        for element in json_str[key]:
-            def_dict[dict_key].append(element)
-    end = timer()
-    print(fmt.OK_SYMBOL, "Done. Took: ",
-          get_elapsed_seconds(start, end), "seconds\n")
-    return def_dict
