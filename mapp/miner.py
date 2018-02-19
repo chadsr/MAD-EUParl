@@ -40,15 +40,15 @@ class Miner(object):
 
         json_str = io.load_json(c.EXTERNAL_MEP_URIS)
         if json_str is not None:
-            self.mep_ext_uris = io.json_to_defaultdict(json_str)
+            self.mep_ext_uris.update(json_str)
 
         json_str = io.load_json(c.EXTERNAL_PARTY_URIS)
         if json_str is not None:
-            self.party_ext_uris = io.json_to_defaultdict(json_str)
+            self.party_ext_uris.update(json_str)
 
         json_str = io.load_json(c.EXTERNAL_PLACES_URIS)
         if json_str is not None:
-            self.places_ext_uris = io.json_to_defaultdict(json_str)
+            self.places_ext_uris.update(json_str)
 
         self.total_triples = 0
 
@@ -120,7 +120,7 @@ class Miner(object):
         resp = io.get_request(c.URL_DBPEDIA_LOOKUP + query)
 
         uris = set()
-        if 'results' in resp:
+        if resp:
             for result in resp['results']:
                 uris.add(result['uri'])
 
