@@ -7,7 +7,7 @@ from rdflib import URIRef, Literal
 import logging
 from timeit import default_timer as timer
 from timing_handler import get_elapsed_seconds
-from multiprocessing import Pool
+import multiprocessing
 from dataset_generator import DatasetGenerator
 import json
 import os
@@ -36,19 +36,9 @@ class Miner(object):
         self.dict_dossier = manager.dict()
         self.dict_committees = manager.dict()
 
+        self.manager = manager
+
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
-
-        json_str = io.load_json(c.EXTERNAL_MEP_URIS)
-        if json_str is not None:
-            self.mep_ext_uris.update(json_str)
-
-        json_str = io.load_json(c.EXTERNAL_PARTY_URIS)
-        if json_str is not None:
-            self.party_ext_uris.update(json_str)
-
-        json_str = io.load_json(c.EXTERNAL_PLACES_URIS)
-        if json_str is not None:
-            self.places_ext_uris.update(json_str)
 
         self.total_triples = 0
 
@@ -58,8 +48,42 @@ class Miner(object):
                             datefmt='%d/%m/%Y %I:%M:%S %p'
                             )
 
+    def convert_to_managed_dict(self, input_dict):
+        managed_dict = self.manager.dict()
+        for key, obj in input_dict.items():
+            if isinstance(obj, list):
+                temp = obj
+                obj = self.manager.list()
+                obj.extend(temp)
+            elif isinstance(obj, dict):
+                managed_children = self.convert_to_managed_dict(obj)
+                obj = {}
+                obj.update(managed_children)
+
+            managed_dict[key] = obj
+
+        return managed_dict
+
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
         """Starts the miner class with the given configuration."""
+
+        loaded_dict = io.load_json(c.EXTERNAL_MEP_URIS)
+        if loaded_dict is not None:
+            self.mep_ext_uris = self.convert_to_managed_dict(loaded_dict)
+
+        for _, obj in self.mep_ext_uris.items():
+            print(type(obj))
+            if isinstance(obj, multiprocessing.managers.DictProxy):
+                for _, child in obj.items():
+                    print('\t', type(child))
+
+        loaded_dict = io.load_json(c.EXTERNAL_PARTY_URIS)
+        if loaded_dict is not None:
+            self.party_ext_uris = self.convert_to_managed_dict(loaded_dict)
+
+        loaded_dict = io.load_json(c.EXTERNAL_PLACES_URIS)
+        if loaded_dict is not None:
+            self.places_ext_uris = self.convert_to_managed_dict(loaded_dict)
 
         results = self.convert_meps(c.DIR_MEPS, num_threads, mep_limit)
         if results:
@@ -158,22 +182,20 @@ class Miner(object):
 
         return uris
 
-    @staticmethod
-    def key_exists(key, uri_dict):
+    def key_exists(self, key, uri_dict):
         if key in uri_dict:
             return True
         else:
             return False
 
-    @staticmethod
-    def uris_exist(key, uri_dict, confirmed=False):
+    def uris_exist(self, key, uri_dict, confirmed=False):
         if confirmed:
             selected_list = 'confirmed'
         else:
             selected_list = 'unconfirmed'
 
-        if Miner.key_exists(key, uri_dict):  # Check if the key exists in the dictionary
-            if Miner.key_exists(selected_list, uri_dict[key]):  # Check if the key has confirmed/unconfirmed objects
+        if self.key_exists(key, uri_dict):  # Check if the key exists in the dictionary
+            if self.key_exists(selected_list, uri_dict[key]):  # Check if the key has confirmed/unconfirmed objects
                 if uri_dict[key][selected_list]:  # Check if the list is empty
                     return True
                 else:
@@ -183,12 +205,11 @@ class Miner(object):
         else:
             return False
 
-    @staticmethod
-    def add_uris(uris, key, uri_dict, confirmed=False):
-        if not Miner.key_exists(key, uri_dict):
+    def add_uris(self, uris, key, uri_dict, confirmed=False):
+        if not self.key_exists(key, uri_dict):
             uri_dict[key] = {
-                'confirmed': [],
-                'unconfirmed': []
+                'confirmed': self.manager.list(),
+                'unconfirmed': self.manager.list()
             }
 
         if confirmed:
@@ -203,17 +224,18 @@ class Miner(object):
             if uri not in uri_dict[key][selected_list]:
                 uri_dict[key][selected_list].append(uri)
 
+        print(uris, json.dumps(uri_dict[key][selected_list], indent=2))
+
         return uri_dict
 
-    @staticmethod
-    def get_uris(key, uri_dict, consider_unconfirmed=True):
+    def get_uris(self, key, uri_dict, consider_unconfirmed=True):
         """
         Attempts to return confirmed URIs, if they do not exist, attempt to return unconfirmed URIs (if consifer_unconfirmed). Otherwise return empty list
         """
 
-        if Miner.uris_exist(key, uri_dict, confirmed=True):
+        if self.uris_exist(key, uri_dict, confirmed=True):
             return uri_dict[key]['confirmed']
-        elif consider_unconfirmed and Miner.uris_exist(key, uri_dict, confirmed=False):
+        elif consider_unconfirmed and self.uris_exist(key, uri_dict, confirmed=False):
             return uri_dict[key]['unconfirmed']
         else:
             return []
@@ -234,12 +256,12 @@ class Miner(object):
         mep_uri = Miner.id_to_iri(mep_id, prefix='mep')
 
         # If no unconfirmed URIs exists, fetch any existing ones and add them to our dictionary
-        if not Miner.uris_exist(mep_id, self.mep_ext_uris, confirmed=False):
+        if not self.uris_exist(mep_id, self.mep_ext_uris, confirmed=False):
             mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', search_class='person')
-            Miner.add_uris(mep_ext_uris, mep_id, self.mep_ext_uris, confirmed=False)
+            self.add_uris(mep_ext_uris, mep_id, self.mep_ext_uris, confirmed=False)
 
         # Add all confirmed external URIs as the same induvidual
-        for ext_uri in Miner.get_uris(mep_id, self.mep_ext_uris, consider_unconfirmed=False):
+        for ext_uri in self.get_uris(mep_id, self.mep_ext_uris, consider_unconfirmed=False):
             triples.add((mep_uri, c.SAME_AS, URIRef(ext_uri)))
 
         # append to temp dictionary of processed MEPs
@@ -260,11 +282,11 @@ class Miner(object):
                 birth_place = mep['Birth']['place'].strip().lower()
 
                 # If no unconfirmed URIs exists, fetch any existing ones and add them to our dictionary
-                if not Miner.uris_exist(birth_place, self.places_ext_uris, confirmed=False):
+                if not self.uris_exist(birth_place, self.places_ext_uris, confirmed=False):
                     birth_place_uris = Miner.fetch_uris_from_name(birth_place, search_class='place')
-                    Miner.add_uris(birth_place_uris, birth_place, self.places_ext_uris, confirmed=False)
+                    self.add_uris(birth_place_uris, birth_place, self.places_ext_uris, confirmed=False)
 
-                confirmed_uris = Miner.get_uris(birth_place, self.places_ext_uris, consider_unconfirmed=False)
+                confirmed_uris = self.get_uris(birth_place, self.places_ext_uris, consider_unconfirmed=False)
                 if confirmed_uris:
                     triples.add((mep_uri, c.BIRTH_PLACE, URIRef(confirmed_uris[0])))
 
@@ -293,17 +315,17 @@ class Miner(object):
                     party_ids.add(party_id)
 
                 # Map the ID to the internal URI
-                if not Miner.key_exists(party_id, self.dict_parties):
+                if not self.key_exists(party_id, self.dict_parties):
                     self.dict_parties[party_id] = party_uri
 
                 # Link external URIs to each party id that does not yet have some
                 for id_ in party_ids:
-                    if not Miner.uris_exist(id_, self.party_ext_uris, confirmed=False):
+                    if not self.uris_exist(id_, self.party_ext_uris, confirmed=False):
                         party_ext_uris = Miner.fetch_uris_from_name(party_title, keywords='european union parliament')
-                        Miner.add_uris(party_ext_uris, id_, self.party_ext_uris, confirmed=False)
+                        self.add_uris(party_ext_uris, id_, self.party_ext_uris, confirmed=False)
 
                 # Link the internal party URI to all confirmed external counterparts
-                for ext_uri in Miner.get_uris(party_id, self.party_ext_uris, consider_unconfirmed=False):
+                for ext_uri in self.get_uris(party_id, self.party_ext_uris, consider_unconfirmed=False):
                     triples.add((party_uri, c.SAME_AS, URIRef(ext_uri)))
 
                 start_date = datetime.strptime(group['start'].split('T')[0], '%Y-%m-%d').date()
@@ -322,11 +344,11 @@ class Miner(object):
                 if 'country' in group:
                     country = group['country'].lower()
 
-                    if not Miner.uris_exist(country, self.places_ext_uris, confirmed=False):
+                    if not self.uris_exist(country, self.places_ext_uris, confirmed=False):
                         country_ext_uris = Miner.fetch_uris_from_name(country, search_class='place')
-                        Miner.add_uris(country_ext_uris, country, self.places_ext_uris, confirmed=False)
+                        self.add_uris(country_ext_uris, country, self.places_ext_uris, confirmed=False)
 
-                    ext_uris = Miner.get_uris(country, self.places_ext_uris, consider_unconfirmed=False)
+                    ext_uris = self.get_uris(country, self.places_ext_uris, consider_unconfirmed=False)
                     if ext_uris:
                         triples.add((membership_uri, c.REPRESENTS_COUNTRY, URIRef(ext_uris[0])))
 
@@ -349,7 +371,7 @@ class Miner(object):
                 committee_id = self.format_name_string(committee_title)
                 committee_uri = self.id_to_iri(committee_id)
 
-                if not Miner.key_exists(committee_id, self.dict_committees):
+                if not self.key_exists(committee_id, self.dict_committees):
                     self.dict_committees[committee_id] = committee_uri
 
                 if 'role' in committee:
@@ -400,7 +422,7 @@ class Miner(object):
         print(fmt.WAIT_SYMBOL, "Mining MEPs...")
 
         try:
-            pool = Pool(num_threads)
+            pool = multiprocessing.Pool(num_threads)
             results = pool.map(self.process_mep, selected_meps)
 
             dataset = DatasetGenerator.get_dataset()
@@ -462,11 +484,11 @@ class Miner(object):
             if procedure['geographical_area']:
                 geo_areas = [geo_area.lower() for geo_area in procedure['geographical_area']]
                 for geo_area in geo_areas:
-                    if not Miner.uris_exist(geo_area, self.places_ext_uris, confirmed=False):
+                    if not self.uris_exist(geo_area, self.places_ext_uris, confirmed=False):
                         geo_ext_uris = Miner.fetch_uris_from_name(geo_area, search_class='place')
-                        Miner.add_uris(geo_ext_uris, geo_area, self.places_ext_uris, confirmed=False)
+                        self.add_uris(geo_ext_uris, geo_area, self.places_ext_uris, confirmed=False)
 
-                    ext_uris = Miner.get_uris(geo_area, self.places_ext_uris, consider_unconfirmed=False)
+                    ext_uris = self.get_uris(geo_area, self.places_ext_uris, consider_unconfirmed=False)
                     if ext_uris:
                         triples.add((dossier_uri, c.GEO_AREA, URIRef(ext_uris[0])))
 
@@ -565,7 +587,7 @@ class Miner(object):
         print(fmt.WAIT_SYMBOL, "Mining Dossiers...")
 
         try:
-            pool = Pool(num_threads)
+            pool = multiprocessing.Pool(num_threads)
             results = pool.map(self.process_dossier, selected_dossiers)
 
             dataset = DatasetGenerator.get_dataset()
@@ -609,7 +631,7 @@ class Miner(object):
             dossier_id = votes['dossierid']
 
             # If this dossier is in our dictionary of useful dossiers, continue
-            if Miner.key_exists(dossier_id, self.dict_dossier):
+            if self.key_exists(dossier_id, self.dict_dossier):
                 dossier_uri = URIRef(self.dict_dossier[dossier_id])
                 # title = votes['title']
                 # url = dossier['url']
@@ -628,7 +650,7 @@ class Miner(object):
                                     failed += 1
                                     continue
 
-                                if Miner.key_exists(voter_id, self.dict_mep):
+                                if self.key_exists(voter_id, self.dict_mep):
                                     voter_uri = URIRef(self.dict_mep[voter_id])
                                     success += 1
                                 else:
@@ -653,7 +675,7 @@ class Miner(object):
         print(fmt.WAIT_SYMBOL, 'Mining votes...')
 
         try:
-            pool = Pool(num_threads)
+            pool = multiprocessing.Pool(num_threads)
 
             results = pool.map(self.process_votes, selected_votes)
 
