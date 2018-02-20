@@ -95,6 +95,12 @@ class Miner(object):
     # return URIRef(to_iri('http://www.europarl.europa.eu/meps/en/' + str(id)
     # + '/_history.html'))
 
+    @staticmethod
+    def mep_to_lpv(id_):
+        id_string = str(id_)
+
+        return URIRef(to_iri(c.lp + 'EUmember_' + id_string))
+
     # Needs changing?
     @staticmethod
     def id_to_iri(id_, prefix=None):
@@ -163,19 +169,22 @@ class Miner(object):
         return uris
 
     def key_exists(self, key, uri_dict):
+        key = str(key)
         if key in uri_dict:
             return True
         else:
             return False
 
     def uris_exist(self, key, uri_dict):
-        if self.key_exists(key, uri_dict):  # Check if the key exists in the dictionary
-                if uri_dict[key]:  # Check if the list is empty
-                    return True
+        key = str(key)
+        if self.key_exists(key, uri_dict):  # Check if the key exists in the dictionary and has a list
+            if uri_dict[key]:  # Check if the list is empty
+                return True
 
         return False
 
     def add_uris(self, uris, key, uri_dict):
+        key = str(key)
         if not self.key_exists(key, uri_dict):
             uri_dict[key] = []
 
@@ -191,6 +200,7 @@ class Miner(object):
         uri_dict[key] = uris
 
     def get_uris(self, key, uri_dict):
+        key = str(key)
         if self.uris_exist(key, uri_dict):
             return uri_dict[key]
         else:
@@ -219,6 +229,9 @@ class Miner(object):
         # Add all external URIs as the same induvidual
         for ext_uri in self.get_uris(mep_id, self.mep_ext_uris):
             triples.add((mep_uri, c.SAME_AS, URIRef(ext_uri)))
+
+        # TODO: Make this more integrated
+        triples.add((mep_uri, c.SAME_AS, Miner.mep_to_lpv(mep_id)))
 
         # append to temp dictionary of processed MEPs
         self.dict_mep[mep_id] = mep_uri
@@ -645,7 +658,7 @@ class Miner(object):
                 for triple in triples:
                     dataset.add((triple[0], triple[1], triple[2]))
 
-                if (success % 1000) == 0 and success != 0:
+                if (total_success % 1000) == 0 and total_success != 0:
                     # reset dataset
                     if not self.sparql_endpoint.import_dataset(dataset):
                         return False
