@@ -71,10 +71,10 @@ ont = NAMESPACE
 ONT = Namespace(ont)
 PREFIX = 'epv'
 
-# DOSSIER_TYPE = 'Legislative proposal published'
-
-# eo = 'http://www.w3.org/2003/01/geo/wgs84_pos#'
-# GEO = Namespace(geo)
+lp = 'http://purl.org/linkedpolitics/'
+LP = Namespace(lp)
+lpv = 'http://purl.org/linkedpolitics/vocabulary/'
+LPV = Namespace(lpv)
 
 dbo = 'http://dbpedia.org/ontology/'
 DBO = Namespace(dbo)
