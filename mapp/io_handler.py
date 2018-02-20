@@ -8,6 +8,7 @@ import random
 from itertools import islice
 import os
 import requests
+import urllib3
 
 import profiler
 
@@ -23,8 +24,10 @@ def get_request(url, return_type='json', timeout=10):
             return json.loads(resp.text)
         else:
             return None
-    except Exception as ex:
-        print(ex)
+    except urllib3.exceptions.ConnectTimeoutError as e:
+        return False
+    except Exception as e:
+        print(e)
         return None
 
 
@@ -59,7 +62,7 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
     data = data.copy()
 
     if ordered:
-        data = OrderedDict(sorted(data.items(), key=lambda d: int(get_key(d[0]))))
+        data = OrderedDict(sorted(data.items(), key=lambda d: get_key(d[0])))
 
     with open(filename, 'w') as f:
         print(fmt.WAIT_SYMBOL, 'Saving:', filename)
