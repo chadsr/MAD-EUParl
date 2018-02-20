@@ -213,7 +213,7 @@ class Miner(object):
 
         # If no URIs exists, fetch any existing ones and add them to our dictionary
         if not self.uris_exist(mep_id, self.mep_ext_uris):
-            mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', search_class='person', max_results=1)
+            mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', max_results=1)  # For some reason results are best without search_class='person'
             self.add_uris(mep_ext_uris, mep_id, self.mep_ext_uris)
 
         # Add all external URIs as the same induvidual
