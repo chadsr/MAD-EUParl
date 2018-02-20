@@ -1,0 +1,122 @@
+{
+  "ALDE": [
+    "http://dbpedia.org/resource/Group_Of_The_Alliance_Of_Liberals_And_Democrats_For_Europe"
+  ],
+  "C": [
+    "http://dbpedia.org/resource/European_Conservative_Group"
+  ],
+  "CD": [
+    "http://dbpedia.org/resource/Christian-Democratic_Group"
+  ],
+  "CDI": [
+    "http://dbpedia.org/resource/Group_For_The_Technical_Coordination_And_Defence_Of_Indipendent_Groups_And_Members"
+  ],
+  "COM": [
+    "http://dbpedia.org/resource/Communist_And_Allies_Group"
+  ],
+  "DEP": [
+    "http://dbpedia.org/resource/Group_Of_European_Progressive_Democrats"
+  ],
+  "DR": [
+    "http://dbpedia.org/resource/Technical_Group_Of_The_European_Right"
+  ],
+  "ECR": [
+    "http://dbpedia.org/resource/European_Conservatives_And_Reformists_Group"
+  ],
+  "EDA": [
+    "http://dbpedia.org/resource/Group_Of_The_European_Democratic_Alliance"
+  ],
+  "EDD": [
+    "http://dbpedia.org/resource/Group_For_A_Europe_Of_Democracies_And_Diversities"
+  ],
+  "EDG": [
+    "http://dbpedia.org/resource/European_Democratic_Group"
+  ],
+  "EFD": [
+    "http://dbpedia.org/resource/Europe_Of_Freedom_And_Democracy_Group"
+  ],
+  "EFDD": [
+    "http://dbpedia.org/resource/Europe_Of_Freedom_And_Direct_Democracy_Group"
+  ],
+  "ELDR": [
+    "http://dbpedia.org/resource/Group_Of_The_European_Liberal%2C_Democrat_And_Reform_Party"
+  ],
+  "ENF": [
+    "http://dbpedia.org/resource/Europe_Of_Nations_And_Freedom_Group"
+  ],
+  "ER": [
+    "http://dbpedia.org/resource/Group_Of_The_European_Right"
+  ],
+  "ERA": [
+    "http://dbpedia.org/resource/Group_Of_The_European_Radical_Alliance"
+  ],
+  "FE": [
+    "http://dbpedia.org/resource/Forza_Europa_Group"
+  ],
+  "GUE": [
+    "http://dbpedia.org/resource/Group_For_The_European_United_Left"
+  ],
+  "GUE/NGL": [
+    "http://dbpedia.org/resource/Confederal_Group_Of_The_European_United_Left%2FNordic_Green_Left"
+  ],
+  "ID": [
+    "http://dbpedia.org/resource/Independence%2FDemocracy_Group"
+  ],
+  "IND/DEM": [
+    "http://dbpedia.org/resource/Independence%2FDemocracy_Group"
+  ],
+  "INDDEM": [
+    "http://dbpedia.org/resource/Independence%2FDemocracy_Group"
+  ],
+  "ITS": [
+    "http://dbpedia.org/resource/Identity%2C_Tradition_And_Sovereignty_Group"
+  ],
+  "LD": [
+    "http://dbpedia.org/resource/Liberal_And_Democratic_Group"
+  ],
+  "LDR": [
+    "http://dbpedia.org/resource/Liberal_And_Democratic_Reformist_Group"
+  ],
+  "LU": [
+    "http://dbpedia.org/resource/Left_Unity"
+  ],
+  "NA": [
+    "http://dbpedia.org/resource/Non-Attached_Members"
+  ],
+  "NI": [
+    "http://dbpedia.org/resource/Non-Attached_Members"
+  ],
+  "PPE": [
+    "http://dbpedia.org/resource/Group_Of_The_European_People%27S_Party"
+  ],
+  "PPE-DE": [
+    "http://dbpedia.org/resource/Group_Of_The_European_People%27S_Party_And_European_Democrats"
+  ],
+  "PSE": [
+    "http://dbpedia.org/resource/Group_Of_The_Party_Of_European_Socialists"
+  ],
+  "RBW": [
+    "http://dbpedia.org/resource/Rainbow_Group%3A_Federation_Of_The_Green-Alternative_European_Links%2C_Agelev-Ecolo%2C_The_Danish_People%27S_Movement_Against_Membership_Of_The_European_Community_And_The_European_Free_Alliance_In_The_European_Parliament"
+  ],
+  "S&D": [
+    "http://dbpedia.org/resource/Group_Of_The_Progressive_Alliance_Of_Socialists_And_Democrats_In_The_European_Parliament"
+  ],
+  "SOC": [
+    "http://dbpedia.org/resource/Socialist_Group"
+  ],
+  "TGI": [
+    "http://dbpedia.org/resource/Technical_Group_Of_Independent_Members_-_Mixed_Group"
+  ],
+  "UDE": [
+    "http://dbpedia.org/resource/European_Democratic_Union_Group"
+  ],
+  "UEN": [
+    "http://dbpedia.org/resource/Union_For_Europe_Of_The_Nations_Group"
+  ],
+  "UFE": [
+    "http://dbpedia.org/resource/Group_Union_For_Europe"
+  ],
+  "Verts/ALE": [
+    "http://dbpedia.org/resource/Group_Of_The_Greens%2FEuropean_Free_Alliance"
+  ]
+}
