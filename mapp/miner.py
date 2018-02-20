@@ -36,8 +36,6 @@ class Miner(object):
         self.dict_dossier = manager.dict()
         self.dict_committees = manager.dict()
 
-        self.manager = manager
-
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
 
         self.total_triples = 0
@@ -48,42 +46,20 @@ class Miner(object):
                             datefmt='%d/%m/%Y %I:%M:%S %p'
                             )
 
-    def convert_to_managed_dict(self, input_dict):
-        managed_dict = self.manager.dict()
-        for key, obj in input_dict.items():
-            if isinstance(obj, list):
-                temp = obj
-                obj = self.manager.list()
-                obj.extend(temp)
-            elif isinstance(obj, dict):
-                managed_children = self.convert_to_managed_dict(obj)
-                obj = {}
-                obj.update(managed_children)
-
-            managed_dict[key] = obj
-
-        return managed_dict
-
     def start(self, num_threads, mep_limit, dossier_limit, vote_limit):
         """Starts the miner class with the given configuration."""
 
         loaded_dict = io.load_json(c.EXTERNAL_MEP_URIS)
         if loaded_dict is not None:
-            self.mep_ext_uris = self.convert_to_managed_dict(loaded_dict)
-
-        for _, obj in self.mep_ext_uris.items():
-            print(type(obj))
-            if isinstance(obj, multiprocessing.managers.DictProxy):
-                for _, child in obj.items():
-                    print('\t', type(child))
+            self.mep_ext_uris.update(loaded_dict)
 
         loaded_dict = io.load_json(c.EXTERNAL_PARTY_URIS)
         if loaded_dict is not None:
-            self.party_ext_uris = self.convert_to_managed_dict(loaded_dict)
+            self.party_ext_uris.update(loaded_dict)
 
         loaded_dict = io.load_json(c.EXTERNAL_PLACES_URIS)
         if loaded_dict is not None:
-            self.places_ext_uris = self.convert_to_managed_dict(loaded_dict)
+            self.places_ext_uris.update(loaded_dict)
 
         results = self.convert_meps(c.DIR_MEPS, num_threads, mep_limit)
         if results:
@@ -136,40 +112,44 @@ class Miner(object):
         return str(urlparse.quote_plus(input_string.replace('.', '_')))
 
     @staticmethod
-    def get_dbpedia_lookup_uris(search_string, search_class=None, max_results=1):
+    def get_dbpedia_lookup_uris(search_string, search_class=None, max_results=5):
         query = 'MaxHits=' + str(max_results) + '&QueryString=' + urlparse.quote_plus(search_string)
         if search_class:
             query += '&QueryClass=' + urlparse.quote_plus(search_class)
 
         resp = io.get_request(c.URL_DBPEDIA_LOOKUP + query)
 
-        uris = set()
+        uris = []
         if resp:
             for result in resp['results']:
-                uris.add(result['uri'])
+                uri = result['uri']
+                if uri not in uris:
+                    uris.append(uri)
         elif resp is False:
             return False
 
-        return list(uris)
+        return uris
 
     @staticmethod
     def get_dbpedia_spotlight_uris(search_string, filters):
-        uris = set()
+        uris = []
 
         try:
             annotations = spotlight.annotate(c.URL_DBPEDIA_SPOTLIGHT, search_string, filters=filters)
 
             for result in annotations:
-                uris.add(urlparse.quote_plus(result['URI']))
+                uri = result['URI']
+                if uri not in uris:
+                    uris.append(uri)
         except spotlight.SpotlightException as e:
             pass
 
-        return list(uris)
+        return uris
 
     @staticmethod
-    def fetch_uris_from_name(name, keywords='', search_class=None):
+    def fetch_uris_from_name(name, keywords='', search_class=None, max_results=5):
         uris = []
-        dbpedia_uris = Miner.get_dbpedia_lookup_uris(name + ' ' + keywords, search_class=search_class, max_results=5)
+        dbpedia_uris = Miner.get_dbpedia_lookup_uris(name + ' ' + keywords, search_class=search_class, max_results=max_results)
 
         if dbpedia_uris:
             uris = dbpedia_uris
@@ -188,55 +168,31 @@ class Miner(object):
         else:
             return False
 
-    def uris_exist(self, key, uri_dict, confirmed=False):
-        if confirmed:
-            selected_list = 'confirmed'
-        else:
-            selected_list = 'unconfirmed'
-
+    def uris_exist(self, key, uri_dict):
         if self.key_exists(key, uri_dict):  # Check if the key exists in the dictionary
-            if self.key_exists(selected_list, uri_dict[key]):  # Check if the key has confirmed/unconfirmed objects
-                if uri_dict[key][selected_list]:  # Check if the list is empty
+                if uri_dict[key]:  # Check if the list is empty
                     return True
-                else:
-                    return False
-            else:
-                return False
-        else:
-            return False
 
-    def add_uris(self, uris, key, uri_dict, confirmed=False):
+        return False
+
+    def add_uris(self, uris, key, uri_dict):
         if not self.key_exists(key, uri_dict):
-            uri_dict[key] = {
-                'confirmed': self.manager.list(),
-                'unconfirmed': self.manager.list()
-            }
-
-        if confirmed:
-            selected_list = 'confirmed'
-        else:
-            selected_list = 'unconfirmed'
+            uri_dict[key] = []
 
         if type(uris) is not list:  # If it's a single uri (string), convert it to a list anyway
             uris = [uris]
 
+        """
         for uri in uris:
             if uri not in uri_dict[key][selected_list]:
                 uri_dict[key][selected_list].append(uri)
-
-        print(uris, json.dumps(uri_dict[key][selected_list], indent=2))
-
-        return uri_dict
-
-    def get_uris(self, key, uri_dict, consider_unconfirmed=True):
-        """
-        Attempts to return confirmed URIs, if they do not exist, attempt to return unconfirmed URIs (if consifer_unconfirmed). Otherwise return empty list
         """
 
-        if self.uris_exist(key, uri_dict, confirmed=True):
-            return uri_dict[key]['confirmed']
-        elif consider_unconfirmed and self.uris_exist(key, uri_dict, confirmed=False):
-            return uri_dict[key]['unconfirmed']
+        uri_dict[key] = uris
+
+    def get_uris(self, key, uri_dict):
+        if self.uris_exist(key, uri_dict):
+            return uri_dict[key]
         else:
             return []
 
@@ -255,13 +211,13 @@ class Miner(object):
         profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
         mep_uri = Miner.id_to_iri(mep_id, prefix='mep')
 
-        # If no unconfirmed URIs exists, fetch any existing ones and add them to our dictionary
-        if not self.uris_exist(mep_id, self.mep_ext_uris, confirmed=False):
-            mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', search_class='person')
-            self.add_uris(mep_ext_uris, mep_id, self.mep_ext_uris, confirmed=False)
+        # If no URIs exists, fetch any existing ones and add them to our dictionary
+        if not self.uris_exist(mep_id, self.mep_ext_uris):
+            mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', search_class='person', max_results=1)
+            self.add_uris(mep_ext_uris, mep_id, self.mep_ext_uris)
 
-        # Add all confirmed external URIs as the same induvidual
-        for ext_uri in self.get_uris(mep_id, self.mep_ext_uris, consider_unconfirmed=False):
+        # Add all external URIs as the same induvidual
+        for ext_uri in self.get_uris(mep_id, self.mep_ext_uris):
             triples.add((mep_uri, c.SAME_AS, URIRef(ext_uri)))
 
         # append to temp dictionary of processed MEPs
@@ -281,14 +237,14 @@ class Miner(object):
             if 'place' in mep['Birth']:
                 birth_place = mep['Birth']['place'].strip().lower()
 
-                # If no unconfirmed URIs exists, fetch any existing ones and add them to our dictionary
-                if not self.uris_exist(birth_place, self.places_ext_uris, confirmed=False):
-                    birth_place_uris = Miner.fetch_uris_from_name(birth_place, search_class='place')
-                    self.add_uris(birth_place_uris, birth_place, self.places_ext_uris, confirmed=False)
+                # If no URIs exists, fetch any existing ones and add them to our dictionary
+                if not self.uris_exist(birth_place, self.places_ext_uris):
+                    birth_place_uris = Miner.fetch_uris_from_name(birth_place, search_class='place', max_results=5)
+                    self.add_uris(birth_place_uris, birth_place, self.places_ext_uris)
 
-                confirmed_uris = self.get_uris(birth_place, self.places_ext_uris, consider_unconfirmed=False)
-                if confirmed_uris:
-                    triples.add((mep_uri, c.BIRTH_PLACE, URIRef(confirmed_uris[0])))
+                uris = self.get_uris(birth_place, self.places_ext_uris)
+                if uris:
+                    triples.add((mep_uri, c.BIRTH_PLACE, URIRef(uris[0])))
 
         if 'Death' in mep:
             death_date = str(mep['Death'])
@@ -320,12 +276,12 @@ class Miner(object):
 
                 # Link external URIs to each party id that does not yet have some
                 for id_ in party_ids:
-                    if not self.uris_exist(id_, self.party_ext_uris, confirmed=False):
-                        party_ext_uris = Miner.fetch_uris_from_name(party_title, keywords='european union parliament')
-                        self.add_uris(party_ext_uris, id_, self.party_ext_uris, confirmed=False)
+                    if not self.uris_exist(id_, self.party_ext_uris):
+                        party_ext_uris = Miner.fetch_uris_from_name(party_title, keywords='european union parliament', max_results=5)
+                        self.add_uris(party_ext_uris, id_, self.party_ext_uris)
 
-                # Link the internal party URI to all confirmed external counterparts
-                for ext_uri in self.get_uris(party_id, self.party_ext_uris, consider_unconfirmed=False):
+                # Link the internal party URI to all external counterparts
+                for ext_uri in self.get_uris(party_id, self.party_ext_uris):
                     triples.add((party_uri, c.SAME_AS, URIRef(ext_uri)))
 
                 start_date = datetime.strptime(group['start'].split('T')[0], '%Y-%m-%d').date()
@@ -344,11 +300,11 @@ class Miner(object):
                 if 'country' in group:
                     country = group['country'].lower()
 
-                    if not self.uris_exist(country, self.places_ext_uris, confirmed=False):
-                        country_ext_uris = Miner.fetch_uris_from_name(country, search_class='place')
-                        self.add_uris(country_ext_uris, country, self.places_ext_uris, confirmed=False)
+                    if not self.uris_exist(country, self.places_ext_uris):
+                        country_ext_uris = Miner.fetch_uris_from_name(country, search_class='country', max_results=1)
+                        self.add_uris(country_ext_uris, country, self.places_ext_uris)
 
-                    ext_uris = self.get_uris(country, self.places_ext_uris, consider_unconfirmed=False)
+                    ext_uris = self.get_uris(country, self.places_ext_uris)
                     if ext_uris:
                         triples.add((membership_uri, c.REPRESENTS_COUNTRY, URIRef(ext_uris[0])))
 
@@ -484,11 +440,11 @@ class Miner(object):
             if procedure['geographical_area']:
                 geo_areas = [geo_area.lower() for geo_area in procedure['geographical_area']]
                 for geo_area in geo_areas:
-                    if not self.uris_exist(geo_area, self.places_ext_uris, confirmed=False):
-                        geo_ext_uris = Miner.fetch_uris_from_name(geo_area, search_class='place')
-                        self.add_uris(geo_ext_uris, geo_area, self.places_ext_uris, confirmed=False)
+                    if not self.uris_exist(geo_area, self.places_ext_uris):
+                        geo_ext_uris = Miner.fetch_uris_from_name(geo_area, search_class='place', max_results=5)
+                        self.add_uris(geo_ext_uris, geo_area, self.places_ext_uris)
 
-                    ext_uris = self.get_uris(geo_area, self.places_ext_uris, consider_unconfirmed=False)
+                    ext_uris = self.get_uris(geo_area, self.places_ext_uris)
                     if ext_uris:
                         triples.add((dossier_uri, c.GEO_AREA, URIRef(ext_uris[0])))
 
