@@ -47,7 +47,7 @@ dbo:party rdf:type owl:ObjectProperty ;
 
 ###  http://dbpedia.org/ontology/politicalPartyInLegislature
 dbo:politicalPartyInLegislature rdf:type owl:ObjectProperty ;
-                                rdfs:domain dbo:Legislature ;
+                                rdfs:domain epv:Institution ;
                                 rdfs:range dbo:PoliticalParty .
 
 
@@ -65,7 +65,7 @@ dbp:office rdf:type owl:ObjectProperty .
 epv:abstains rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf epv:reactsToVote ;
              rdfs:domain epv:Voter ;
-             rdfs:range epv:Dossier .
+             rdfs:range epv:VoteInParliament .
 
 
 ###  http://localhost:7200/parlialytics#geoArea
@@ -123,6 +123,13 @@ epv:hasText rdf:type owl:ObjectProperty ,
                        ] .
 
 
+###  http://localhost:7200/parlialytics#hasVote
+epv:hasVote rdf:type owl:ObjectProperty ;
+            owl:inverseOf epv:isVoteFor ;
+            rdfs:domain epv:Dossier ;
+            rdfs:range epv:VoteInParliament .
+
+
 ###  http://localhost:7200/parlialytics#hasVoter
 epv:hasVoter rdf:type owl:ObjectProperty ;
              owl:inverseOf epv:votesIn ;
@@ -144,6 +151,12 @@ epv:isInvolvedIn rdf:type owl:ObjectProperty ;
 ###  http://localhost:7200/parlialytics#isResponsibleIn
 epv:isResponsibleIn rdf:type owl:ObjectProperty ;
                     rdfs:subPropertyOf epv:isInvolvedIn .
+
+
+###  http://localhost:7200/parlialytics#isVoteFor
+epv:isVoteFor rdf:type owl:ObjectProperty ;
+              rdfs:domain epv:VoteInParliament ;
+              rdfs:range epv:Dossier .
 
 
 ###  http://localhost:7200/parlialytics#isWithin
@@ -179,7 +192,7 @@ epv:processesFor rdf:type owl:ObjectProperty ;
 ###  http://localhost:7200/parlialytics#reactsToVote
 epv:reactsToVote rdf:type owl:ObjectProperty ;
                  rdfs:domain epv:Voter ;
-                 rdfs:range epv:Dossier .
+                 rdfs:range epv:VoteInParliament .
 
 
 ###  http://localhost:7200/parlialytics#representedBy
@@ -206,14 +219,14 @@ epv:representsCountry rdf:type owl:ObjectProperty ,
 epv:votesAgainst rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf epv:votesOn ;
                  rdfs:domain epv:Voter ;
-                 rdfs:range epv:Dossier .
+                 rdfs:range epv:VoteInParliament .
 
 
 ###  http://localhost:7200/parlialytics#votesFor
 epv:votesFor rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf epv:votesOn ;
              rdfs:domain epv:Voter ;
-             rdfs:range epv:Dossier .
+             rdfs:range epv:VoteInParliament .
 
 
 ###  http://localhost:7200/parlialytics#votesIn
@@ -227,7 +240,7 @@ epv:votesIn rdf:type owl:ObjectProperty ;
 epv:votesOn rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf epv:reactsToVote ;
             rdfs:domain epv:Voter ;
-            rdfs:range epv:Dossier .
+            rdfs:range epv:VoteInParliament .
 
 
 #################################################################
@@ -292,11 +305,6 @@ foaf:name rdf:type owl:DatatypeProperty .
 ###  http://dbpedia.org/ontology/Country
 dbo:Country rdf:type owl:Class ;
             rdfs:subClassOf dbo:Place .
-
-
-###  http://dbpedia.org/ontology/Legislature
-dbo:Legislature rdf:type owl:Class ;
-                rdfs:subClassOf dbo:Organisation .
 
 
 ###  http://dbpedia.org/ontology/Organisation
@@ -435,6 +443,11 @@ epv:InactiveMembership rdf:type owl:Class ;
                        rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/parlialytics#Institution
+epv:Institution rdf:type owl:Class ;
+                rdfs:subClassOf dbo:Organisation .
+
+
 ###  http://localhost:7200/parlialytics#MEP
 epv:MEP rdf:type owl:Class ;
         rdfs:subClassOf dbo:Person .
@@ -519,6 +532,10 @@ epv:ViceChairOfTheBureau rdf:type owl:Class ;
                          rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/parlialytics#VoteInParliament
+epv:VoteInParliament rdf:type owl:Class .
+
+
 ###  http://localhost:7200/parlialytics#Voter
 epv:Voter rdf:type owl:Class ;
           owl:equivalentClass [ owl:intersectionOf ( [ rdf:type owl:Restriction ;
@@ -545,6 +562,63 @@ epv:VotingAssembly rdf:type owl:Class ;
 
 ###  http://xmlns.com/foaf/0.1/Agent
 foaf:Agent rdf:type owl:Class .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://localhost:7200/parlialytics#european_central_bank
+epv:european_central_bank rdf:type owl:NamedIndividual ,
+                                   epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_commission
+epv:european_commission rdf:type owl:NamedIndividual ,
+                                 epv:Institution ;
+                        rdfs:comment "The entity of the European Commission"@en .
+
+
+###  http://localhost:7200/parlialytics#european_committee_of_regions
+epv:european_committee_of_regions rdf:type owl:NamedIndividual ,
+                                           epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_communities_court_of_justice
+epv:european_communities_court_of_justice rdf:type owl:NamedIndividual ,
+                                                   epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_council
+epv:european_council rdf:type owl:NamedIndividual ,
+                              epv:Institution ;
+                     rdfs:comment "The entity of the European Council"@en .
+
+
+###  http://localhost:7200/parlialytics#european_court_of_auditors
+epv:european_court_of_auditors rdf:type owl:NamedIndividual ,
+                                        epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_court_of_justice
+epv:european_court_of_justice rdf:type owl:NamedIndividual ,
+                                       epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_data_protection_supervisor
+epv:european_data_protection_supervisor rdf:type owl:NamedIndividual ,
+                                                 epv:Institution .
+
+
+###  http://localhost:7200/parlialytics#european_economic_and_social_committee
+epv:european_economic_and_social_committee rdf:type owl:NamedIndividual ,
+                                                    dbo:Organisation .
+
+
+###  http://localhost:7200/parlialytics#european_parliament
+epv:european_parliament rdf:type owl:NamedIndividual ,
+                                 epv:Institution ;
+                        rdfs:comment "The entity of the European Parliament"@en .
 
 
 ###  Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi
