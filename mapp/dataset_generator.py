@@ -15,5 +15,6 @@ class DatasetGenerator(object):
         ds.bind('dbr', c.DBR)
         ds.bind('dbp', c.DBP)
         ds.bind('foaf', c.FOAF)
-
+        ds.bind('lp', c.LP)
+        ds.bind('lpv', c.LPV)
         return ds

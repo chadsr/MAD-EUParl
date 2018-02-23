@@ -58,18 +58,28 @@ def get_key(key):
         return key
 
 
+def __save_to_json__(filename, obj, indent_num=2):
+    with open(filename, 'w') as f:
+        print(fmt.WAIT_SYMBOL, 'Saving:', filename)
+        start = timer()
+        json.dump(obj, f, indent=indent_num)
+        end = timer()
+    print(fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
+
+
+def save_list_to_json(filename, data, indent_num=2):
+    input_list = [x for x in data]
+
+    __save_to_json__(filename, input_list, indent_num=2)
+
+
 def save_dict_to_json(filename, data, ordered=True, indent_num=2):
     data = data.copy()
 
     if ordered:
         data = OrderedDict(sorted(data.items(), key=lambda d: get_key(d[0])))
 
-    with open(filename, 'w') as f:
-        print(fmt.WAIT_SYMBOL, 'Saving:', filename)
-        start = timer()
-        json.dump(data, f, indent=indent_num)
-        end = timer()
-    print(fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
+    __save_to_json__(filename, data, indent_num=2)
 
 
 def split_dataset(path, output_dir):

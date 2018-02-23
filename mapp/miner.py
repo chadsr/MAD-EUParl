@@ -35,6 +35,11 @@ class Miner(object):
         self.dict_parties = manager.dict()
         self.dict_dossier = manager.dict()
         self.dict_committees = manager.dict()
+        # self.dict_docs = manager.dict()
+
+        self.list_activities = manager.list()
+        self.list_procedures = manager.list()
+        self.list_doc_types = manager.list()
 
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
 
@@ -61,6 +66,19 @@ class Miner(object):
         if loaded_dict is not None:
             self.places_ext_uris.update(loaded_dict)
 
+        # TEMP
+        loaded_dict = io.load_json(c.JSON_DIR + 'procedures.json')
+        if loaded_dict is not None:
+            self.list_procedures.extend(loaded_dict)
+
+        loaded_dict = io.load_json(c.JSON_DIR + 'activities.json')
+        if loaded_dict is not None:
+            self.list_activities.extend(loaded_dict)
+
+        loaded_dict = io.load_json(c.JSON_DIR + 'doc_types.json')
+        if loaded_dict is not None:
+            self.list_doc_types.extend(loaded_dict)
+
         results = self.convert_meps(c.DIR_MEPS, num_threads, mep_limit)
         if results:
             total_mep_triples, total_meps, time = results
@@ -79,6 +97,10 @@ class Miner(object):
             return False
 
         io.save_dict_to_json(c.EXTERNAL_PLACES_URIS, self.places_ext_uris)
+
+        io.save_list_to_json(c.JSON_DIR + 'activities.json', self.list_activities)
+        io.save_list_to_json(c.JSON_DIR + 'procedures.json', self.list_procedures)
+        io.save_list_to_json(c.JSON_DIR + 'doc_types.json', self.list_doc_types)
 
         results = self.convert_votes(c.DIR_VOTES, num_threads, vote_limit)
         if results:
@@ -327,9 +349,10 @@ class Miner(object):
                     if role in c.MEMBERSHIPS:
                         triples.add((membership_uri, c.TYPE, c.MEMBERSHIPS[role]))
                     else:
-                        logging.warning("Unknown role: %s", role)
+                        logging.error("Unknown role: %s", role)
                 else:
-                    logging.warning("No role found: %s %s %s", profile_url, group['start'], party_title)
+                    logging.warning("No role found: MEP:%i start:%s party:%s. Adding as normal member.", mep_id, group['start'], party_title)
+                    triples.add((membership_uri, c.TYPE, c.MEMBERSHIPS['Member']))
 
                 triples.add((c.EUROPEAN_PARLIAMENT, c.IN_LEGISLATURE, party_uri))
 
@@ -343,20 +366,19 @@ class Miner(object):
                 if not self.key_exists(committee_id, self.dict_committees):
                     self.dict_committees[committee_id] = committee_uri
 
-                if 'role' in committee:
-                    role = str(committee['role'])
+                if 'role' in committee and committee['role']:
+                    role = committee['role']
 
-                    if role != "":
-                        # start_date = group['start']
-                        end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
+                    # start_date = group['start']
+                    end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
 
-                        if role in c.MEMBERSHIPS:
-                            triples.add((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id])))
-                            # If end_date has passed
-                            if end_date <= date_now:
-                                pass  # TODO: add end date
-                        else:
-                            logging.warning("Unknown role:", role)
+                    if role in c.MEMBERSHIPS:
+                        triples.add((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id])))
+                        # If end_date has passed
+                        if end_date <= date_now:
+                            pass  # TODO: add end date
+                    else:
+                        logging.error("Unknown role:", role)
 
         if 'Gender' in mep:
             gender = str(mep['Gender'])
@@ -365,7 +387,7 @@ class Miner(object):
             elif gender == 'F':
                 triples.add((mep_uri, c.GENDER, c.FEMALE))
             else:
-                logging.warning("Unknown gender:", gender)
+                logging.error("Unknown gender:", gender)
         else:
             logging.warning('No gender found: %s' % profile_url)
 
@@ -431,23 +453,26 @@ class Miner(object):
 
         dossier_id = dossier['_id']
         dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
-
         procedure = dossier['procedure']
 
+        dossier_reference = procedure['reference']
         dossier_title = Literal(str(procedure['title'].strip()), datatype=c.STRING)
-        dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
-        # dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
+        # dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
+        dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
 
-        dossier_uri = self.id_to_iri(dossier_id, prefix='dossier')
+        # TEMP
+        if procedure['type'] not in self.list_procedures:
+            self.list_procedures.append(procedure['type'])
+
+        dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
 
         # Append to temp dictionary of dossiers processed
         self.dict_dossier[dossier_id] = dossier_uri
 
-        triples.add((dossier_uri, c.REACHED_STAGE, dossier_stage))
-        # triples.add([dossier_uri, c.PROCEDURE_TYPE, dossier_title])
+        # triples.add((dossier_uri, c.REACHED_STAGE, dossier_stage))
+        triples.add((dossier_uri, c.PROCEDURE_TYPE, dossier_type))
         triples.add((dossier_uri, c.DOSSIER_TITLE, dossier_title))
         triples.add((dossier_uri, c.URI, dossier_url))
-        triples.add((dossier_uri, c.PROCESSED_BY, c.EUROPEAN_PARLIAMENT))
 
         if 'geographical_area' in procedure:
             if procedure['geographical_area']:
@@ -462,14 +487,19 @@ class Miner(object):
                         triples.add((dossier_uri, c.GEO_AREA, URIRef(ext_uris[0])))
 
         for activity in dossier['activities']:
+            # TODO: Filter out irelevant activities
             if 'type' in activity:
                 if activity['type'] is not None:
-                    activity_id = dossier_title + '#' + activity['type']
+                    activity_type = activity['type'].lower()
+                    activity_id = dossier_id + '_' + activity_type
                     activity_uri = self.id_to_iri(activity_id, prefix='activity')
-                    activity_type = Literal(str(activity['type']), datatype=c.STRING)
                     activity_date = Literal(datetime.strptime(activity['date'].split('T')[0], '%Y-%m-%d').date(), datatype=c.DATE)
 
-                    triples.add((activity_uri, c.HAS_TYPE, activity_type))
+                    # TEMP
+                    if activity_type not in self.list_activities:
+                        self.list_activities.append(activity_type)
+
+                    triples.add((activity_uri, c.HAS_TYPE, Literal(activity_type, datatype=c.STRING)))
                     triples.add((activity_uri, c.DATE, activity_date))
                     triples.add((dossier_uri, c.HAS_ACTIVITY, activity_uri))
 
@@ -478,14 +508,24 @@ class Miner(object):
                     #        activity_id = int(activity['meeting_id'])
 
                     if 'body' in activity:
-                        if activity['body'] is not None:
+                        if activity['body']:
                             activity_body = str(activity['body'])
-                            if activity_body == "EP":
-                                triples.add((activity_uri, c.HAS_BODY, c.EUROPEAN_PARLIAMENT))
-                            elif activity_body == "EC":
-                                triples.add((activity_uri, c.HAS_BODY, c.EUROPEAN_COUNCIL))
-                            else:
-                                logging.warning("Unknown activity body '%s'" % activity_body)
+                            if activity_body is not 'unknown':  # TODO: Investigate why parltrack gives some as unknown
+                                if activity_body in c.BODIES:
+                                    body_uris = c.BODIES[activity_body][c.PREFIX]
+                                    body_dbpedia_uris = c.BODIES[activity_body]['dbpedia']
+                                    for body in body_uris:
+                                        triples.add((activity_uri, c.HAS_BODY, body))
+                                        triples.add((dossier_uri, c.PROCESSED_BY, body))  # TODO: make this inferred?
+
+                                        for dbpedia_uri in body_dbpedia_uris:
+                                            if isinstance(dbpedia_uri, list):
+                                                for uri in dbpedia_uri:
+                                                    triples.add((body, c.SAME_AS, dbpedia_uri))
+                                            else:
+                                                triples.add((body, c.SAME_AS, dbpedia_uri))  # TODO: check if this causes issues with duplicates
+                                else:
+                                    logging.error("Unknown activity body '%s'" % activity_body)
 
                     if 'title' in activity:
                         activity_title = Literal(str(activity['title']), datatype=c.STRING)
@@ -493,11 +533,13 @@ class Miner(object):
 
                     if 'docs' in activity:
                         for doc in activity['docs']:
-                            doc_title = Literal(str(doc['title']), datatype=c.STRING)
-                            doc_uri = self.id_to_iri(doc_title, prefix='document')
+                            # TODO: Filter out irelevant docs
+                            doc_title = doc['title']
+                            doc_id = activity_id + '_' + doc_title
+                            doc_uri = self.id_to_iri(doc_id, prefix='document')
 
                             triples.add((activity_uri, c.HAS_DOC, doc_uri))
-                            triples.add((doc_uri, c.HAS_TITLE, doc_title))
+                            triples.add((doc_uri, c.HAS_TITLE, Literal(doc_title, datatype=c.STRING)))
 
                             if 'url' in doc:
                                 if doc['url']:
@@ -506,8 +548,12 @@ class Miner(object):
 
                             if 'type' in doc:
                                 if doc['type']:
-                                    doc_type = Literal(str(doc['type']), datatype=c.STRING)
-                                    triples.add((doc_uri, c.HAS_TYPE, doc_type))
+                                    doc_type = doc['type'].lower()
+                                    triples.add((doc_uri, c.HAS_TYPE, Literal(doc_type, datatype=c.STRING)))
+
+                                    # TODO: REMOVE
+                                    if doc_type not in self.list_doc_types:
+                                        self.list_doc_types.append(doc_type)
                 else:
                     logging.warning("Activity has no type:", json.dumps(activity, indent=2))
             else:
@@ -590,18 +636,39 @@ class Miner(object):
         return num_triples, counter, get_elapsed_seconds(start, end)
 
     def process_votes(self, index):
-        success = 0
+        count = 0
         failed = 0
         triples = set()
 
         votes = io.load_json(os.path.join(c.DIR_VOTES, str(index) + '.json'), verbose=False)
 
-        if 'dossierid' in votes:
-            dossier_id = votes['dossierid']
+        if 'epref' in votes:
+            dossier_reference = votes['epref']
+            if '_id' in votes:
+                vote_id = votes['_id']
+                vote_uri = self.id_to_iri(dossier_reference + '_' + vote_id, prefix='parlvote')
 
-            # If this dossier is in our dictionary of useful dossiers, continue
-            if self.key_exists(dossier_id, self.dict_dossier):
-                dossier_uri = URIRef(self.dict_dossier[dossier_id])
+                if 'title' in votes:
+                    vote_title = votes['title']
+                    triples.add((URIRef(vote_uri), c.HAS_TITLE, Literal(vote_title, datatype=c.STRING)))
+
+                if 'report' in votes:
+                    report_id = str(votes['report'])
+                    report_uri = self.id_to_iri(report_id, prefix='document')  # TODO: Make a dict and lookup from there?
+                    triples.add((URIRef(vote_uri), c.BASED_ON_REPORT, report_uri))
+
+                # If there's a dossier id and we processed this dossier, link the voting to the looked up URI, otherwise attempt to construct the URI and hope for the best
+                if 'dossierid' in votes and self.key_exists(str(votes['dossierid']), self.dict_dossier):
+                    dossier_uri = self.dict_dossier[str(votes['dossierid'])]
+                else:
+                    dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
+
+                triples.add((URIRef(vote_uri), c.IS_VOTE_FOR, URIRef(dossier_uri)))
+
+                if 'url' in votes:
+                    vote_url = votes['url']
+                    triples.add((URIRef(vote_uri), c.URI, Literal(vote_url, datatype=c.URI)))
+
                 # title = votes['title']
                 # url = dossier['url']
                 # ep_title = dossier['eptitle']
@@ -612,32 +679,37 @@ class Miner(object):
                             # group_name = group['group']
                             for vote in group['votes']:
                                 try:
-                                    voter_id = int(vote['ep_id'])
-                                    # voter_id = str(vote['id'])
+                                    if 'ep_id' in vote:
+                                        voter_id = vote['ep_id']
+                                    else:
+                                        if 'name' in vote:
+                                            logging.warning("MEP of vote had no epid. Do they exist? (%s). Attempting to use internal ID", vote['name'])
+                                        voter_id = vote['userid']
                                 except Exception as ex:
-                                    logging.error("Skipping vote of type " + vote_type + " on dossier " + dossier_uri + " Invalid MEP id.")
+                                    logging.error("Skipping vote of type " + vote_type + " on dossier " + dossier_uri + " No ID found.")
                                     failed += 1
                                     continue
 
                                 if self.key_exists(voter_id, self.dict_mep):
                                     voter_uri = URIRef(self.dict_mep[voter_id])
-                                    success += 1
                                 else:
                                     voter_uri = self.id_to_iri(voter_id, prefix='mep')
-                                    logging.warning("MEP not found. Using URI '%s'." % voter_uri)
-                                    failed += 1
 
-                                triples.add((voter_uri, c.VOTES[vote_type], dossier_uri))
+                                triples.add((voter_uri, c.VOTES[vote_type], vote_uri))
+                                count += 1
             else:
-                logging.warning("Votes for unrecognised dossier (ID: %i). Skipping." % dossier_id)
+                logging.warning("Votes has no id. Skipping.")
+        else:
+            logging.warning("No dossier reference (epref) found in votes. Skipping.")
 
-        return success, failed, triples
+        return count, failed, triples
 
     def convert_votes(self, path, num_threads, limit):
         start = timer()
         total_success = 0
         total_failed = 0
         num_triples = 0
+        counter = 0
 
         selected_votes = io.get_dataset_indexes(path, limit)
 
@@ -650,20 +722,22 @@ class Miner(object):
 
             dataset = DatasetGenerator.get_dataset()
             for result in results:
-                success, failed, triples = result
+                count, failed, triples = result
                 total_failed += failed
-                total_success += success
+                total_success += count
                 num_triples += len(triples)
+
+                counter += 1
 
                 for triple in triples:
                     dataset.add((triple[0], triple[1], triple[2]))
 
-                if (total_success % 1000) == 0 and total_success != 0:
+                if (counter % 1000) == 0 and counter != 0:
                     # reset dataset
                     if not self.sparql_endpoint.import_dataset(dataset):
                         return False
 
-                    print(fmt.INFO_SYMBOL, success, "votes imported.")
+                    print(fmt.INFO_SYMBOL, total_success, "votes imported.")
                     dataset = DatasetGenerator.get_dataset()
 
             # Import any left over from the last (incomplete) batch
@@ -672,8 +746,8 @@ class Miner(object):
 
             print(fmt.OK_SYMBOL, "Total of", total_success, "votes imported.")
 
-            if failed > 0:
-                print(fmt.WARNING, '%i out of %i votes had no MEP ID' % (total_failed, total_success))
+            if total_failed > 0:
+                print(fmt.WARNING, '%i out of %i votes had no MEP ID and have been excluded.' % (total_failed, total_success + total_failed))
 
         finally:
             pool.close()

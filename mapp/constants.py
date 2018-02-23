@@ -44,6 +44,7 @@ NAMESPACE = DATABASE
 URL_DBPEDIA_LOOKUP = 'http://lookup.dbpedia.org/api/search/KeywordSearch?'
 URL_DBPEDIA_SPOTLIGHT = 'http://localhost:2222/rest/annotate'
 
+VOTE_ACTIVITIES = ['results of vote in parliament', 'r\u00e9sultat du vote au parlement']
 
 FILTER_PERSON = {
     'policy': "whitelist",
@@ -103,6 +104,9 @@ IS_RESPONSIBLE = ONT['isResponsibleIn']
 IS_INVOLVED = ONT['isInvolvedIn']
 HAS_RAPPORTEUR = ONT['hasRapporteur']
 
+PARLIAMENT_VOTE = ONT['VoteInParliament']
+IS_VOTE_FOR = ONT['isVoteFor']
+
 ABSTAINS = ONT['abstains']
 VOTES_FOR = ONT['votesFor']
 VOTES_AGAINST = ONT['votesAgainst']
@@ -115,6 +119,7 @@ PARTY = DBO['party']
 
 REPRESENTS_COUNTRY = ONT['representsCountry']
 
+BASED_ON_REPORT = ONT['basedOnReport']
 IS_WITHIN = ONT['isWithin']
 HAS_MEMBERSHIP = ONT['hasMembership']
 MEMBER = ONT['Membership']
@@ -136,8 +141,25 @@ BUREAU_MEMBER = ONT['MemberOfTheBureau']
 GENDER = FOAF.gender
 MALE = Literal('male', datatype=XSD.string)
 FEMALE = Literal('female', datatype=XSD.string)
-EUROPEAN_PARLIAMENT = DBR['European_Parliament']
-EUROPEAN_COUNCIL = DBR['European_Council']
+EUROPEAN_PARLIAMENT_DBR = DBR['European_Parliament']
+EUROPEAN_COUNCIL_DBR = DBR['European_Council']
+EUROPEAN_COMMISION_DBR = DBR['European_Commission']
+EUROPEAN_CENTRAL_BANK_DBR = DBR['European_Central_Bank']
+EUROPEAN_CENTRAL_BANK = ONT['european_central_bank']
+EUROPEAN_PARLIAMENT = ONT['european_parliament']
+EUROPEAN_COUNCIL = ONT['european_council']
+EUROPEAN_COMMISSION = ONT['european_commission']
+EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE = ONT['european_economic_and_social_committee']
+EUROPEAN_COURT_OF_AUDITORS = ONT['european_court_of_auditors']
+EUROPEAN_COURT_OF_AUDITORS_DBR = DBR['Court_of_Auditors']
+EUROPEAN_COMMITTEE_OF_REGIONS = ONT['european_committee_of_regions']
+EUROPEAN_COMMITTEE_OF_REGIONS_DBR = DBR['Committee_of_the_Regions']
+EUROPEAN_DATA_PROTECTION_SUPERVISOR = ONT['european_data_protection_supervisor']
+EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR = DBR['European_Data_Protection_Supervisor']
+EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE = ONT['european_communities_court_of_justice']
+EUROPEAN_UNION_COURT_OF_JUSTICE = ONT['european_court_of_justice']
+EUROPEAN_UNION_COURT_OF_JUSTICE_DBR = DBR['European_Court_of_Justice']
+
 EUROPEAN_PARLIAMENT_GROUP = DBO['europeanParliamentGroup']
 IN_LEGISLATURE = DBO['politicalPartyInLegislature']
 POLITICAL_PARTY = DBO['PoliticalParty']
@@ -177,6 +199,81 @@ MEMBERSHIPS = {
     'Deputy Treasurer': DEPUTY_TREASURER,
     'Substitute': SUBSTITUTE,
     'Substitute observer': SUBSTITUTE_OBSERVER
+}
+
+__EP__ = {
+    PREFIX: [EUROPEAN_PARLIAMENT],
+    'dbpedia': [EUROPEAN_PARLIAMENT_DBR]
+}
+
+__EC__ = {
+    PREFIX: [EUROPEAN_COMMISSION],
+    'dbpedia': [EUROPEAN_COMMISION_DBR]
+}
+
+__CSL__ = {
+    PREFIX: [EUROPEAN_COUNCIL],
+    'dbpedia': [EUROPEAN_COUNCIL_DBR]
+}
+
+__ESOC__ = {
+    PREFIX: [EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE],
+    'dbpedia': []
+}
+
+__COA__ = {
+    PREFIX: [EUROPEAN_COURT_OF_AUDITORS],
+    'dbpedia': [EUROPEAN_COURT_OF_AUDITORS_DBR]
+}
+
+__EDPS__ = {
+    PREFIX: [EUROPEAN_DATA_PROTECTION_SUPERVISOR],
+    'dbpedia': [EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR]
+}
+
+__CJEU__ = {
+    PREFIX: [EUROPEAN_UNION_COURT_OF_JUSTICE],
+    'dbpedia': [EUROPEAN_UNION_COURT_OF_JUSTICE_DBR]
+}
+
+__CJEC__ = {
+    PREFIX: [EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE],
+    'dbpedia': []
+}
+
+__COR__ = {
+    PREFIX: [EUROPEAN_COMMITTEE_OF_REGIONS],
+    'dbpedia': [EUROPEAN_COMMITTEE_OF_REGIONS_DBR]
+}
+
+__ECB__ = {
+    PREFIX: [EUROPEAN_CENTRAL_BANK],
+    'dbpedia': [EUROPEAN_CENTRAL_BANK_DBR]
+}
+
+__ALL__ = {  # This seems to denote "Additional Information"?
+    PREFIX: [],
+    'dbpedia': []
+}
+
+BODIES = {
+    'all': __ALL__,
+    'EP': __EP__,
+    'EC': __EC__,
+    'CSL': __CSL__,
+    'ESOC': __ESOC__,
+    'EDPS': __EDPS__,
+    'CJEC': __CJEC__,
+    'CJEU': __CJEU__,
+    'CoA': __COA__,
+    'CoR': __COR__,
+    'CotR': __COR__,
+    'ECB': __ECB__,
+    'EP/CSL':
+    {
+        PREFIX: __EP__[PREFIX] + __CSL__[PREFIX],
+        'dbpedia': [[__EP__['dbpedia']], [__CSL__['dbpedia']]]  # TODO: Just make this json with keys or something
+    }
 }
 
 VOTES = {'Abstain': ABSTAINS, 'For': VOTES_FOR, 'Against': VOTES_AGAINST}
