@@ -68,6 +68,12 @@ epv:abstains rdf:type owl:ObjectProperty ;
              rdfs:range epv:VoteInParliament .
 
 
+###  http://localhost:7200/parlialytics#basedOnReport
+epv:basedOnReport rdf:type owl:ObjectProperty ;
+                  rdfs:domain epv:VoteInParliament ;
+                  rdfs:range epv:Report .
+
+
 ###  http://localhost:7200/parlialytics#geoArea
 epv:geoArea rdf:type owl:ObjectProperty ;
             rdfs:domain epv:Dossier ;
@@ -389,6 +395,10 @@ epv:DeputyTreasurer rdf:type owl:Class ;
                     rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/parlialytics#Document
+epv:Document rdf:type owl:Class .
+
+
 ###  http://localhost:7200/parlialytics#Dossier
 epv:Dossier rdf:type owl:Class ;
             owl:equivalentClass [ rdf:type owl:Restriction ;
@@ -495,6 +505,11 @@ epv:Party rdf:type owl:Class ;
 ###  http://localhost:7200/parlialytics#President
 epv:President rdf:type owl:Class ;
               rdfs:subClassOf epv:Membership .
+
+
+###  http://localhost:7200/parlialytics#Report
+epv:Report rdf:type owl:Class ;
+           rdfs:subClassOf epv:Document .
 
 
 ###  http://localhost:7200/parlialytics#SubCommittee
