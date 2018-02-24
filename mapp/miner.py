@@ -514,11 +514,11 @@ class Miner(object):
                                 if activity_body in c.BODIES:
                                     body_uris = c.BODIES[activity_body][c.PREFIX]
                                     body_dbpedia_uris = c.BODIES[activity_body]['dbpedia']
-                                    for body in body_uris:
+                                    for i, body in enumerate(body_uris):
                                         triples.add((activity_uri, c.HAS_BODY, body))
                                         triples.add((dossier_uri, c.PROCESSED_BY, body))  # TODO: make this inferred?
 
-                                        for dbpedia_uri in body_dbpedia_uris:
+                                        for dbpedia_uri in body_dbpedia_uris[i]:
                                             if isinstance(dbpedia_uri, list):
                                                 for uri in dbpedia_uri:
                                                     triples.add((body, c.SAME_AS, dbpedia_uri))
