@@ -4,8 +4,6 @@ catalog-v001.xml
 logs/runtime.json
 
 !data/linked_data/.gitkeep
-data/linked_data/*.ttl
-!data/linked_data/parlialytics.ttl
 
 data/json/*.json
 data/json/*.xz

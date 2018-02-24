@@ -5,40 +5,40 @@ import os
 
 DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-LOG_DIR = DIR + '/logs/'
-DATA_DIR = DIR + '/data/'
+LOG_DIR = os.path.join(DIR, 'logs/')
+DATA_DIR = os.path.join(DIR, 'data/')
 
-MAIN_LOG = LOG_DIR + 'parlialytics.log'
+MAIN_LOG = os.path.join(LOG_DIR, 'europarl.log')
 
-JSON_DIR = DATA_DIR + 'json/'
-LD_DIR = DATA_DIR + 'linked_data/'
+JSON_DIR = os.path.join(DATA_DIR, 'json/')
+LD_DIR = os.path.join(DATA_DIR, 'linked_data/')
 
-DATA_OUTPUT = LD_DIR + 'parlialytics.ttl'
-GRAPH_OUTPUT = LD_DIR + 'parltrack-graph.ttl'
+DATA_OUTPUT = os.path.join(LD_DIR, 'europarl.ttl')
+GRAPH_OUTPUT = os.path.join(LD_DIR, 'europarl.ttl')
 
 DIR_MEPS = os.path.join(JSON_DIR, 'mep_chunks')
 DIR_DOSSIERS = os.path.join(JSON_DIR, 'dossier_chunks')
 DIR_VOTES = os.path.join(JSON_DIR, 'vote_chunks')
 
-DATA_MEP = JSON_DIR + 'ep_meps_current.json'
-DATA_VOTES = JSON_DIR + 'ep_votes.json'
-DATA_DOSSIER = JSON_DIR + 'ep_dossiers.json'
+DATA_MEP = os.path.join(JSON_DIR, 'ep_meps_current.json')
+DATA_VOTES = os.path.join(JSON_DIR, 'ep_votes.json')
+DATA_DOSSIER = os.path.join(JSON_DIR, 'ep_dossiers.json')
 
-EXTERNAL_MEP_URIS = JSON_DIR + 'mep_uris.json'
-EXTERNAL_PARTY_URIS = JSON_DIR + 'party_uris.json'
-EXTERNAL_PLACES_URIS = JSON_DIR + 'places_uris.json'
+EXTERNAL_MEP_URIS = os.path.join(JSON_DIR, 'mep_uris.json')
+EXTERNAL_PARTY_URIS = os.path.join(JSON_DIR, 'party_uris.json')
+EXTERNAL_PLACES_URIS = os.path.join(JSON_DIR, 'places_uris.json')
 
-DICT_COMMITTEES = JSON_DIR + 'dict_committees.json'
-DICT_MISC_VOTES = JSON_DIR + 'misc_votes.json'
+DICT_COMMITTEES = os.path.join(JSON_DIR, 'dict_committees.json')
+DICT_MISC_VOTES = os.path.join(JSON_DIR, 'misc_votes.json')
 
-SPARQL_ENDPOINT = 'http://localhost:7200/repositories/parlialytics/statements'
+SPARQL_ENDPOINT = 'http://localhost:7200/repositories/europarl/statements'
 
 DOWNLOAD_TIMEOUT = 30
 DATA_URLS = {DIR_VOTES: 'http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
              DIR_MEPS: 'http://parltrack.euwiki.org/dumps/ep_meps_current.json.xz',
              DIR_DOSSIERS: 'http://parltrack.euwiki.org/dumps/ep_dossiers.json.xz'}
 
-DATABASE = 'http://localhost:7200/parlialytics#'  # Database endpoint
+DATABASE = 'http://localhost:7200/europarl#'  # Database endpoint
 NAMESPACE = DATABASE
 
 URL_DBPEDIA_LOOKUP = 'http://lookup.dbpedia.org/api/search/KeywordSearch?'
