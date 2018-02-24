@@ -31,7 +31,7 @@ EXTERNAL_PLACES_URIS = os.path.join(JSON_DIR, 'places_uris.json')
 DICT_COMMITTEES = os.path.join(JSON_DIR, 'dict_committees.json')
 DICT_MISC_VOTES = os.path.join(JSON_DIR, 'misc_votes.json')
 
-SPARQL_ENDPOINT = 'http://localhost:7200/repositories/europarl/statements'
+SPARQL_ENDPOINT = 'http://192.168.1.60:7200/repositories/europarl/statements'
 
 DOWNLOAD_TIMEOUT = 30
 DATA_URLS = {DIR_VOTES: 'http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
@@ -202,78 +202,74 @@ MEMBERSHIPS = {
 }
 
 __EP__ = {
-    PREFIX: [EUROPEAN_PARLIAMENT],
+    PREFIX: EUROPEAN_PARLIAMENT,
     'dbpedia': [EUROPEAN_PARLIAMENT_DBR]
 }
 
 __EC__ = {
-    PREFIX: [EUROPEAN_COMMISSION],
+    PREFIX: EUROPEAN_COMMISSION,
     'dbpedia': [EUROPEAN_COMMISION_DBR]
 }
 
 __CSL__ = {
-    PREFIX: [EUROPEAN_COUNCIL],
+    PREFIX: EUROPEAN_COUNCIL,
     'dbpedia': [EUROPEAN_COUNCIL_DBR]
 }
 
 __ESOC__ = {
-    PREFIX: [EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE],
+    PREFIX: EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE,
     'dbpedia': []
 }
 
 __COA__ = {
-    PREFIX: [EUROPEAN_COURT_OF_AUDITORS],
+    PREFIX: EUROPEAN_COURT_OF_AUDITORS,
     'dbpedia': [EUROPEAN_COURT_OF_AUDITORS_DBR]
 }
 
 __EDPS__ = {
-    PREFIX: [EUROPEAN_DATA_PROTECTION_SUPERVISOR],
+    PREFIX: EUROPEAN_DATA_PROTECTION_SUPERVISOR,
     'dbpedia': [EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR]
 }
 
 __CJEU__ = {
-    PREFIX: [EUROPEAN_UNION_COURT_OF_JUSTICE],
+    PREFIX: EUROPEAN_UNION_COURT_OF_JUSTICE,
     'dbpedia': [EUROPEAN_UNION_COURT_OF_JUSTICE_DBR]
 }
 
 __CJEC__ = {
-    PREFIX: [EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE],
+    PREFIX: EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE,
     'dbpedia': []
 }
 
 __COR__ = {
-    PREFIX: [EUROPEAN_COMMITTEE_OF_REGIONS],
+    PREFIX: EUROPEAN_COMMITTEE_OF_REGIONS,
     'dbpedia': [EUROPEAN_COMMITTEE_OF_REGIONS_DBR]
 }
 
 __ECB__ = {
-    PREFIX: [EUROPEAN_CENTRAL_BANK],
+    PREFIX: EUROPEAN_CENTRAL_BANK,
     'dbpedia': [EUROPEAN_CENTRAL_BANK_DBR]
 }
 
 __ALL__ = {  # This seems to denote "Additional Information"?
-    PREFIX: [],
+    PREFIX: None,
     'dbpedia': []
 }
 
 BODIES = {
-    'all': __ALL__,
-    'EP': __EP__,
-    'EC': __EC__,
-    'CSL': __CSL__,
-    'ESOC': __ESOC__,
-    'EDPS': __EDPS__,
-    'CJEC': __CJEC__,
-    'CJEU': __CJEU__,
-    'CoA': __COA__,
-    'CoR': __COR__,
-    'CotR': __COR__,
-    'ECB': __ECB__,
-    'EP/CSL':
-    {
-        PREFIX: __EP__[PREFIX] + __CSL__[PREFIX],
-        'dbpedia': [[__EP__['dbpedia']], [__CSL__['dbpedia']]]  # TODO: Just make this json with keys or something
-    }
+    'all': [__ALL__],
+    'EP': [__EP__],
+    'EC': [__EC__],
+    'CSL': [__CSL__],
+    'ESOC': [__ESOC__],
+    'EDPS': [__EDPS__],
+    'CJEC': [__CJEC__],
+    'CJEU': [__CJEU__],
+    'CoA': [__COA__],
+    'CoR': [__COR__],
+    'CotR': [__COR__],
+    'ECB': [__ECB__],
+    'EP/CSL': [__EP__, __CSL__]
 }
 
 VOTES = {'Abstain': ABSTAINS, 'For': VOTES_FOR, 'Against': VOTES_AGAINST}

@@ -512,18 +512,16 @@ class Miner(object):
                             activity_body = str(activity['body'])
                             if activity_body is not 'unknown':  # TODO: Investigate why parltrack gives some as unknown
                                 if activity_body in c.BODIES:
-                                    body_uris = c.BODIES[activity_body][c.PREFIX]
-                                    body_dbpedia_uris = c.BODIES[activity_body]['dbpedia']
-                                    for i, body in enumerate(body_uris):
-                                        triples.add((activity_uri, c.HAS_BODY, body))
-                                        triples.add((dossier_uri, c.PROCESSED_BY, body))  # TODO: make this inferred?
+                                    bodies = c.BODIES[activity_body]
 
-                                        for dbpedia_uri in body_dbpedia_uris[i]:
-                                            if isinstance(dbpedia_uri, list):
-                                                for uri in dbpedia_uri:
-                                                    triples.add((body, c.SAME_AS, dbpedia_uri))
-                                            else:
-                                                triples.add((body, c.SAME_AS, dbpedia_uri))  # TODO: check if this causes issues with duplicates
+                                    for body in bodies:
+                                        body_uri = body[c.PREFIX]
+
+                                        triples.add((activity_uri, c.HAS_BODY, body_uri))
+                                        triples.add((dossier_uri, c.PROCESSED_BY, body_uri))  # TODO: make this inferred?
+
+                                        for ext_uri in body['dbpedia']:
+                                            triples.add((body_uri, c.SAME_AS, ext_uri))  # TODO: check if this causes issues with duplicates
                                 else:
                                     logging.error("Unknown activity body '%s'" % activity_body)
 
