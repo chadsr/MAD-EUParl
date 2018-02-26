@@ -1,3 +1,4 @@
+@prefix : <http://localhost:7200/europarl##> .
 @prefix dbo: <http://dbpedia.org/ontology/> .
 @prefix dbp: <http://dbpedia.org/property/> .
 @prefix dbr: <http://dbpedia.org/resource/> .
@@ -37,7 +38,8 @@ dbo:birthPlace rdf:type owl:ObjectProperty ,
 
 ###  http://dbpedia.org/ontology/gender
 dbo:gender rdf:type owl:ObjectProperty ,
-                    owl:FunctionalProperty .
+                    owl:FunctionalProperty ;
+           rdfs:domain dbo:Person .
 
 
 ###  http://dbpedia.org/ontology/party
@@ -53,8 +55,7 @@ dbo:politicalPartyInLegislature rdf:type owl:ObjectProperty ;
 
 ###  http://dbpedia.org/property/houses
 dbp:houses rdf:type owl:ObjectProperty ;
-           owl:inverseOf epv:processesFor ;
-           rdfs:range epv:VotingAssembly .
+           owl:inverseOf epv:processesFor .
 
 
 ###  http://dbpedia.org/property/office
@@ -68,10 +69,32 @@ epv:abstains rdf:type owl:ObjectProperty ;
              rdfs:range epv:VoteInParliament .
 
 
+###  http://localhost:7200/europarl#activity
+epv:activity rdf:type owl:ObjectProperty ;
+             rdfs:domain epv:Dossier ;
+             rdfs:range epv:Activity .
+
+
 ###  http://localhost:7200/europarl#basedOnReport
 epv:basedOnReport rdf:type owl:ObjectProperty ;
                   rdfs:domain epv:VoteInParliament ;
                   rdfs:range epv:Report .
+
+
+###  http://localhost:7200/europarl#body
+epv:body rdf:type owl:ObjectProperty ;
+         rdfs:domain [ rdf:type owl:Class ;
+                       owl:unionOf ( epv:Activity
+                                     epv:Committee
+                                   )
+                     ] ;
+         rdfs:range epv:Institution .
+
+
+###  http://localhost:7200/europarl#document
+epv:document rdf:type owl:ObjectProperty ;
+             rdfs:domain epv:Activity ;
+             rdfs:range epv:Document .
 
 
 ###  http://localhost:7200/europarl#geoArea
@@ -80,66 +103,15 @@ epv:geoArea rdf:type owl:ObjectProperty ;
             rdfs:range dbo:Place .
 
 
-###  http://localhost:7200/europarl#hasActivity
-epv:hasActivity rdf:type owl:ObjectProperty ;
-                rdfs:subPropertyOf owl:topObjectProperty ;
-                rdfs:domain epv:Dossier ;
-                rdfs:range epv:Activity .
-
-
-###  http://localhost:7200/europarl#hasBody
-epv:hasBody rdf:type owl:ObjectProperty ;
-            rdfs:domain epv:Activity ;
-            rdfs:range dbo:Organisation .
-
-
-###  http://localhost:7200/europarl#hasMeeting
-epv:hasMeeting rdf:type owl:ObjectProperty ;
-               rdfs:domain epv:Committee ;
-               rdfs:range epv:Meeting .
-
-
-###  http://localhost:7200/europarl#hasMember
-epv:hasMember rdf:type owl:ObjectProperty ;
-              rdfs:domain epv:Group ;
-              rdfs:range dbo:Person .
-
-
-###  http://localhost:7200/europarl#hasMembership
-epv:hasMembership rdf:type owl:ObjectProperty ;
-                  owl:inverseOf epv:membershipOf ;
-                  rdfs:domain epv:MEP ;
-                  rdfs:range epv:Membership .
-
-
 ###  http://localhost:7200/europarl#hasRapporteur
 epv:hasRapporteur rdf:type owl:ObjectProperty ;
                   rdfs:domain epv:Committee ;
                   rdfs:range epv:MEP .
 
 
-###  http://localhost:7200/europarl#hasText
-epv:hasText rdf:type owl:ObjectProperty ,
-                     owl:FunctionalProperty ;
-            rdfs:domain epv:Dossier ;
-            rdfs:range [ rdf:type owl:Restriction ;
-                         owl:onProperty epv:dossierTItle ;
-                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                         owl:onDataRange xsd:string
-                       ] .
-
-
-###  http://localhost:7200/europarl#hasVote
-epv:hasVote rdf:type owl:ObjectProperty ;
-            owl:inverseOf epv:isVoteFor ;
-            rdfs:domain epv:Dossier ;
-            rdfs:range epv:VoteInParliament .
-
-
 ###  http://localhost:7200/europarl#hasVoter
 epv:hasVoter rdf:type owl:ObjectProperty ;
              owl:inverseOf epv:votesIn ;
-             rdfs:domain epv:VotingAssembly ;
              rdfs:range epv:Voter .
 
 
@@ -156,29 +128,34 @@ epv:isInvolvedIn rdf:type owl:ObjectProperty ;
 
 ###  http://localhost:7200/europarl#isResponsibleIn
 epv:isResponsibleIn rdf:type owl:ObjectProperty ;
-                    rdfs:subPropertyOf epv:isInvolvedIn .
+                    rdfs:subPropertyOf epv:isInvolvedIn ;
+                    rdfs:domain epv:Committee ;
+                    rdfs:range epv:Dossier .
 
 
-###  http://localhost:7200/europarl#isVoteFor
-epv:isVoteFor rdf:type owl:ObjectProperty ;
-              rdfs:domain epv:VoteInParliament ;
-              rdfs:range epv:Dossier .
+###  http://localhost:7200/europarl#meeting
+epv:meeting rdf:type owl:ObjectProperty ;
+            rdfs:domain epv:Committee ;
+            rdfs:range epv:Meeting .
 
 
-###  http://localhost:7200/europarl#isWithin
-epv:isWithin rdf:type owl:ObjectProperty ;
-             rdfs:domain epv:Membership ;
-             rdfs:range epv:Group .
+###  http://localhost:7200/europarl#membership
+epv:membership rdf:type owl:ObjectProperty ;
+               owl:inverseOf epv:membershipOf ;
+               rdfs:domain epv:MEP ;
+               rdfs:range epv:Membership .
 
 
 ###  http://localhost:7200/europarl#membershipOf
-epv:membershipOf rdf:type owl:ObjectProperty .
+epv:membershipOf rdf:type owl:ObjectProperty ;
+                 rdfs:domain epv:Membership ;
+                 rdfs:range epv:MEP .
 
 
 ###  http://localhost:7200/europarl#processed
 epv:processed rdf:type owl:ObjectProperty ;
               owl:inverseOf epv:processedBy ;
-              rdfs:domain epv:VotingAssembly ;
+              rdfs:domain epv:Institution ;
               rdfs:range epv:Dossier ;
               rdfs:label "processed"@en .
 
@@ -186,13 +163,12 @@ epv:processed rdf:type owl:ObjectProperty ;
 ###  http://localhost:7200/europarl#processedBy
 epv:processedBy rdf:type owl:ObjectProperty ;
                 rdfs:domain epv:Dossier ;
-                rdfs:range epv:VotingAssembly ;
+                rdfs:range epv:Institution ;
                 rdfs:label "processedBy"@en .
 
 
 ###  http://localhost:7200/europarl#processesFor
-epv:processesFor rdf:type owl:ObjectProperty ;
-                 rdfs:domain epv:VotingAssembly .
+epv:processesFor rdf:type owl:ObjectProperty .
 
 
 ###  http://localhost:7200/europarl#reactsToVote
@@ -221,6 +197,19 @@ epv:representsCountry rdf:type owl:ObjectProperty ,
                       rdfs:range dbo:Country .
 
 
+###  http://localhost:7200/europarl#vote
+epv:vote rdf:type owl:ObjectProperty ;
+         owl:inverseOf epv:voteOn ;
+         rdfs:domain epv:Dossier ;
+         rdfs:range epv:VoteInParliament .
+
+
+###  http://localhost:7200/europarl#voteOn
+epv:voteOn rdf:type owl:ObjectProperty ;
+           rdfs:domain epv:VoteInParliament ;
+           rdfs:range epv:Dossier .
+
+
 ###  http://localhost:7200/europarl#votesAgainst
 epv:votesAgainst rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf epv:votesOn ;
@@ -238,7 +227,6 @@ epv:votesFor rdf:type owl:ObjectProperty ;
 ###  http://localhost:7200/europarl#votesIn
 epv:votesIn rdf:type owl:ObjectProperty ;
             rdfs:domain epv:Voter ;
-            rdfs:range epv:VotingAssembly ;
             rdfs:label "votesIn"@en .
 
 
@@ -247,6 +235,12 @@ epv:votesOn rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf epv:reactsToVote ;
             rdfs:domain epv:Voter ;
             rdfs:range epv:VoteInParliament .
+
+
+###  http://localhost:7200/europarl#within
+epv:within rdf:type owl:ObjectProperty ;
+           rdfs:domain epv:Membership ;
+           rdfs:range epv:Group .
 
 
 #################################################################
@@ -267,9 +261,23 @@ dbo:deathDate rdf:type owl:DatatypeProperty ,
               rdfs:range xsd:date .
 
 
-###  http://localhost:7200/europarl#dossierTItle
-epv:dossierTItle rdf:type owl:DatatypeProperty ,
-                          owl:FunctionalProperty ;
+###  http://localhost:7200/europarl#activityTitle
+epv:activityTitle rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf epv:title ;
+                  rdfs:domain epv:Activity ;
+                  rdfs:range xsd:string .
+
+
+###  http://localhost:7200/europarl#documentTitle
+epv:documentTitle rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf epv:title ;
+                  rdfs:domain epv:Document ;
+                  rdfs:range xsd:string .
+
+
+###  http://localhost:7200/europarl#dossierTitle
+epv:dossierTitle rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf epv:title ;
                  rdfs:domain epv:Dossier ;
                  rdfs:range xsd:string .
 
@@ -281,11 +289,34 @@ epv:endDate rdf:type owl:DatatypeProperty ,
             rdfs:range xsd:date .
 
 
+###  http://localhost:7200/europarl#reportTitle
+epv:reportTitle rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf epv:documentTitle ;
+                rdfs:domain epv:Report ;
+                rdfs:range xsd:string .
+
+
 ###  http://localhost:7200/europarl#startDate
 epv:startDate rdf:type owl:DatatypeProperty ,
                        owl:FunctionalProperty ;
               rdfs:domain epv:Membership ;
               rdfs:range xsd:date .
+
+
+###  http://localhost:7200/europarl#text
+epv:text rdf:type owl:DatatypeProperty ;
+         rdfs:range xsd:string .
+
+
+###  http://localhost:7200/europarl#title
+epv:title rdf:type owl:DatatypeProperty ;
+          rdfs:range xsd:string .
+
+
+###  http://localhost:7200/europarl#voteTitle
+epv:voteTitle rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf epv:title ;
+              rdfs:domain epv:VoteInParliament .
 
 
 ###  http://xmlns.com/foaf/0.1/age
@@ -327,14 +358,15 @@ dbo:Place rdf:type owl:Class .
 
 
 ###  http://dbpedia.org/ontology/PoliticalParty
-dbo:PoliticalParty rdf:type owl:Class .
+dbo:PoliticalParty rdf:type owl:Class ;
+                   owl:equivalentClass epv:PoliticalGroup .
 
 
 ###  http://localhost:7200/europarl#ActiveMEP
 epv:ActiveMEP rdf:type owl:Class ;
               owl:equivalentClass [ owl:intersectionOf ( epv:MEP
                                                          [ rdf:type owl:Restriction ;
-                                                           owl:onProperty epv:hasMembership ;
+                                                           owl:onProperty epv:membership ;
                                                            owl:someValuesFrom epv:ActiveMembership
                                                          ]
                                                        ) ;
@@ -346,6 +378,13 @@ epv:ActiveMEP rdf:type owl:Class ;
 
 ###  http://localhost:7200/europarl#ActiveMembership
 epv:ActiveMembership rdf:type owl:Class ;
+                     owl:equivalentClass [ owl:intersectionOf ( epv:Membership
+                                                                [ rdf:type owl:Class ;
+                                                                  owl:complementOf epv:InactiveMembership
+                                                                ]
+                                                              ) ;
+                                           rdf:type owl:Class
+                                         ] ;
                      rdfs:subClassOf epv:Membership ;
                      owl:disjointWith epv:InactiveMembership .
 
@@ -400,12 +439,7 @@ epv:Document rdf:type owl:Class .
 
 
 ###  http://localhost:7200/europarl#Dossier
-epv:Dossier rdf:type owl:Class ;
-            owl:equivalentClass [ rdf:type owl:Restriction ;
-                                  owl:onProperty epv:processedBy ;
-                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                  owl:onClass epv:VotingAssembly
-                                ] .
+epv:Dossier rdf:type owl:Class .
 
 
 ###  http://localhost:7200/europarl#FemaleMEP
@@ -430,7 +464,7 @@ epv:Group rdf:type owl:Class ;
 epv:InactiveMEP rdf:type owl:Class ;
                 owl:equivalentClass [ owl:intersectionOf ( epv:MEP
                                                            [ rdf:type owl:Restriction ;
-                                                             owl:onProperty epv:hasMembership ;
+                                                             owl:onProperty epv:membership ;
                                                              owl:qualifiedCardinality "0"^^xsd:nonNegativeInteger ;
                                                              owl:onClass epv:ActiveMembership
                                                            ]
@@ -495,11 +529,9 @@ epv:Observer rdf:type owl:Class ;
              rdfs:subClassOf epv:Membership .
 
 
-###  http://localhost:7200/europarl#Party
-epv:Party rdf:type owl:Class ;
-          rdfs:subClassOf epv:Group ;
-          rdfs:comment "A collection of relatively likeminded Voters" ;
-          rdfs:label "Party"@en .
+###  http://localhost:7200/europarl#PoliticalGroup
+epv:PoliticalGroup rdf:type owl:Class ;
+                   rdfs:subClassOf epv:Group .
 
 
 ###  http://localhost:7200/europarl#President
@@ -553,26 +585,7 @@ epv:VoteInParliament rdf:type owl:Class .
 
 ###  http://localhost:7200/europarl#Voter
 epv:Voter rdf:type owl:Class ;
-          owl:equivalentClass [ owl:intersectionOf ( [ rdf:type owl:Restriction ;
-                                                       owl:onProperty epv:reactsToVote ;
-                                                       owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                       owl:onClass epv:Dossier
-                                                     ]
-                                                     [ rdf:type owl:Restriction ;
-                                                       owl:onProperty epv:votesIn ;
-                                                       owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                       owl:onClass epv:VotingAssembly
-                                                     ]
-                                                   ) ;
-                                rdf:type owl:Class
-                              ] ;
           rdfs:subClassOf epv:Agent .
-
-
-###  http://localhost:7200/europarl#VotingAssembly
-epv:VotingAssembly rdf:type owl:Class ;
-                   rdfs:subClassOf epv:Agent ;
-                   rdfs:label "VotingAssembly"@en .
 
 
 ###  http://xmlns.com/foaf/0.1/Agent

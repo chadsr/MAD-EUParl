@@ -29,6 +29,7 @@ class Miner(object):
         self.mep_ext_uris = manager.dict()
         self.party_ext_uris = manager.dict()
         self.places_ext_uris = manager.dict()
+        self.committees_ext_uris = manager.dict()
 
         # Internal URIs
         self.dict_mep = manager.dict()
@@ -39,6 +40,7 @@ class Miner(object):
 
         self.list_activities = manager.list()
         self.list_procedures = manager.list()
+        self.list_sub_procedures = manager.list()
         self.list_doc_types = manager.list()
 
         self.sparql_endpoint = SparqlServer(c.SPARQL_ENDPOINT)
@@ -66,7 +68,15 @@ class Miner(object):
         if loaded_dict is not None:
             self.places_ext_uris.update(loaded_dict)
 
+        loaded_dict = io.load_json(c.EXTERNAL_COMMITTEE_URIS)
+        if loaded_dict is not None:
+            self.committees_ext_uris.update(loaded_dict)
+
         # TEMP
+        loaded_dict = io.load_json(c.JSON_DIR + 'subprocedures.json')
+        if loaded_dict is not None:
+            self.list_procedures.extend(loaded_dict)
+
         loaded_dict = io.load_json(c.JSON_DIR + 'procedures.json')
         if loaded_dict is not None:
             self.list_procedures.extend(loaded_dict)
@@ -88,6 +98,7 @@ class Miner(object):
 
         io.save_dict_to_json(c.EXTERNAL_MEP_URIS, self.mep_ext_uris)
         io.save_dict_to_json(c.EXTERNAL_PARTY_URIS, self.party_ext_uris)
+        io.save_dict_to_json(c.EXTERNAL_COMMITTEE_URIS, self.committees_ext_uris)
 
         results = self.convert_dossiers(c.DIR_DOSSIERS, num_threads, dossier_limit)
         if results:
@@ -100,6 +111,7 @@ class Miner(object):
 
         io.save_list_to_json(c.JSON_DIR + 'activities.json', self.list_activities)
         io.save_list_to_json(c.JSON_DIR + 'procedures.json', self.list_procedures)
+        io.save_list_to_json(c.JSON_DIR + 'subprocedures.json', self.list_sub_procedures)
         io.save_list_to_json(c.JSON_DIR + 'doc_types.json', self.list_doc_types)
 
         results = self.convert_votes(c.DIR_VOTES, num_threads, vote_limit)
@@ -110,8 +122,6 @@ class Miner(object):
             return False
 
         self.total_triples = total_mep_triples + total_dossier_triples + total_vote_triples
-        # io.save_graph(c.GRAPH_OUTPUT, graph)
-        # io.save_dataset(c.DATA_OUTPUT, miner.dataset)
 
     # def mepid_to_profile_iri(id):
     # return URIRef(to_iri('http://www.europarl.europa.eu/meps/en/' + str(id)
@@ -359,26 +369,43 @@ class Miner(object):
         if 'Committees' in mep:
             for committee in mep['Committees']:
                 committee_title = committee['Organization']
-                # Since IDs are not always available, we use a formatted title string for now
-                committee_id = self.format_name_string(committee_title)
+
+                if Miner.key_exists('committee_id', committee):
+                    committee_id = committee['committee_id']
+                elif Miner.key_exists('abbr', committee):
+                    committee_id = committee['abbr']
+                else:
+                    logging.warning("No committee_id or abbr found. Skipping.")
+                    continue
+
                 committee_uri = self.id_to_iri(committee_id)
 
                 if not self.key_exists(committee_id, self.dict_committees):
                     self.dict_committees[committee_id] = committee_uri
 
+                if not self.uris_exist(committee_id, self.committees_ext_uris):
+                    committee_ext_uris = Miner.fetch_uris_from_name(committee_id, keywords='european committee', max_results=1)
+                    self.add_uris(committee_ext_uris, committee_id, self.committees_ext_uris)
+
+                ext_uris = self.get_uris(committee_id, self.committees_ext_uris)
+                if ext_uris:
+                    triples.add((committee_uri, c.SAME_AS, URIRef(ext_uris[0])))
+
                 if 'role' in committee and committee['role']:
                     role = committee['role']
 
-                    # start_date = group['start']
+                    start_date = datetime.strptime(group['start'].split('T')[0], '%Y-%m-%d').date()
                     end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
 
+                    membership_uri = self.id_to_iri(str(mep_id) + "_" + committee_id + "_" + str(start_date), prefix='membership')
+
                     if role in c.MEMBERSHIPS:
-                        triples.add((mep_uri, c.MEMBERSHIPS[role], URIRef(self.dict_committees[committee_id])))
-                        # If end_date has passed
-                        if end_date <= date_now:
-                            pass  # TODO: add end date
+                        triples.add((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
+                        triples.add((membership_uri, c.TYPE, URIRef(c.MEMBERSHIPS[role])))
                     else:
                         logging.error("Unknown role:", role)
+                else:
+                    logging.warning("No role in committee entry of MEP.")
 
         if 'Gender' in mep:
             gender = str(mep['Gender'])
@@ -458,11 +485,14 @@ class Miner(object):
         dossier_reference = procedure['reference']
         dossier_title = Literal(str(procedure['title'].strip()), datatype=c.STRING)
         # dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
-        dossier_type = Literal(str(procedure['type']), datatype=c.STRING)
+        dossier_type = procedure['type']
+
+        if not Miner.key_exists('subtype', procedure):
+            self.list_sub_procedures.append(procedure['subtype'])
 
         # TEMP
-        if procedure['type'] not in self.list_procedures:
-            self.list_procedures.append(procedure['type'])
+        if dossier_type not in self.list_procedures:
+            self.list_procedures.append(dossier_type)
 
         dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
 
@@ -470,7 +500,7 @@ class Miner(object):
         self.dict_dossier[dossier_id] = dossier_uri
 
         # triples.add((dossier_uri, c.REACHED_STAGE, dossier_stage))
-        triples.add((dossier_uri, c.PROCEDURE_TYPE, dossier_type))
+        # triples.add((dossier_uri, c.PROCEDURE_TYPE, dossier_type))
         triples.add((dossier_uri, c.DOSSIER_TITLE, dossier_title))
         triples.add((dossier_uri, c.URI, dossier_url))
 
@@ -525,7 +555,7 @@ class Miner(object):
 
                     if 'title' in activity:
                         activity_title = Literal(str(activity['title']), datatype=c.STRING)
-                        triples.add((activity_uri, c.HAS_TITLE, activity_title))
+                        triples.add((activity_uri, c.ACTIVITY_TITLE, activity_title))
 
                     if 'docs' in activity:
                         for doc in activity['docs']:
@@ -535,7 +565,7 @@ class Miner(object):
                             doc_uri = self.id_to_iri(doc_id, prefix='document')
 
                             triples.add((activity_uri, c.HAS_DOC, doc_uri))
-                            triples.add((doc_uri, c.HAS_TITLE, Literal(doc_title, datatype=c.STRING)))
+                            triples.add((doc_uri, c.DOCUMENT_TITLE, Literal(doc_title, datatype=c.STRING)))
 
                             if 'url' in doc:
                                 if doc['url']:
@@ -555,33 +585,38 @@ class Miner(object):
             else:
                 logging.warning("Activity has no type field!", json.dumps(activity, indent=2))
 
-            for committee in dossier['committees']:
-                committee_title = committee['committee_full']
-                committee_id = self.format_name_string(committee_title)
-                committee_uri = self.id_to_iri(committee_id)
-                # committee_body = committee['body']
-                committee_responsible = bool(committee['responsible'])
+        for committee in dossier['committees']:
+            committee_title = committee['committee_full']
+            committee_id = committee['committee']
+            committee_uri = self.id_to_iri(committee_id, prefix='committee')
+            committee_responsible = bool(committee['responsible'])
 
-                if committee_responsible:
-                    triples.add((committee_uri, c.IS_RESPONSIBLE, dossier_uri))
-                else:
-                    triples.add((committee_uri, c.IS_INVOLVED, dossier_uri))
+            if Miner.key_exists('body', committee):
+                committee_body = committee['body']
+                if Miner.key_exists(committee_body, c.BODIES):
+                    triples.add((committee_uri, c.HAS_BODY, c.BODIES[committee_body][c.PREFIX]))
+                    # TODO: Extend to sameas?
 
-                # TODO () Figure out ID troubles (ID doesn't match current
-                # dictionary)
-                """
-                if 'rapporteur' in committee:
-                    for rapporteur in committee['rapporteur']:
-                        committee_rapporteur_id = str(rapporteur['mepref'])
+            if committee_responsible:
+                triples.add((committee_uri, c.IS_RESPONSIBLE, dossier_uri))
+            else:
+                triples.add((committee_uri, c.IS_INVOLVED, dossier_uri))
 
-                        if committee_rapporteur_id in self.mep_ext_uris:
-                            mep_uri = URIRef(self.mep_ext_uris[committee_rapporteur_id][0])
-                            triples.add([committee_uri, c.HAS_RAPPORTEUR , mep_uri])
-                            print (mep_uri)
-                        else:
-                            print ("MEP not found:", committee_rapporteur_id)
-                            print (json.dumps(rapporteur, indent=2), "\n")
-                """
+            # TODO () Figure out ID troubles (ID doesn't match current
+            # dictionary)
+            """
+            if 'rapporteur' in committee:
+                for rapporteur in committee['rapporteur']:
+                    committee_rapporteur_id = str(rapporteur['mepref'])
+
+                    if committee_rapporteur_id in self.mep_ext_uris:
+                        mep_uri = URIRef(self.mep_ext_uris[committee_rapporteur_id][0])
+                        triples.add([committee_uri, c.HAS_RAPPORTEUR , mep_uri])
+                        print (mep_uri)
+                    else:
+                        print ("MEP not found:", committee_rapporteur_id)
+                        print (json.dumps(rapporteur, indent=2), "\n")
+            """
 
         return triples
 
@@ -646,7 +681,7 @@ class Miner(object):
 
                 if 'title' in votes:
                     vote_title = votes['title']
-                    triples.add((URIRef(vote_uri), c.HAS_TITLE, Literal(vote_title, datatype=c.STRING)))
+                    triples.add((URIRef(vote_uri), c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
 
                 if 'report' in votes:
                     report_id = str(votes['report'])

@@ -7,7 +7,7 @@ class DatasetGenerator(object):
         raise NotImplementedError()
 
     @staticmethod
-    def get_dataset(ont=c.DATA_OUTPUT):
+    def get_dataset(ont=c.ONTOLOGY):
         ds = Dataset()
         ds.parse(ont, format='turtle')
         ds.bind(c.PREFIX, c.ONT)

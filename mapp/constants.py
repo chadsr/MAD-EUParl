@@ -13,8 +13,9 @@ MAIN_LOG = os.path.join(LOG_DIR, 'europarl.log')
 JSON_DIR = os.path.join(DATA_DIR, 'json/')
 LD_DIR = os.path.join(DATA_DIR, 'linked_data/')
 
-DATA_OUTPUT = os.path.join(LD_DIR, 'europarl.ttl')
-GRAPH_OUTPUT = os.path.join(LD_DIR, 'europarl.ttl')
+ONTOLOGY = os.path.join(LD_DIR, 'europarl.ttl')
+DATA_OUTPUT = os.path.join(LD_DIR, 'europarl_ds.ttl')
+GRAPH_OUTPUT = os.path.join(LD_DIR, 'europarl_graph.ttl')
 
 DIR_MEPS = os.path.join(JSON_DIR, 'mep_chunks')
 DIR_DOSSIERS = os.path.join(JSON_DIR, 'dossier_chunks')
@@ -27,6 +28,7 @@ DATA_DOSSIER = os.path.join(JSON_DIR, 'ep_dossiers.json')
 EXTERNAL_MEP_URIS = os.path.join(JSON_DIR, 'mep_uris.json')
 EXTERNAL_PARTY_URIS = os.path.join(JSON_DIR, 'party_uris.json')
 EXTERNAL_PLACES_URIS = os.path.join(JSON_DIR, 'places_uris.json')
+EXTERNAL_COMMITTEE_URIS = os.path.join(JSON_DIR, 'committee_uris.json')
 
 DICT_COMMITTEES = os.path.join(JSON_DIR, 'dict_committees.json')
 DICT_MISC_VOTES = os.path.join(JSON_DIR, 'misc_votes.json')
@@ -86,79 +88,46 @@ DBP = Namespace(dbp)
 
 DOSSIER = ONT['Dossier']
 ACTIVITY = ONT['Activity']
-DOSSIER_TITLE = ONT['dossierTitle']
 PROCESSED_BY = ONT['processedBy']
-HAS_ACTIVITY = ONT['hasActivity']
-REACHED_STAGE = ONT['reachedStage']
-PROCEDURE_TYPE = ONT['procedureType']
+HAS_ACTIVITY = ONT['activity']
 GEO_AREA = ONT['geoArea']
 
 START_DATE = ONT['startDate']
 END_DATE = ONT['endDate']
 
-HAS_TITLE = ONT['hasTitle']
+DOSSIER_TITLE = ONT['dossierTitle']
+REPORT_TITLE = ONT['reportTitle']
+ACTIVITY_TITLE = ONT['activityTitle']
+DOCUMENT_TITLE = ONT['documentTitlte']
+VOTE_TITLE = ONT['voteTitle']
 
-HAS_DOC = ONT['hasDocument']
+HAS_DOC = ONT['document']
 
 IS_RESPONSIBLE = ONT['isResponsibleIn']
 IS_INVOLVED = ONT['isInvolvedIn']
 HAS_RAPPORTEUR = ONT['hasRapporteur']
 
 PARLIAMENT_VOTE = ONT['VoteInParliament']
-IS_VOTE_FOR = ONT['isVoteFor']
+IS_VOTE_FOR = ONT['voteOn']
 
 ABSTAINS = ONT['abstains']
 VOTES_FOR = ONT['votesFor']
 VOTES_AGAINST = ONT['votesAgainst']
 VOTES_IN = ONT['votesIn']
 
-HAS_TYPE = ONT['hasType']
-HAS_BODY = ONT['hasBody']
+HAS_BODY = ONT['body']
 
-PARTY = DBO['party']
+# PARTY = DBO['party']
 
 REPRESENTS_COUNTRY = ONT['representsCountry']
 
 BASED_ON_REPORT = ONT['basedOnReport']
-IS_WITHIN = ONT['isWithin']
-HAS_MEMBERSHIP = ONT['hasMembership']
-MEMBER = ONT['Membership']
-SUBSTITUTE = ONT['Substitute']
-DEPUTY_TREASURER = ONT['DeputyTreasurer']
-VICE_CHAIR = ONT['ViceChair']
-CO_CHAIR = ONT['CoChair']
-BUREAU_VICE_CHAIR = ONT['ViceChairOfTheBureau']
-CO_TREASURER = ONT['CoTreasurer']
-DEPUTY_CHAIR = ONT['DeputyChair']
-OBSERVER = ONT['Observer']
-SUBSTITUTE_OBSERVER = ONT['SubstituteObserver']
-BUREAU_CHAIR = ONT['ChairOfTheBureau']
-CHAIR = ONT['Chair']
-PRESIDENT = ONT['President']
-TREASURER = ONT['Treasurer']
-BUREAU_MEMBER = ONT['MemberOfTheBureau']
+IS_WITHIN = ONT['within']
+HAS_MEMBERSHIP = ONT['membership']
 
 GENDER = FOAF.gender
 MALE = Literal('male', datatype=XSD.string)
 FEMALE = Literal('female', datatype=XSD.string)
-EUROPEAN_PARLIAMENT_DBR = DBR['European_Parliament']
-EUROPEAN_COUNCIL_DBR = DBR['European_Council']
-EUROPEAN_COMMISION_DBR = DBR['European_Commission']
-EUROPEAN_CENTRAL_BANK_DBR = DBR['European_Central_Bank']
-EUROPEAN_CENTRAL_BANK = ONT['european_central_bank']
-EUROPEAN_PARLIAMENT = ONT['european_parliament']
-EUROPEAN_COUNCIL = ONT['european_council']
-EUROPEAN_COMMISSION = ONT['european_commission']
-EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE = ONT['european_economic_and_social_committee']
-EUROPEAN_COURT_OF_AUDITORS = ONT['european_court_of_auditors']
-EUROPEAN_COURT_OF_AUDITORS_DBR = DBR['Court_of_Auditors']
-EUROPEAN_COMMITTEE_OF_REGIONS = ONT['european_committee_of_regions']
-EUROPEAN_COMMITTEE_OF_REGIONS_DBR = DBR['Committee_of_the_Regions']
-EUROPEAN_DATA_PROTECTION_SUPERVISOR = ONT['european_data_protection_supervisor']
-EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR = DBR['European_Data_Protection_Supervisor']
-EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE = ONT['european_communities_court_of_justice']
-EUROPEAN_UNION_COURT_OF_JUSTICE = ONT['european_court_of_justice']
-EUROPEAN_UNION_COURT_OF_JUSTICE_DBR = DBR['European_Court_of_Justice']
 
 EUROPEAN_PARLIAMENT_GROUP = DBO['europeanParliamentGroup']
 IN_LEGISLATURE = DBO['politicalPartyInLegislature']
@@ -183,6 +152,21 @@ BOOLEAN = XSD.boolean
 TYPE = RDF.type
 SAME_AS = OWL.sameAs
 
+MEMBER = ONT['Membership']
+SUBSTITUTE = ONT['Substitute']
+DEPUTY_TREASURER = ONT['DeputyTreasurer']
+VICE_CHAIR = ONT['ViceChair']
+CO_CHAIR = ONT['CoChair']
+BUREAU_VICE_CHAIR = ONT['ViceChairOfTheBureau']
+CO_TREASURER = ONT['CoTreasurer']
+DEPUTY_CHAIR = ONT['DeputyChair']
+OBSERVER = ONT['Observer']
+SUBSTITUTE_OBSERVER = ONT['SubstituteObserver']
+BUREAU_CHAIR = ONT['ChairOfTheBureau']
+CHAIR = ONT['Chair']
+PRESIDENT = ONT['President']
+TREASURER = ONT['Treasurer']
+BUREAU_MEMBER = ONT['MemberOfTheBureau']
 MEMBERSHIPS = {
     'Member': MEMBER,
     'Member of the Bureau': BUREAU_MEMBER,
@@ -200,6 +184,25 @@ MEMBERSHIPS = {
     'Substitute': SUBSTITUTE,
     'Substitute observer': SUBSTITUTE_OBSERVER
 }
+
+EUROPEAN_PARLIAMENT_DBR = DBR['European_Parliament']
+EUROPEAN_COUNCIL_DBR = DBR['European_Council']
+EUROPEAN_COMMISION_DBR = DBR['European_Commission']
+EUROPEAN_CENTRAL_BANK_DBR = DBR['European_Central_Bank']
+EUROPEAN_CENTRAL_BANK = ONT['european_central_bank']
+EUROPEAN_PARLIAMENT = ONT['european_parliament']
+EUROPEAN_COUNCIL = ONT['european_council']
+EUROPEAN_COMMISSION = ONT['european_commission']
+EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE = ONT['european_economic_and_social_committee']
+EUROPEAN_COURT_OF_AUDITORS = ONT['european_court_of_auditors']
+EUROPEAN_COURT_OF_AUDITORS_DBR = DBR['Court_of_Auditors']
+EUROPEAN_COMMITTEE_OF_REGIONS = ONT['european_committee_of_regions']
+EUROPEAN_COMMITTEE_OF_REGIONS_DBR = DBR['Committee_of_the_Regions']
+EUROPEAN_DATA_PROTECTION_SUPERVISOR = ONT['european_data_protection_supervisor']
+EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR = DBR['European_Data_Protection_Supervisor']
+EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE = ONT['european_communities_court_of_justice']
+EUROPEAN_UNION_COURT_OF_JUSTICE = ONT['european_court_of_justice']
+EUROPEAN_UNION_COURT_OF_JUSTICE_DBR = DBR['European_Court_of_Justice']
 
 __EP__ = {
     PREFIX: EUROPEAN_PARLIAMENT,
