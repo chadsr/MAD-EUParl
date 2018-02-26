@@ -370,9 +370,9 @@ class Miner(object):
             for committee in mep['Committees']:
                 committee_title = committee['Organization']
 
-                if Miner.key_exists('committee_id', committee):
+                if 'committee_id' in committee and committee['committee_id']:
                     committee_id = committee['committee_id']
-                elif Miner.key_exists('abbr', committee):
+                elif 'abbr' in committee and committee['abbr']:
                     committee_id = committee['abbr']
                 else:
                     logging.warning("No committee_id or abbr found. Skipping.")
@@ -487,7 +487,7 @@ class Miner(object):
         # dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
         dossier_type = procedure['type']
 
-        if not Miner.key_exists('subtype', procedure):
+        if not self.key_exists('subtype', procedure):
             self.list_sub_procedures.append(procedure['subtype'])
 
         # TEMP
@@ -591,9 +591,9 @@ class Miner(object):
             committee_uri = self.id_to_iri(committee_id, prefix='committee')
             committee_responsible = bool(committee['responsible'])
 
-            if Miner.key_exists('body', committee):
+            if self.key_exists('body', committee):
                 committee_body = committee['body']
-                if Miner.key_exists(committee_body, c.BODIES):
+                if self.key_exists(committee_body, c.BODIES):
                     triples.add((committee_uri, c.HAS_BODY, c.BODIES[committee_body][c.PREFIX]))
                     # TODO: Extend to sameas?
 
@@ -601,6 +601,8 @@ class Miner(object):
                 triples.add((committee_uri, c.IS_RESPONSIBLE, dossier_uri))
             else:
                 triples.add((committee_uri, c.IS_INVOLVED, dossier_uri))
+
+            triples.add((committee_uri, c.COMMITTEE_TITLE, Literal(committee_title, datatype=c.STRING)))
 
             # TODO () Figure out ID troubles (ID doesn't match current
             # dictionary)
