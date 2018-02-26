@@ -100,6 +100,7 @@ REPORT_TITLE = ONT['reportTitle']
 ACTIVITY_TITLE = ONT['activityTitle']
 DOCUMENT_TITLE = ONT['documentTitlte']
 VOTE_TITLE = ONT['voteTitle']
+COMMITTEE_TITLE = ONT['committeeTitle']
 
 HAS_DOC = ONT['document']
 
