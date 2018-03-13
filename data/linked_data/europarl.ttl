@@ -91,6 +91,13 @@ epv:body rdf:type owl:ObjectProperty ;
          rdfs:range epv:Institution .
 
 
+###  http://localhost:7200/europarl#committeeSecretariat
+epv:committeeSecretariat rdf:type owl:ObjectProperty ;
+                         rdfs:subPropertyOf epv:secretariat ;
+                         rdfs:domain epv:CommitteeSecretariat ;
+                         rdfs:range epv:Committee .
+
+
 ###  http://localhost:7200/europarl#document
 epv:document rdf:type owl:ObjectProperty ;
              rdfs:domain epv:Activity ;
@@ -152,6 +159,13 @@ epv:membershipOf rdf:type owl:ObjectProperty ;
                  rdfs:range epv:MEP .
 
 
+###  http://localhost:7200/europarl#politicalGroupSecretariat
+epv:politicalGroupSecretariat rdf:type owl:ObjectProperty ;
+                              rdfs:subPropertyOf epv:secretariat ;
+                              rdfs:domain epv:PoliticalGroupSecretariat ;
+                              rdfs:range epv:PoliticalGroup .
+
+
 ###  http://localhost:7200/europarl#processed
 epv:processed rdf:type owl:ObjectProperty ;
               owl:inverseOf epv:processedBy ;
@@ -171,23 +185,16 @@ epv:processedBy rdf:type owl:ObjectProperty ;
 epv:processesFor rdf:type owl:ObjectProperty .
 
 
+###  http://localhost:7200/europarl#rapporteur
+epv:rapporteur rdf:type owl:ObjectProperty ;
+               rdfs:domain epv:Dossier ;
+               rdfs:range epv:Rapporteur .
+
+
 ###  http://localhost:7200/europarl#reactsToVote
 epv:reactsToVote rdf:type owl:ObjectProperty ;
                  rdfs:domain epv:Voter ;
                  rdfs:range epv:VoteInParliament .
-
-
-###  http://localhost:7200/europarl#representedBy
-epv:representedBy rdf:type owl:ObjectProperty ;
-                  owl:inverseOf epv:represents ;
-                  rdfs:range epv:Voter ;
-                  rdfs:label "representedBy"@en .
-
-
-###  http://localhost:7200/europarl#represents
-epv:represents rdf:type owl:ObjectProperty ;
-               rdfs:domain epv:Voter ;
-               rdfs:label "represents"@en .
 
 
 ###  http://localhost:7200/europarl#representsCountry
@@ -195,6 +202,18 @@ epv:representsCountry rdf:type owl:ObjectProperty ,
                                owl:FunctionalProperty ;
                       rdfs:domain epv:Membership ;
                       rdfs:range dbo:Country .
+
+
+###  http://localhost:7200/europarl#secretariat
+epv:secretariat rdf:type owl:ObjectProperty ;
+                rdfs:domain epv:Secretariat ;
+                rdfs:range epv:Group .
+
+
+###  http://localhost:7200/europarl#shadowRapporteur
+epv:shadowRapporteur rdf:type owl:ObjectProperty ;
+                     rdfs:domain epv:Dossier ;
+                     rdfs:range epv:ShadowRapporteur .
 
 
 ###  http://localhost:7200/europarl#vote
@@ -350,6 +369,7 @@ dbo:Organisation rdf:type owl:Class .
 
 ###  http://dbpedia.org/ontology/Person
 dbo:Person rdf:type owl:Class ;
+           owl:equivalentClass epv:Person ;
            rdfs:subClassOf epv:Agent .
 
 
@@ -419,9 +439,19 @@ epv:CoTreasurer rdf:type owl:Class ;
                 rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/europarl#Commissioner
+epv:Commissioner rdf:type owl:Class ;
+                 rdfs:subClassOf epv:Person .
+
+
 ###  http://localhost:7200/europarl#Committee
 epv:Committee rdf:type owl:Class ;
               rdfs:subClassOf epv:Group .
+
+
+###  http://localhost:7200/europarl#CommitteeSecretariat
+epv:CommitteeSecretariat rdf:type owl:Class ;
+                         rdfs:subClassOf epv:Secretariat .
 
 
 ###  http://localhost:7200/europarl#DeputyChair
@@ -439,7 +469,16 @@ epv:Document rdf:type owl:Class .
 
 
 ###  http://localhost:7200/europarl#Dossier
-epv:Dossier rdf:type owl:Class .
+epv:Dossier rdf:type owl:Class ;
+            owl:equivalentClass [ rdf:type owl:Restriction ;
+                                  owl:onProperty epv:shadowRapporteur ;
+                                  owl:someValuesFrom epv:ShadowRapporteur
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty epv:rapporteur ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass epv:Rapporteur
+                                ] .
 
 
 ###  http://localhost:7200/europarl#FemaleMEP
@@ -457,7 +496,7 @@ epv:FemaleMEP rdf:type owl:Class ;
 
 ###  http://localhost:7200/europarl#Group
 epv:Group rdf:type owl:Class ;
-          rdfs:subClassOf epv:Agent .
+          rdfs:subClassOf dbo:Organisation .
 
 
 ###  http://localhost:7200/europarl#InactiveMEP
@@ -494,7 +533,12 @@ epv:Institution rdf:type owl:Class ;
 
 ###  http://localhost:7200/europarl#MEP
 epv:MEP rdf:type owl:Class ;
-        rdfs:subClassOf dbo:Person .
+        rdfs:subClassOf epv:Person .
+
+
+###  http://localhost:7200/europarl#MEPAssistant
+epv:MEPAssistant rdf:type owl:Class ;
+                 rdfs:subClassOf epv:Person .
 
 
 ###  http://localhost:7200/europarl#MaleMEP
@@ -529,9 +573,19 @@ epv:Observer rdf:type owl:Class ;
              rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/europarl#Person
+epv:Person rdf:type owl:Class ;
+           rdfs:subClassOf epv:Agent .
+
+
 ###  http://localhost:7200/europarl#PoliticalGroup
 epv:PoliticalGroup rdf:type owl:Class ;
                    rdfs:subClassOf epv:Group .
+
+
+###  http://localhost:7200/europarl#PoliticalGroupSecretariat
+epv:PoliticalGroupSecretariat rdf:type owl:Class ;
+                              rdfs:subClassOf epv:Secretariat .
 
 
 ###  http://localhost:7200/europarl#President
@@ -539,9 +593,24 @@ epv:President rdf:type owl:Class ;
               rdfs:subClassOf epv:Membership .
 
 
+###  http://localhost:7200/europarl#Rapporteur
+epv:Rapporteur rdf:type owl:Class ;
+               rdfs:subClassOf epv:MEP .
+
+
 ###  http://localhost:7200/europarl#Report
 epv:Report rdf:type owl:Class ;
            rdfs:subClassOf epv:Document .
+
+
+###  http://localhost:7200/europarl#Secretariat
+epv:Secretariat rdf:type owl:Class ;
+                rdfs:subClassOf epv:Group .
+
+
+###  http://localhost:7200/europarl#ShadowRapporteur
+epv:ShadowRapporteur rdf:type owl:Class ;
+                     rdfs:subClassOf epv:MEP .
 
 
 ###  http://localhost:7200/europarl#SubCommittee
@@ -585,7 +654,7 @@ epv:VoteInParliament rdf:type owl:Class .
 
 ###  http://localhost:7200/europarl#Voter
 epv:Voter rdf:type owl:Class ;
-          rdfs:subClassOf epv:Agent .
+          rdfs:subClassOf epv:Person .
 
 
 ###  http://xmlns.com/foaf/0.1/Agent
