@@ -98,6 +98,8 @@ END_DATE = ONT['endDate']
 DOSSIER_TITLE = ONT['dossierTitle']
 REPORT_TITLE = ONT['reportTitle']
 ACTIVITY_TITLE = ONT['activityTitle']
+
+DOCUMENT = ONT['Document']
 DOCUMENT_TITLE = ONT['documentTitlte']
 VOTE_TITLE = ONT['voteTitle']
 COMMITTEE_TITLE = ONT['committeeTitle']
@@ -110,11 +112,11 @@ HAS_RAPPORTEUR = ONT['hasRapporteur']
 
 PARLIAMENT_VOTE = ONT['VoteInParliament']
 IS_VOTE_FOR = ONT['voteOn']
-
-ABSTAINS = ONT['abstains']
-VOTES_FOR = ONT['votesFor']
-VOTES_AGAINST = ONT['votesAgainst']
-VOTES_IN = ONT['votesIn']
+REACTION_BY = ONT['reactionBy']
+REACTION_TO = ONT['reactionTo']
+ABSTAIN = ONT['Abstain']
+VOTE_FOR = ONT['VoteFor']
+VOTE_AGAINST = ONT['VoteAgainst']
 
 HAS_BODY = ONT['body']
 
@@ -207,57 +209,57 @@ EUROPEAN_UNION_COURT_OF_JUSTICE_DBR = DBR['European_Court_of_Justice']
 
 __EP__ = {
     PREFIX: EUROPEAN_PARLIAMENT,
-    'dbpedia': [EUROPEAN_PARLIAMENT_DBR]
+    'dbpedia': EUROPEAN_PARLIAMENT_DBR
 }
 
 __EC__ = {
     PREFIX: EUROPEAN_COMMISSION,
-    'dbpedia': [EUROPEAN_COMMISION_DBR]
+    'dbpedia': EUROPEAN_COMMISION_DBR
 }
 
 __CSL__ = {
     PREFIX: EUROPEAN_COUNCIL,
-    'dbpedia': [EUROPEAN_COUNCIL_DBR]
+    'dbpedia': EUROPEAN_COUNCIL_DBR
 }
 
 __ESOC__ = {
     PREFIX: EUROPEAN_ECONOMIC_SOCIAL_COMMITTEE,
-    'dbpedia': []
+    'dbpedia': None
 }
 
 __COA__ = {
     PREFIX: EUROPEAN_COURT_OF_AUDITORS,
-    'dbpedia': [EUROPEAN_COURT_OF_AUDITORS_DBR]
+    'dbpedia': EUROPEAN_COURT_OF_AUDITORS_DBR
 }
 
 __EDPS__ = {
     PREFIX: EUROPEAN_DATA_PROTECTION_SUPERVISOR,
-    'dbpedia': [EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR]
+    'dbpedia': EUROPEAN_DATA_PROTECTION_SUPERVISOR_DBR
 }
 
 __CJEU__ = {
     PREFIX: EUROPEAN_UNION_COURT_OF_JUSTICE,
-    'dbpedia': [EUROPEAN_UNION_COURT_OF_JUSTICE_DBR]
+    'dbpedia': EUROPEAN_UNION_COURT_OF_JUSTICE_DBR
 }
 
 __CJEC__ = {
     PREFIX: EUROPEAN_COMMUNITIES_COURT_OF_JUSTICE,
-    'dbpedia': []
+    'dbpedia': None
 }
 
 __COR__ = {
     PREFIX: EUROPEAN_COMMITTEE_OF_REGIONS,
-    'dbpedia': [EUROPEAN_COMMITTEE_OF_REGIONS_DBR]
+    'dbpedia': EUROPEAN_COMMITTEE_OF_REGIONS_DBR
 }
 
 __ECB__ = {
     PREFIX: EUROPEAN_CENTRAL_BANK,
-    'dbpedia': [EUROPEAN_CENTRAL_BANK_DBR]
+    'dbpedia': EUROPEAN_CENTRAL_BANK_DBR
 }
 
 __ALL__ = {  # This seems to denote "Additional Information"?
     PREFIX: None,
-    'dbpedia': []
+    'dbpedia': None
 }
 
 BODIES = {
@@ -276,4 +278,4 @@ BODIES = {
     'EP/CSL': [__EP__, __CSL__]
 }
 
-VOTES = {'Abstain': ABSTAINS, 'For': VOTES_FOR, 'Against': VOTES_AGAINST}
+VOTES = {'Abstain': ABSTAIN, 'For': VOTE_FOR, 'Against': VOTE_AGAINST}
