@@ -3905,6 +3905,10 @@
     "http://dbpedia.org/resource/Mani%C3%B3w,_G%C5%82og%C3%B3w_County",
     "http://dbpedia.org/resource/Mod%C5%82a,_G%C5%82og%C3%B3w_County"
   ],
+  "haapaj\u00e4rvi": [
+    "http://dbpedia.org/resource/Nivala-Haapaj%C3%A4rvi_sub-region",
+    "http://dbpedia.org/resource/Lake_Haapaj%C3%A4rvi"
+  ],
   "haarlem": [
     "http://dbpedia.org/resource/Haarlem",
     "http://dbpedia.org/resource/Teylers_Museum",
