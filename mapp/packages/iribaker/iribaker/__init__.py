@@ -74,8 +74,7 @@ def to_iri(iri):
         except Exception:
             # Unable to generate a valid quoted iri, using the straightforward
             # urllib percent quoting (but this is ugly!)
-            logger.warning('Could not safely quote as IRI, falling back to '
-                           'percent encoding')
+            logger.warning('Could not safely quote "%s" as IRI, falling back to percent encoding' % quoted_iri)
             quoted_iri = urllib.quote(iri.encode('utf-8'))
 
         return quoted_iri
