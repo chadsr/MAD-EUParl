@@ -704,7 +704,7 @@ class Miner(object):
             # dossier_reference = votes['epref']
             # vote_id = votes['_id']
             vote_title = votes['title']
-            vote_id = vote_title
+            vote_id = Miner.format_name_string(vote_title)
             vote_uri = self.id_to_iri(vote_id, prefix='parlvote')
 
             triples.add((URIRef(vote_uri), c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
