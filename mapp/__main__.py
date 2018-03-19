@@ -29,6 +29,8 @@ parser.add_argument(
     "--dossier-limit", help="Used to specify the number of dossiers to process from the dataset.", type=int)
 parser.add_argument(
     "--vote-limit", help="Used to specify the number of votes to process from the dataset.", type=int)
+parser.add_argument(
+    "--debug", help="Disables intensive operations which are not neccessary for code debugging.", action="store_true")
 
 args = parser.parse_args()
 
@@ -48,7 +50,7 @@ else:
 start = timer()
 
 manager = multiprocessing.Manager()
-miner = Miner(manager)
+miner = Miner(manager, debug=args.debug)
 
 mem_usage = memory_profiler.memory_usage((miner.start, (num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)))
 max_mem_usage = max(mem_usage)

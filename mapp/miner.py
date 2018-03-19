@@ -24,7 +24,9 @@ import formatting as fmt
 class Miner(object):
     """Miner module."""
 
-    def __init__(self, manager):
+    def __init__(self, manager, debug=False):
+        self.debug = debug
+
         # External URIs (DBPedia etc)
         self.mep_ext_uris = manager.dict()
         self.party_ext_uris = manager.dict()
@@ -36,7 +38,7 @@ class Miner(object):
         self.dict_parties = manager.dict()
         self.dict_dossier = manager.dict()
         self.dict_committees = manager.dict()
-        # self.dict_docs = manager.dict()
+        self.dict_docs = manager.dict()
 
         self.list_activities = manager.list()
         self.list_procedures = manager.list()
@@ -368,7 +370,7 @@ class Miner(object):
 
         if 'Committees' in mep:
             for committee in mep['Committees']:
-                committee_title = committee['Organization']
+                # committee_title = committee['Organization']
 
                 if 'committee_id' in committee and committee['committee_id']:
                     committee_id = committee['committee_id']
@@ -446,22 +448,28 @@ class Miner(object):
             dataset = DatasetGenerator.get_dataset()
             for triples in results:
                 for triple in triples:
-                    dataset.add((triple[0], triple[1], triple[2]))
+                    try:
+                        dataset.add((triple[0], triple[1], triple[2]))
+                    except AssertionError as e:
+                        print(e, triple)
+                        return False
 
                 counter += 1
 
-                # Max 1000 MEPs per request
-                if (counter % 1000) == 0 and counter != 0:
-                    # reset dataset
-                    if not self.sparql_endpoint.import_dataset(dataset):
+                if not self.debug:
+                    # Max 1000 MEPs per request
+                    if (counter % 1000) == 0 and counter != 0:
+                        # reset dataset
+                        if not self.sparql_endpoint.import_dataset(dataset):
+                            return False
+
+                        print(fmt.INFO_SYMBOL, counter, "MEPs imported.")
+                        dataset = DatasetGenerator.get_dataset()
+
+            if not self.debug:
+                # Import any left over from the last (incomplete) batch
+                if not self.sparql_endpoint.import_dataset(dataset):
                         return False
-
-                    print(fmt.INFO_SYMBOL, counter, "MEPs imported.")
-                    dataset = DatasetGenerator.get_dataset()
-
-            # Import any left over from the last (incomplete) batch
-            if not self.sparql_endpoint.import_dataset(dataset):
-                    return False
 
             print(fmt.OK_SYMBOL, "Total of", counter, "MEPs imported.")
 
@@ -487,7 +495,7 @@ class Miner(object):
         # dossier_stage = Literal(str(procedure['stage_reached']), datatype=c.STRING)
         dossier_type = procedure['type']
 
-        if not self.key_exists('subtype', procedure):
+        if self.key_exists('subtype', procedure):
             self.list_sub_procedures.append(procedure['subtype'])
 
         # TEMP
@@ -529,7 +537,7 @@ class Miner(object):
                     if activity_type not in self.list_activities:
                         self.list_activities.append(activity_type)
 
-                    triples.add((activity_uri, c.HAS_TYPE, Literal(activity_type, datatype=c.STRING)))
+                    triples.add((activity_uri, c.TYPE, Literal(activity_type, datatype=c.STRING)))
                     triples.add((activity_uri, c.DATE, activity_date))
                     triples.add((dossier_uri, c.HAS_ACTIVITY, activity_uri))
 
@@ -543,13 +551,15 @@ class Miner(object):
                             if activity_body is not 'unknown':  # TODO: Investigate why parltrack gives some as unknown
                                 if activity_body in c.BODIES:
                                     for body in c.BODIES[activity_body]:
-                                        body_uri = URIRef(body[c.PREFIX])
+                                        body_uri = body[c.PREFIX]
 
-                                        triples.add((activity_uri, c.HAS_BODY, body_uri))
-                                        triples.add((dossier_uri, c.PROCESSED_BY, body_uri))  # TODO: make this inferred?
+                                        if body_uri:
+                                            triples.add((activity_uri, c.HAS_BODY, body_uri))
+                                            triples.add((dossier_uri, c.PROCESSED_BY, body_uri))  # TODO: make this inferred?
 
-                                        for ext_uri in body['dbpedia']:
-                                            triples.add((body_uri, c.SAME_AS, URIRef(ext_uri)))  # TODO: check if this causes issues with duplicates
+                                            dbp_body_uri = body['dbpedia']
+                                            if dbp_body_uri:
+                                                triples.add((body_uri, c.SAME_AS, dbp_body_uri))  # TODO: check if this causes issues with duplicates
                                 else:
                                     logging.error("Unknown activity body '%s'" % activity_body)
 
@@ -560,12 +570,15 @@ class Miner(object):
                     if 'docs' in activity:
                         for doc in activity['docs']:
                             # TODO: Filter out irelevant docs
-                            doc_title = doc['title']
-                            doc_id = activity_id + '_' + doc_title
+                            doc_id = doc['title']
                             doc_uri = self.id_to_iri(doc_id, prefix='document')
 
+                            # Save the doc uri mapping if it does not already exist
+                            if doc_id not in self.dict_docs:
+                                self.dict_docs[doc_id] = doc_uri
+
                             triples.add((activity_uri, c.HAS_DOC, doc_uri))
-                            triples.add((doc_uri, c.DOCUMENT_TITLE, Literal(doc_title, datatype=c.STRING)))
+                            triples.add((doc_uri, c.DOCUMENT_TITLE, Literal(doc_id, datatype=c.STRING)))
 
                             if 'url' in doc:
                                 if doc['url']:
@@ -575,7 +588,7 @@ class Miner(object):
                             if 'type' in doc:
                                 if doc['type']:
                                     doc_type = doc['type'].lower()
-                                    triples.add((doc_uri, c.HAS_TYPE, Literal(doc_type, datatype=c.STRING)))
+                                    triples.add((doc_uri, c.TYPE, Literal(doc_type, datatype=c.STRING)))
 
                                     # TODO: REMOVE
                                     if doc_type not in self.list_doc_types:
@@ -594,8 +607,13 @@ class Miner(object):
             if self.key_exists('body', committee):
                 committee_body = committee['body']
                 if self.key_exists(committee_body, c.BODIES):
-                    triples.add((committee_uri, c.HAS_BODY, c.BODIES[committee_body][c.PREFIX]))
-                    # TODO: Extend to sameas?
+                    for body in c.BODIES[committee_body]:
+                        body_uri = body[c.PREFIX]
+                        if body_uri:
+                            triples.add((committee_uri, c.HAS_BODY, body_uri))
+                            dbp_body_uri = body['dbpedia']
+                            if dbp_body_uri:
+                                triples.add((URIRef(body_uri), c.SAME_AS, dbp_body_uri))
 
             if committee_responsible:
                 triples.add((committee_uri, c.IS_RESPONSIBLE, dossier_uri))
@@ -641,23 +659,29 @@ class Miner(object):
             dataset = DatasetGenerator.get_dataset()
             for dossier in results:
                 for triple in dossier:
-                    dataset.add((triple[0], triple[1], triple[2]))
+                    try:
+                        dataset.add((triple[0], triple[1], triple[2]))
+                    except AssertionError as e:
+                        print(e, triple)
+                        return False
 
                 num_triples += len(dossier)
                 counter += 1
 
-                # Max 1000 dossiers per request
-                if (counter % 1000) == 0 and counter != 0:
-                    # reset dataset
-                    if not self.sparql_endpoint.import_dataset(dataset):
+                if not self.debug:
+                    # Max 1000 dossiers per request
+                    if (counter % 1000) == 0 and counter != 0:
+                        # reset dataset
+                        if not self.sparql_endpoint.import_dataset(dataset):
+                            return False
+
+                        print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
+                        dataset = DatasetGenerator.get_dataset()
+
+            if not self.debug:
+                # Import any left over from the last (incomplete) batch
+                if not self.sparql_endpoint.import_dataset(dataset):
                         return False
-
-                    print(fmt.INFO_SYMBOL, counter, "dossiers imported.")
-                    dataset = DatasetGenerator.get_dataset()
-
-            # Import any left over from the last (incomplete) batch
-            if not self.sparql_endpoint.import_dataset(dataset):
-                    return False
 
             print(fmt.OK_SYMBOL, "Total of", counter, "dossiers imported.")
 
@@ -675,65 +699,74 @@ class Miner(object):
 
         votes = io.load_json(os.path.join(c.DIR_VOTES, str(index) + '.json'), verbose=False)
 
-        if 'epref' in votes:
-            dossier_reference = votes['epref']
-            if '_id' in votes:
-                vote_id = votes['_id']
-                vote_uri = self.id_to_iri(dossier_reference + '_' + vote_id, prefix='parlvote')
+        if 'report' in votes:
+            report_id = votes['report']
+            # dossier_reference = votes['epref']
+            # vote_id = votes['_id']
+            vote_title = votes['title']
+            vote_id = vote_title
+            vote_uri = self.id_to_iri(vote_id, prefix='parlvote')
 
-                if 'title' in votes:
-                    vote_title = votes['title']
-                    triples.add((URIRef(vote_uri), c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
+            triples.add((URIRef(vote_uri), c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
 
-                if 'report' in votes:
-                    report_id = str(votes['report'])
-                    report_uri = self.id_to_iri(report_id, prefix='document')  # TODO: Make a dict and lookup from there?
-                    triples.add((URIRef(vote_uri), c.BASED_ON_REPORT, report_uri))
-
-                # If there's a dossier id and we processed this dossier, link the voting to the looked up URI, otherwise attempt to construct the URI and hope for the best
-                if 'dossierid' in votes and self.key_exists(str(votes['dossierid']), self.dict_dossier):
-                    dossier_uri = self.dict_dossier[str(votes['dossierid'])]
-                else:
-                    dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
-
-                triples.add((URIRef(vote_uri), c.IS_VOTE_FOR, URIRef(dossier_uri)))
-
-                if 'url' in votes:
-                    vote_url = votes['url']
-                    triples.add((URIRef(vote_uri), c.URI, Literal(vote_url, datatype=c.URI)))
-
-                # title = votes['title']
-                # url = dossier['url']
-                # ep_title = dossier['eptitle']
-
-                for vote_type in c.VOTES:
-                    if vote_type in votes:
-                        for group in votes[vote_type]['groups']:
-                            # group_name = group['group']
-                            for vote in group['votes']:
-                                try:
-                                    if 'ep_id' in vote:
-                                        voter_id = vote['ep_id']
-                                    else:
-                                        if 'name' in vote:
-                                            logging.warning("MEP of vote had no epid. Do they exist? (%s). Attempting to use internal ID", vote['name'])
-                                        voter_id = vote['userid']
-                                except Exception as ex:
-                                    logging.error("Skipping vote of type " + vote_type + " on dossier " + dossier_uri + " No ID found.")
-                                    failed += 1
-                                    continue
-
-                                if self.key_exists(voter_id, self.dict_mep):
-                                    voter_uri = URIRef(self.dict_mep[voter_id])
-                                else:
-                                    voter_uri = self.id_to_iri(voter_id, prefix='mep')
-
-                                triples.add((voter_uri, c.VOTES[vote_type], vote_uri))
-                                count += 1
+            if report_id in self.dict_docs:
+                report_uri = URIRef(self.dict_docs[report_id])
             else:
-                logging.warning("Votes has no id. Skipping.")
+                logging.warning("Did not find a matching report uri in dict_docs. Generating one. (This is really not ideal)")
+                report_uri = self.id_to_iri(report_id, prefix='document')
+
+                # triples.add((vote_uri, c.BASED_ON_REPORT, report_uri))
+
+                triples.add((vote_uri, c.IS_VOTE_FOR, report_uri))
+
+            """
+            # If there's a dossier id and we processed this dossier, link the voting to the looked up URI, otherwise attempt to construct the URI and hope for the best
+            if 'dossierid' in votes and self.key_exists(str(votes['dossierid']), self.dict_dossier):
+                dossier_uri = self.dict_dossier[str(votes['dossierid'])]
+            else:
+                dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
+            """
+
+            if 'url' in votes:
+                vote_url = votes['url']
+                triples.add((URIRef(vote_uri), c.URI, Literal(vote_url, datatype=c.URI)))
+
+            # title = votes['title']
+            # url = dossier['url']
+            # ep_title = dossier['eptitle']
+
+            for vote_type in c.VOTES:
+                if vote_type in votes:
+                    for group in votes[vote_type]['groups']:
+                        # group_name = group['group']
+                        for vote in group['votes']:
+                            try:
+                                if 'ep_id' in vote:
+                                    voter_id = vote['ep_id']
+                                else:
+                                    if 'name' in vote:
+                                        logging.warning("MEP of vote had no epid. Do they exist? (%s). Attempting to use internal ID", vote['name'])
+                                    voter_id = vote['userid']
+                            except Exception as ex:
+                                logging.error("Skipping vote of type " + vote_type + "No MEP ID found.")
+                                failed += 1
+                                continue
+
+                            if self.key_exists(voter_id, self.dict_mep):
+                                voter_uri = URIRef(self.dict_mep[voter_id])
+                            else:
+                                voter_uri = self.id_to_iri(voter_id, prefix='mep')
+
+                            reaction_uri = self.id_to_iri(report_id + '_' + str(voter_id) + '_' + str(c.VOTES[vote_type]), prefix='reaction')
+                            triples.add((reaction_uri, c.TYPE, c.VOTES[vote_type]))
+                            triples.add((reaction_uri, c.REACTION_TO, vote_uri))
+                            triples.add((reaction_uri, c.REACTION_BY, voter_uri))
+
+                            count += 1
+                else:
+                    logging.warning("No vote type found!")
         else:
-            logging.warning("No dossier reference (epref) found in votes. Skipping.")
+            logging.warning("No report ID found (vote['report']). Skipping.")
 
         return count, failed, triples
 
@@ -763,19 +796,25 @@ class Miner(object):
                 counter += 1
 
                 for triple in triples:
-                    dataset.add((triple[0], triple[1], triple[2]))
-
-                if (counter % 1000) == 0 and counter != 0:
-                    # reset dataset
-                    if not self.sparql_endpoint.import_dataset(dataset):
+                    try:
+                        dataset.add((triple[0], triple[1], triple[2]))
+                    except AssertionError as e:
+                        print(e, triple)
                         return False
 
-                    print(fmt.INFO_SYMBOL, total_success, "votes imported.")
-                    dataset = DatasetGenerator.get_dataset()
+                if not self.debug:
+                    if (counter % 1000) == 0 and counter != 0:
+                        # reset dataset
+                        if not self.sparql_endpoint.import_dataset(dataset):
+                            return False
 
-            # Import any left over from the last (incomplete) batch
-            if not self.sparql_endpoint.import_dataset(dataset):
-                return False
+                        print(fmt.INFO_SYMBOL, total_success, "votes imported.")
+                        dataset = DatasetGenerator.get_dataset()
+
+            if not self.debug:
+                # Import any left over from the last (incomplete) batch
+                if not self.sparql_endpoint.import_dataset(dataset):
+                    return False
 
             print(fmt.OK_SYMBOL, "Total of", total_success, "votes imported.")
 
