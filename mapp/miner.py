@@ -757,7 +757,7 @@ class Miner(object):
                             else:
                                 voter_uri = self.id_to_iri(voter_id, prefix='mep')
 
-                            reaction_uri = self.id_to_iri(report_id + '_' + str(voter_id) + '_' + str(c.VOTES[vote_type]), prefix='reaction')
+                            reaction_uri = self.id_to_iri(report_id + '_' + str(voter_id) + '_' + vote_type, prefix='reaction')
                             triples.add((reaction_uri, c.TYPE, c.VOTES[vote_type]))
                             triples.add((reaction_uri, c.REACTION_TO, vote_uri))
                             triples.add((reaction_uri, c.REACTION_BY, voter_uri))
