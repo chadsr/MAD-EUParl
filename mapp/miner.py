@@ -812,7 +812,7 @@ class Miner(object):
                         return False
 
                 if not self.debug:
-                    if (counter % 1000) == 0 and counter != 0:
+                    if (counter % 100) == 0 and counter != 0:
                         # reset dataset
                         if not self.sparql_endpoint.import_dataset(dataset):
                             return False
