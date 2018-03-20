@@ -492,7 +492,7 @@ class Miner(object):
 
         dossier = io.load_json(os.path.join(c.DIR_DOSSIERS, str(index) + '.json'), verbose=False)
 
-        dossier_id = dossier['_id']
+        # dossier_id = dossier['_id']
         dossier_url = Literal(str(dossier['meta']['source']), datatype=c.URI)
         procedure = dossier['procedure']
 
@@ -511,7 +511,7 @@ class Miner(object):
         dossier_uri = self.id_to_iri(dossier_reference, prefix='dossier')
 
         # Append to temp dictionary of dossiers processed
-        self.dict_dossier[dossier_id] = dossier_uri
+        self.dict_dossier[dossier_reference] = dossier_uri
 
         # triples.add((dossier_uri, c.REACHED_STAGE, dossier_stage))
         # triples.add((dossier_uri, c.PROCEDURE_TYPE, dossier_type))
@@ -536,7 +536,7 @@ class Miner(object):
             if 'type' in activity:
                 if activity['type'] is not None:
                     activity_type = activity['type'].lower()
-                    activity_id = dossier_id + '_' + activity_type
+                    activity_id = dossier_reference + '_' + activity_type
                     activity_uri = self.id_to_iri(activity_id, prefix='activity')
                     activity_date = Literal(datetime.strptime(activity['date'].split('T')[0], '%Y-%m-%d').date(), datatype=c.DATE)
 
@@ -578,7 +578,7 @@ class Miner(object):
                         for doc in activity['docs']:
                             # TODO: Filter out irelevant docs
                             doc_id = doc['title']
-                            doc_uri = self.id_to_iri(doc_id, prefix='document')
+                            doc_uri = self.id_to_iri(activity_id + '_' + doc_id, prefix='document')
 
                             # Save the doc uri mapping if it does not already exist
                             if doc_id not in self.dict_docs:
@@ -596,7 +596,7 @@ class Miner(object):
                             if 'type' in doc:
                                 if doc['type']:
                                     doc_type = doc['type'].lower()
-                                    triples.add((doc_uri, c.TYPE, Literal(doc_type, datatype=c.STRING)))
+                                    triples.add((doc_uri, c.DOC_TYPE, Literal(doc_type, datatype=c.STRING)))
 
                                     # TODO: REMOVE
                                     if doc_type not in self.list_doc_types:

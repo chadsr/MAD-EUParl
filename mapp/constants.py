@@ -33,7 +33,7 @@ EXTERNAL_COMMITTEE_URIS = os.path.join(JSON_DIR, 'committee_uris.json')
 DICT_COMMITTEES = os.path.join(JSON_DIR, 'dict_committees.json')
 DICT_MISC_VOTES = os.path.join(JSON_DIR, 'misc_votes.json')
 
-SPARQL_ENDPOINT = 'http://192.168.1.60:7200/repositories/europarl/statements'
+SPARQL_ENDPOINT = 'http://10.42.0.241:7200/repositories/europarl/statements'
 
 DOWNLOAD_TIMEOUT = 30
 DATA_URLS = {DIR_VOTES: 'http://parltrack.euwiki.org/dumps/ep_votes.json.xz',
@@ -102,11 +102,12 @@ ACTIVITY_TITLE = ONT['activityTitle']
 
 DOCUMENT = ONT['Document']
 REPORT = ONT['Report']
-DOCUMENT_TITLE = ONT['documentTitlte']
+DOCUMENT_TITLE = ONT['documentTitle']
 VOTE_TITLE = ONT['voteTitle']
 COMMITTEE_TITLE = ONT['committeeTitle']
 
 HAS_DOC = ONT['document']
+DOC_TYPE = ONT['documentType']
 
 IS_RESPONSIBLE = ONT['isResponsibleIn']
 IS_INVOLVED = ONT['isInvolvedIn']
