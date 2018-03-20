@@ -1,3 +1,4 @@
+@prefix : <http://localhost:7200/europarl##> .
 @prefix dbo: <http://dbpedia.org/ontology/> .
 @prefix dbp: <http://dbpedia.org/property/> .
 @prefix dbr: <http://dbpedia.org/resource/> .
@@ -259,6 +260,10 @@ epv:documentTitle rdf:type owl:DatatypeProperty ;
                   rdfs:subPropertyOf epv:title ;
                   rdfs:domain epv:Document ;
                   rdfs:range xsd:string .
+
+
+###  http://localhost:7200/europarl#documentType
+epv:documentType rdf:type owl:DatatypeProperty .
 
 
 ###  http://localhost:7200/europarl#dossierTitle
