@@ -86,6 +86,7 @@ DBR = Namespace(dbr)
 dbp = 'http://dbpedia.org/property/'
 DBP = Namespace(dbp)
 
+MEP = ONT['MEP']
 DOSSIER = ONT['Dossier']
 ACTIVITY = ONT['Activity']
 PROCESSED_BY = ONT['processedBy']
@@ -100,6 +101,7 @@ REPORT_TITLE = ONT['reportTitle']
 ACTIVITY_TITLE = ONT['activityTitle']
 
 DOCUMENT = ONT['Document']
+REPORT = ONT['Report']
 DOCUMENT_TITLE = ONT['documentTitlte']
 VOTE_TITLE = ONT['voteTitle']
 COMMITTEE_TITLE = ONT['committeeTitle']
@@ -108,7 +110,7 @@ HAS_DOC = ONT['document']
 
 IS_RESPONSIBLE = ONT['isResponsibleIn']
 IS_INVOLVED = ONT['isInvolvedIn']
-HAS_RAPPORTEUR = ONT['hasRapporteur']
+HAS_RAPPORTEUR = ONT['rapporteur']
 
 PARLIAMENT_VOTE = ONT['VoteInParliament']
 IS_VOTE_FOR = ONT['voteOn']
@@ -120,7 +122,9 @@ VOTE_AGAINST = ONT['VoteAgainst']
 
 HAS_BODY = ONT['body']
 
-# PARTY = DBO['party']
+POLITICAL_GROUP = ONT['PoliticalGroup']
+INSTITUTION = ONT['Institution']
+COMMITTEE = ONT['Committee']
 
 REPRESENTS_COUNTRY = ONT['representsCountry']
 

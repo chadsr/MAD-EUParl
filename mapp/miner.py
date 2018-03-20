@@ -255,6 +255,8 @@ class Miner(object):
         profile_url = Literal(str(mep['meta']['url']), datatype=c.URI)
         mep_uri = Miner.id_to_iri(mep_id, prefix='mep')
 
+        triples.add((mep_uri, c.TYPE, c.MEP))
+
         # If no URIs exists, fetch any existing ones and add them to our dictionary
         if not self.uris_exist(mep_id, self.mep_ext_uris):
             mep_ext_uris = Miner.fetch_uris_from_name(full_name, keywords='politician', max_results=1)  # For some reason results are best without search_class='person'
@@ -331,6 +333,8 @@ class Miner(object):
                 for ext_uri in self.get_uris(party_id, self.party_ext_uris):
                     triples.add((party_uri, c.SAME_AS, URIRef(ext_uri)))
 
+                triples.add((party_uri, c.TYPE, c.POLITICAL_GROUP))
+
                 start_date = datetime.strptime(group['start'].split('T')[0], '%Y-%m-%d').date()
                 end_date = datetime.strptime(group['end'].split('T')[0], '%Y-%m-%d').date()
 
@@ -381,6 +385,8 @@ class Miner(object):
                     continue
 
                 committee_uri = self.id_to_iri(committee_id)
+
+                triples.add((committee_uri, c.TYPE, c.COMMITTEE))
 
                 if not self.key_exists(committee_id, self.dict_committees):
                     self.dict_committees[committee_id] = committee_uri
@@ -509,6 +515,7 @@ class Miner(object):
 
         # triples.add((dossier_uri, c.REACHED_STAGE, dossier_stage))
         # triples.add((dossier_uri, c.PROCEDURE_TYPE, dossier_type))
+        triples.add((dossier_uri, c.TYPE, c.DOSSIER))
         triples.add((dossier_uri, c.DOSSIER_TITLE, dossier_title))
         triples.add((dossier_uri, c.URI, dossier_url))
 
@@ -537,7 +544,7 @@ class Miner(object):
                     if activity_type not in self.list_activities:
                         self.list_activities.append(activity_type)
 
-                    triples.add((activity_uri, c.TYPE, Literal(activity_type, datatype=c.STRING)))
+                    triples.add((activity_uri, c.TYPE, c.ACTIVITY))  # TODO: Make subclass according to acitvity type
                     triples.add((activity_uri, c.DATE, activity_date))
                     triples.add((dossier_uri, c.HAS_ACTIVITY, activity_uri))
 
@@ -548,7 +555,7 @@ class Miner(object):
                     if 'body' in activity:
                         if activity['body']:
                             activity_body = str(activity['body'])
-                            if activity_body is not 'unknown':  # TODO: Investigate why parltrack gives some as unknown
+                            if activity_body != 'unknown':  # TODO: Investigate why parltrack gives some as unknown
                                 if activity_body in c.BODIES:
                                     for body in c.BODIES[activity_body]:
                                         body_uri = body[c.PREFIX]
@@ -578,6 +585,7 @@ class Miner(object):
                                 self.dict_docs[doc_id] = doc_uri
 
                             triples.add((activity_uri, c.HAS_DOC, doc_uri))
+                            triples.add((doc_uri, c.TYPE, c.DOCUMENT))
                             triples.add((doc_uri, c.DOCUMENT_TITLE, Literal(doc_id, datatype=c.STRING)))
 
                             if 'url' in doc:
@@ -707,7 +715,7 @@ class Miner(object):
             vote_id = Miner.format_name_string(vote_title)
             vote_uri = self.id_to_iri(vote_id, prefix='parlvote')
 
-            triples.add((URIRef(vote_uri), c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
+            triples.add((vote_uri, c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
 
             if report_id in self.dict_docs:
                 report_uri = URIRef(self.dict_docs[report_id])
@@ -717,7 +725,8 @@ class Miner(object):
 
                 # triples.add((vote_uri, c.BASED_ON_REPORT, report_uri))
 
-                triples.add((vote_uri, c.IS_VOTE_FOR, report_uri))
+            triples.add((report_uri, c.TYPE, c.REPORT))
+            triples.add((vote_uri, c.IS_VOTE_FOR, report_uri))
 
             """
             # If there's a dossier id and we processed this dossier, link the voting to the looked up URI, otherwise attempt to construct the URI and hope for the best
