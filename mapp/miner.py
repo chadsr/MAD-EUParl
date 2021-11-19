@@ -122,9 +122,7 @@ class Miner(object):
 
         io.save_list_to_json(c.JSON_DIR + "activities.json", self.list_activities)
         io.save_list_to_json(c.JSON_DIR + "procedures.json", self.list_procedures)
-        io.save_list_to_json(
-            c.JSON_DIR + "subprocedures.json", self.list_sub_procedures
-        )
+        io.save_list_to_json(c.JSON_DIR + "subprocedures.json", self.list_sub_procedures)
         io.save_list_to_json(c.JSON_DIR + "doc_types.json", self.list_doc_types)
 
         results = self.convert_votes(c.DIR_VOTES, num_threads, vote_limit)
@@ -138,9 +136,7 @@ class Miner(object):
         else:
             return False
 
-        self.total_triples = (
-            total_mep_triples + total_dossier_triples + total_vote_triples
-        )
+        self.total_triples = total_mep_triples + total_dossier_triples + total_vote_triples
 
     # def mepid_to_profile_iri(id):
     # return URIRef(to_iri('http://www.europarl.europa.eu/meps/en/' + str(id)
@@ -171,10 +167,7 @@ class Miner(object):
     @staticmethod
     def get_dbpedia_lookup_uris(search_string, search_class=None, max_results=5):
         query = (
-            "MaxHits="
-            + str(max_results)
-            + "&QueryString="
-            + urlparse.quote_plus(search_string)
+            "MaxHits=" + str(max_results) + "&QueryString=" + urlparse.quote_plus(search_string)
         )
         if search_class:
             query += "&QueryClass=" + urlparse.quote_plus(search_class)
@@ -252,9 +245,7 @@ class Miner(object):
         if not self.key_exists(key, uri_dict):
             uri_dict[key] = []
 
-        if (
-            type(uris) is not list
-        ):  # If it's a single uri (string), convert it to a list anyway
+        if type(uris) is not list:  # If it's a single uri (string), convert it to a list anyway
             uris = [uris]
 
         """
@@ -275,18 +266,14 @@ class Miner(object):
     def process_mep(self, index):
         triples = set()
 
-        mep = io.load_json(
-            os.path.join(c.DIR_MEPS, str(index) + ".json"), verbose=False
-        )
+        mep = io.load_json(os.path.join(c.DIR_MEPS, str(index) + ".json"), verbose=False)
 
         date_now = datetime.now().date()
 
         # Get raw values
         mep_id = int(mep["UserID"])
         # user_id = str(mep['_id'])
-        full_name = Literal(
-            str(mep["Name"]["full"].lower().title().strip()), datatype=c.STRING
-        )
+        full_name = Literal(str(mep["Name"]["full"].lower().title().strip()), datatype=c.STRING)
 
         profile_url = Literal(str(mep["meta"]["url"]), datatype=c.URI)
         mep_uri = Miner.id_to_iri(mep_id, prefix="mep")
@@ -387,26 +374,18 @@ class Miner(object):
 
                 triples.add((party_uri, c.TYPE, c.POLITICAL_GROUP))
 
-                start_date = datetime.strptime(
-                    group["start"].split("T")[0], "%Y-%m-%d"
-                ).date()
-                end_date = datetime.strptime(
-                    group["end"].split("T")[0], "%Y-%m-%d"
-                ).date()
+                start_date = datetime.strptime(group["start"].split("T")[0], "%Y-%m-%d").date()
+                end_date = datetime.strptime(group["end"].split("T")[0], "%Y-%m-%d").date()
 
                 membership_uri = self.id_to_iri(
                     str(mep_id) + "_" + str(party_id) + "_" + str(start_date),
                     prefix="membership",
                 )
-                triples.add(
-                    (membership_uri, c.START_DATE, Literal(start_date, datatype=c.DATE))
-                )
+                triples.add((membership_uri, c.START_DATE, Literal(start_date, datatype=c.DATE)))
 
                 # If end date has passed
                 if end_date <= date_now:
-                    triples.add(
-                        (membership_uri, c.END_DATE, Literal(end_date, datatype=c.DATE))
-                    )
+                    triples.add((membership_uri, c.END_DATE, Literal(end_date, datatype=c.DATE)))
 
                 triples.add((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
                 triples.add((membership_uri, c.IS_WITHIN, party_uri))
@@ -422,9 +401,7 @@ class Miner(object):
 
                     ext_uris = self.get_uris(country, self.places_ext_uris)
                     if ext_uris:
-                        triples.add(
-                            (membership_uri, c.REPRESENTS_COUNTRY, URIRef(ext_uris[0]))
-                        )
+                        triples.add((membership_uri, c.REPRESENTS_COUNTRY, URIRef(ext_uris[0])))
 
                 if "role" in group and group["role"]:
                     role = str(group["role"])
@@ -467,9 +444,7 @@ class Miner(object):
                     committee_ext_uris = Miner.fetch_uris_from_name(
                         committee_id, keywords="european committee", max_results=1
                     )
-                    self.add_uris(
-                        committee_ext_uris, committee_id, self.committees_ext_uris
-                    )
+                    self.add_uris(committee_ext_uris, committee_id, self.committees_ext_uris)
 
                 ext_uris = self.get_uris(committee_id, self.committees_ext_uris)
                 if ext_uris:
@@ -478,12 +453,8 @@ class Miner(object):
                 if "role" in committee and committee["role"]:
                     role = committee["role"]
 
-                    start_date = datetime.strptime(
-                        group["start"].split("T")[0], "%Y-%m-%d"
-                    ).date()
-                    end_date = datetime.strptime(
-                        group["end"].split("T")[0], "%Y-%m-%d"
-                    ).date()
+                    start_date = datetime.strptime(group["start"].split("T")[0], "%Y-%m-%d").date()
+                    end_date = datetime.strptime(group["end"].split("T")[0], "%Y-%m-%d").date()
 
                     membership_uri = self.id_to_iri(
                         str(mep_id) + "_" + committee_id + "_" + str(start_date),
@@ -492,9 +463,7 @@ class Miner(object):
 
                     if role in c.MEMBERSHIPS:
                         triples.add((mep_uri, c.HAS_MEMBERSHIP, membership_uri))
-                        triples.add(
-                            (membership_uri, c.TYPE, URIRef(c.MEMBERSHIPS[role]))
-                        )
+                        triples.add((membership_uri, c.TYPE, URIRef(c.MEMBERSHIPS[role])))
                     else:
                         logging.error("Unknown role:", role)
                 else:
@@ -575,9 +544,7 @@ class Miner(object):
     def process_dossier(self, index):
         triples = set()
 
-        dossier = io.load_json(
-            os.path.join(c.DIR_DOSSIERS, str(index) + ".json"), verbose=False
-        )
+        dossier = io.load_json(os.path.join(c.DIR_DOSSIERS, str(index) + ".json"), verbose=False)
 
         # dossier_id = dossier['_id']
         dossier_url = Literal(str(dossier["meta"]["source"]), datatype=c.URI)
@@ -608,9 +575,7 @@ class Miner(object):
 
         if "geographical_area" in procedure:
             if procedure["geographical_area"]:
-                geo_areas = [
-                    geo_area.lower() for geo_area in procedure["geographical_area"]
-                ]
+                geo_areas = [geo_area.lower() for geo_area in procedure["geographical_area"]]
                 for geo_area in geo_areas:
                     if not self.uris_exist(geo_area, self.places_ext_uris):
                         geo_ext_uris = Miner.fetch_uris_from_name(
@@ -630,9 +595,7 @@ class Miner(object):
                     activity_id = dossier_reference + "_" + activity_type
                     activity_uri = self.id_to_iri(activity_id, prefix="activity")
                     activity_date = Literal(
-                        datetime.strptime(
-                            activity["date"].split("T")[0], "%Y-%m-%d"
-                        ).date(),
+                        datetime.strptime(activity["date"].split("T")[0], "%Y-%m-%d").date(),
                         datatype=c.DATE,
                     )
 
@@ -661,9 +624,7 @@ class Miner(object):
                                         body_uri = body[c.PREFIX]
 
                                         if body_uri:
-                                            triples.add(
-                                                (activity_uri, c.HAS_BODY, body_uri)
-                                            )
+                                            triples.add((activity_uri, c.HAS_BODY, body_uri))
                                             triples.add(
                                                 (dossier_uri, c.PROCESSED_BY, body_uri)
                                             )  # TODO: make this inferred?
@@ -674,23 +635,17 @@ class Miner(object):
                                                     (body_uri, c.SAME_AS, dbp_body_uri)
                                                 )  # TODO: check if this causes issues with duplicates
                                 else:
-                                    logging.error(
-                                        "Unknown activity body '%s'" % activity_body
-                                    )
+                                    logging.error("Unknown activity body '%s'" % activity_body)
 
                     if "title" in activity:
-                        activity_title = Literal(
-                            str(activity["title"]), datatype=c.STRING
-                        )
+                        activity_title = Literal(str(activity["title"]), datatype=c.STRING)
                         triples.add((activity_uri, c.ACTIVITY_TITLE, activity_title))
 
                     if "docs" in activity:
                         for doc in activity["docs"]:
                             # TODO: Filter out irelevant docs
                             doc_id = doc["title"]
-                            doc_uri = self.id_to_iri(
-                                activity_id + "_" + doc_id, prefix="document"
-                            )
+                            doc_uri = self.id_to_iri(activity_id + "_" + doc_id, prefix="document")
 
                             # Save the doc uri mapping if it does not already exist
                             if doc_id not in self.dict_docs:
@@ -726,13 +681,9 @@ class Miner(object):
                                     if doc_type not in self.list_doc_types:
                                         self.list_doc_types.append(doc_type)
                 else:
-                    logging.warning(
-                        "Activity has no type:", json.dumps(activity, indent=2)
-                    )
+                    logging.warning("Activity has no type:", json.dumps(activity, indent=2))
             else:
-                logging.warning(
-                    "Activity has no type field!", json.dumps(activity, indent=2)
-                )
+                logging.warning("Activity has no type field!", json.dumps(activity, indent=2))
 
         for committee in dossier["committees"]:
             committee_title = committee["committee_full"]
@@ -839,9 +790,7 @@ class Miner(object):
         failed = 0
         triples = set()
 
-        votes = io.load_json(
-            os.path.join(c.DIR_VOTES, str(index) + ".json"), verbose=False
-        )
+        votes = io.load_json(os.path.join(c.DIR_VOTES, str(index) + ".json"), verbose=False)
 
         if "report" in votes:
             report_id = votes["report"]
@@ -851,9 +800,7 @@ class Miner(object):
             vote_id = Miner.format_name_string(vote_title)
             vote_uri = self.id_to_iri(vote_id, prefix="parlvote")
 
-            triples.add(
-                (vote_uri, c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING))
-            )
+            triples.add((vote_uri, c.VOTE_TITLE, Literal(vote_title, datatype=c.STRING)))
 
             if report_id in self.dict_docs:
                 report_uri = URIRef(self.dict_docs[report_id])
@@ -878,9 +825,7 @@ class Miner(object):
 
             if "url" in votes:
                 vote_url = votes["url"]
-                triples.add(
-                    (URIRef(vote_uri), c.URI, Literal(vote_url, datatype=c.URI))
-                )
+                triples.add((URIRef(vote_uri), c.URI, Literal(vote_url, datatype=c.URI)))
 
             # title = votes['title']
             # url = dossier['url']
@@ -903,9 +848,7 @@ class Miner(object):
                                     voter_id = vote["userid"]
                             except Exception as ex:
                                 logging.error(
-                                    "Skipping vote of type "
-                                    + vote_type
-                                    + "No MEP ID found."
+                                    "Skipping vote of type " + vote_type + "No MEP ID found."
                                 )
                                 failed += 1
                                 continue
