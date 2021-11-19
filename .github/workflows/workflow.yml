@@ -1,0 +1,30 @@
+name: Python Workflow
+on:
+  push:
+    branches:
+      - "main"
+      - "develop"
+  pull_request:
+
+env:
+  PYTHON_MIN: 3.7
+  PYTHON_MAX: 3.9
+
+jobs:
+  lint:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Python 3
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_MAX }} # Just lint on latest version
+    - name: Lint
+      uses: ricardochaves/python-lint@v1.4.0
+      with:
+        use-pylint: false
+        use-pycodestyle: false
+        use-flake8: false
+        use-black: true
+        use-mypy: false
+        use-isort: false
