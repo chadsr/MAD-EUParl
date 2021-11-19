@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "mad-euparl"
+version = "0.1.0"
+description = "European Parliament data mining/analytics, utilising linked data."
+authors = ["Ross <git@ross.ch>"]
+license = "GPL-3.0"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+urllib3 = "^1.26.7"
+requests = "^2.26.0"
+rdflib = "^6.0.2"
+ijson = "^3.1.4"
+SPARQLWrapper = "^1.8.5"
+iribaker = "^0.2"
+pyspotlight = "^0.7.2"
+
+[tool.poetry.dev-dependencies]
+setuptools = "^59.2.0"
+memory-profiler = "^0.58.0"
+line-profiler = "^3.3.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
