@@ -6,7 +6,7 @@ authors = ["Ross <git@ross.ch>"]
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.7"
 urllib3 = "^1.26.7"
 requests = "^2.26.0"
 rdflib = "^6.0.2"
@@ -19,7 +19,15 @@ pyspotlight = "^0.7.2"
 setuptools = "^59.2.0"
 memory-profiler = "^0.58.0"
 line-profiler = "^3.3.1"
+bandit = "^1.7.1"
+pydocstyle = "^6.1.1"
+black = "^21.11b1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+# Use the more relaxed max line length permitted in PEP8.
+line-length = 99
+target-version = ["py37", "py38", "py39", "py310"]

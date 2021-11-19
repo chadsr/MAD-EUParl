@@ -16,7 +16,7 @@ class Logger(object):
             "total_triples": num_triples,
             "triples_per_s": round((float(num_triples) / exec_time), 2),
             "run_time": exec_time,
-            "maximum_memory_usage": mem_usage
+            "maximum_memory_usage": mem_usage,
         }
 
     def save(self):

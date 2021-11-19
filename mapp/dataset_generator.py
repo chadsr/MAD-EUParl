@@ -9,12 +9,12 @@ class DatasetGenerator(object):
     @staticmethod
     def get_dataset(ont=c.ONTOLOGY):
         ds = Dataset()
-        ds.parse(ont, format='turtle')
+        ds.parse(ont, format="turtle")
         ds.bind(c.PREFIX, c.ONT)
-        ds.bind('dbo', c.DBO)
-        ds.bind('dbr', c.DBR)
-        ds.bind('dbp', c.DBP)
-        ds.bind('foaf', c.FOAF)
-        ds.bind('lp', c.LP)
-        ds.bind('lpv', c.LPV)
+        ds.bind("dbo", c.DBO)
+        ds.bind("dbr", c.DBR)
+        ds.bind("dbp", c.DBP)
+        ds.bind("foaf", c.FOAF)
+        ds.bind("lp", c.LP)
+        ds.bind("lpv", c.LPV)
         return ds

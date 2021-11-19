@@ -13,10 +13,10 @@ import urllib3
 import profiler
 
 
-def get_request(url, return_type='json', timeout=10):
+def get_request(url, return_type="json", timeout=10):
     headers = {}
     if return_type:
-        headers['Accept'] = 'application/' + return_type.lower()
+        headers["Accept"] = "application/" + return_type.lower()
 
     try:
         resp = requests.get(url, timeout=timeout, headers=headers)
@@ -31,24 +31,22 @@ def get_request(url, return_type='json', timeout=10):
         return None
 
 
-def save_dataset(filename, dataset, format_type='turtle'):
-    with open(filename, 'wb') as f:
-        print(fmt.WAIT_SYMBOL, 'Saving:', filename)
+def save_dataset(filename, dataset, format_type="turtle"):
+    with open(filename, "wb") as f:
+        print(fmt.WAIT_SYMBOL, "Saving:", filename)
         start = timer()
         dataset.serialize(f, format=format_type)
         end = timer()
-    print(fmt.OK_SYMBOL, 'Saved. Took:',
-          get_elapsed_seconds(start, end), "seconds\n")
+    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
 
 
-def save_graph(filename, graph, format_type='nt'):
-    with open(filename, 'wb') as f:
-        print(fmt.WAIT_SYMBOL, 'Saving:', filename)
+def save_graph(filename, graph, format_type="nt"):
+    with open(filename, "wb") as f:
+        print(fmt.WAIT_SYMBOL, "Saving:", filename)
         start = timer()
         graph.serialize(f, format=format_type)
         end = timer()
-    print(fmt.OK_SYMBOL, 'Saved. Took:',
-          get_elapsed_seconds(start, end), "seconds\n")
+    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
 
 
 def get_key(key):
@@ -59,12 +57,12 @@ def get_key(key):
 
 
 def __save_to_json__(filename, obj, indent_num=2):
-    with open(filename, 'w') as f:
-        print(fmt.WAIT_SYMBOL, 'Saving:', filename)
+    with open(filename, "w") as f:
+        print(fmt.WAIT_SYMBOL, "Saving:", filename)
         start = timer()
         json.dump(obj, f, indent=indent_num)
         end = timer()
-    print(fmt.OK_SYMBOL, 'Saved. Took:', get_elapsed_seconds(start, end), "seconds\n")
+    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
 
 
 def save_list_to_json(filename, data, indent_num=2):
@@ -85,23 +83,27 @@ def save_dict_to_json(filename, data, ordered=True, indent_num=2):
 def split_dataset(path, output_dir):
     print(fmt.WAIT_SYMBOL, "Splitting dataset ", path, "to", output_dir)
     start = timer()
-    f = open(path, 'rb')
+    f = open(path, "rb")
 
-    objects = ijson.items(f, 'item')
+    objects = ijson.items(f, "item")
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     for i, obj in enumerate(objects):
-        path = os.path.join(output_dir, str(i) + '.json')
+        path = os.path.join(output_dir, str(i) + ".json")
 
-        with open(path, 'w') as out:
+        with open(path, "w") as out:
             json.dump(obj, out, indent=2)
         out.close()
 
     end = timer()
-    print(fmt.OK_SYMBOL, "Finished splitting. Took",
-          get_elapsed_seconds(start, end), 'seconds')
+    print(
+        fmt.OK_SYMBOL,
+        "Finished splitting. Took",
+        get_elapsed_seconds(start, end),
+        "seconds",
+    )
 
 
 @profiler.do_profile()
@@ -112,7 +114,7 @@ def get_dataset_indexes(path, count=None):
 
     for f in os.listdir(path):
         if f.endswith(".json"):
-            datasets.append(int(f.split('.')[0]))
+            datasets.append(int(f.split(".")[0]))
 
     if count:
         return random.sample(datasets, count)
@@ -123,15 +125,15 @@ def get_dataset_indexes(path, count=None):
 @profiler.do_profile()
 def load_json(path, index=None, verbose=True):
     try:
-        f = open(path, 'r')
+        f = open(path, "r")
 
         if verbose:
-            print(fmt.WAIT_SYMBOL, 'Loading file:', path)
+            print(fmt.WAIT_SYMBOL, "Loading file:", path)
         try:
             start = timer()
 
             if index:
-                objects = ijson.items(f, 'item')
+                objects = ijson.items(f, "item")
 
                 for obj in islice(objects, index, index + 1):
                     # Only loads one object always, so this is messy but works
@@ -142,7 +144,12 @@ def load_json(path, index=None, verbose=True):
             end = timer()
 
             if verbose:
-                print(fmt.OK_SYMBOL, 'Loaded. Took:', get_elapsed_seconds(start, end), "seconds")
+                print(
+                    fmt.OK_SYMBOL,
+                    "Loaded. Took:",
+                    get_elapsed_seconds(start, end),
+                    "seconds",
+                )
         except (ValueError) as error:
             print(error)
             return None

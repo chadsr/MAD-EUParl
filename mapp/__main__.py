@@ -20,17 +20,33 @@ print(fmt.INFO_SYMBOL, "Data directory:", c.DATA_DIR, "\n")
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--update", help="Will fetch the latest dataset and then run", action="store_true")
+    "--update", help="Will fetch the latest dataset and then run", action="store_true"
+)
 parser.add_argument(
-    "--threads", help="Used to specify the number of threads the miner should utilise. Takes an integer, or if left out, uses cpu thread count as default.", type=int)
+    "--threads",
+    help="Used to specify the number of threads the miner should utilise. Takes an integer, or if left out, uses cpu thread count as default.",
+    type=int,
+)
 parser.add_argument(
-    "--mep-limit", help="Used to specify the number of MEPs to process from the dataset.", type=int)
+    "--mep-limit",
+    help="Used to specify the number of MEPs to process from the dataset.",
+    type=int,
+)
 parser.add_argument(
-    "--dossier-limit", help="Used to specify the number of dossiers to process from the dataset.", type=int)
+    "--dossier-limit",
+    help="Used to specify the number of dossiers to process from the dataset.",
+    type=int,
+)
 parser.add_argument(
-    "--vote-limit", help="Used to specify the number of votes to process from the dataset.", type=int)
+    "--vote-limit",
+    help="Used to specify the number of votes to process from the dataset.",
+    type=int,
+)
 parser.add_argument(
-    "--debug", help="Disables intensive operations which are not neccessary for code debugging.", action="store_true")
+    "--debug",
+    help="Disables intensive operations which are not neccessary for code debugging.",
+    action="store_true",
+)
 
 args = parser.parse_args()
 
@@ -45,14 +61,16 @@ if args.update:
     print(fmt.WAIT_SYMBOL, "Downloading latest datasets...")
     dl.prepare_datasets(num_threads)
 else:
-    print(fmt. WARNING_SYMBOL, "Using existing datasets")
+    print(fmt.WARNING_SYMBOL, "Using existing datasets")
 
 start = timer()
 
 manager = multiprocessing.Manager()
 miner = Miner(manager, debug=args.debug)
 
-mem_usage = memory_profiler.memory_usage((miner.start, (num_threads, args.mep_limit, args.dossier_limit, args.vote_limit)))
+mem_usage = memory_profiler.memory_usage(
+    (miner.start, (num_threads, args.mep_limit, args.dossier_limit, args.vote_limit))
+)
 max_mem_usage = max(mem_usage)
 
 end = timer()

@@ -15,9 +15,10 @@ import io_handler as io
 def __prepare_dataset__(info):
     folder, url = info
     uo = request.urlopen(url, timeout=c.DOWNLOAD_TIMEOUT)
-    modified_date = uo.headers['last-modified']
-    remote_unix = time.mktime(datetime.datetime.strptime(
-        modified_date, '%a, %d %b %Y %X GMT').timetuple())
+    modified_date = uo.headers["last-modified"]
+    remote_unix = time.mktime(
+        datetime.datetime.strptime(modified_date, "%a, %d %b %Y %X GMT").timetuple()
+    )
 
     disassembled = parse.urlparse(url)
     file_name = os.path.basename(disassembled.path)
@@ -36,8 +37,12 @@ def __prepare_dataset__(info):
             start = timer()
             output_path = extract_dataset(path)
             end = timer()
-            print(fmt.OK_SYMBOL, "Extracted. Took",
-                  get_elapsed_seconds(start, end), 'seconds')
+            print(
+                fmt.OK_SYMBOL,
+                "Extracted. Took",
+                get_elapsed_seconds(start, end),
+                "seconds",
+            )
 
             io.split_dataset(output_path, folder)
 
@@ -46,10 +51,9 @@ def __prepare_dataset__(info):
             return True
 
         except (error.URLError) as e:
-            if hasattr(e, 'code'):
+            if hasattr(e, "code"):
                 if e.code == 404:
-                    print(fmt.ERROR_SYMBOL, "Resource", url,
-                          "could not be found")
+                    print(fmt.ERROR_SYMBOL, "Resource", url, "could not be found")
                 else:
                     print("HTTP Error:", e)
             else:
@@ -78,7 +82,7 @@ def extract_dataset(path):
     name = os.path.splitext(filename)[0]
     output_path = os.path.join(c.JSON_DIR, name)
 
-    with lzma.open(path) as f, open(output_path, 'wb') as fout:
+    with lzma.open(path) as f, open(output_path, "wb") as fout:
         file_content = f.read()
         fout.write(file_content)
     f.close()
