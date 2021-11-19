@@ -6,6 +6,9 @@ catalog-v001.xml
 *.out
 *.gz
 *temp.tex
+*temp.pdf
+*.bbl
+*.blg
 
 *.lprof
 logs/runtime.json
