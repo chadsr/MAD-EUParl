@@ -1,59 +1,14 @@
-import json as json
+import json
+import os
 import ijson.backends.yajl2 as ijson
 from collections import OrderedDict
 from timeit import default_timer as timer
-from timing_handler import get_elapsed_seconds
 import formatting as fmt
-import random
-from itertools import islice
-import os
-import requests
-import urllib3
-
 import profiler
+from numpy import random
+from itertools import islice
 
-
-def get_request(url, return_type="json", timeout=10):
-    headers = {}
-    if return_type:
-        headers["Accept"] = "application/" + return_type.lower()
-
-    try:
-        resp = requests.get(url, timeout=timeout, headers=headers)
-        if resp.status_code == requests.codes.ok:
-            return json.loads(resp.text)
-        else:
-            return None
-    except urllib3.exceptions.ConnectTimeoutError as e:
-        return False
-    except Exception as e:
-        print(e)
-        return None
-
-
-def save_dataset(filename, dataset, format_type="turtle"):
-    with open(filename, "wb") as f:
-        print(fmt.WAIT_SYMBOL, "Saving:", filename)
-        start = timer()
-        dataset.serialize(f, format=format_type)
-        end = timer()
-    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
-
-
-def save_graph(filename, graph, format_type="nt"):
-    with open(filename, "wb") as f:
-        print(fmt.WAIT_SYMBOL, "Saving:", filename)
-        start = timer()
-        graph.serialize(f, format=format_type)
-        end = timer()
-    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
-
-
-def get_key(key):
-    try:
-        return int(key)
-    except ValueError:
-        return key
+from .utils import get_elapsed_seconds, get_key
 
 
 def __save_to_json__(filename, obj, indent_num=2):
@@ -104,6 +59,24 @@ def split_dataset(path, output_dir):
         get_elapsed_seconds(start, end),
         "seconds",
     )
+
+
+def save_dataset(filename, dataset, format_type="turtle"):
+    with open(filename, "wb") as f:
+        print(fmt.WAIT_SYMBOL, "Saving:", filename)
+        start = timer()
+        dataset.serialize(f, format=format_type)
+        end = timer()
+    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
+
+
+def save_graph(filename, graph, format_type="nt"):
+    with open(filename, "wb") as f:
+        print(fmt.WAIT_SYMBOL, "Saving:", filename)
+        start = timer()
+        graph.serialize(f, format=format_type)
+        end = timer()
+    print(fmt.OK_SYMBOL, "Saved. Took:", get_elapsed_seconds(start, end), "seconds\n")
 
 
 @profiler.do_profile()

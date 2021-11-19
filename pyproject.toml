@@ -6,7 +6,7 @@ authors = ["Ross <git@ross.ch>"]
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8,<3.10"
 urllib3 = "^1.26.7"
 requests = "^2.26.0"
 rdflib = "^6.0.2"
@@ -14,6 +14,7 @@ ijson = "^3.1.4"
 SPARQLWrapper = "^1.8.5"
 iribaker = "^0.2"
 pyspotlight = "^0.7.2"
+numpy = "^1.21.4"
 
 [tool.poetry.dev-dependencies]
 setuptools = "^59.2.0"

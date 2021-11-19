@@ -1,14 +1,11 @@
 import re
 from datetime import datetime
 import urllib.parse as urlparse
-from SPARQLEndpoint import SparqlServer
 from iribaker import to_iri
 from rdflib import URIRef, Literal
 import logging
 from timeit import default_timer as timer
-from timing_handler import get_elapsed_seconds
 import multiprocessing
-from dataset_generator import DatasetGenerator
 import json
 import os
 import spotlight
@@ -16,6 +13,9 @@ import spotlight
 import io_handler as io
 import constants as c
 import formatting as fmt
+from sparql_server import SparqlServer
+from dataset_generator import DatasetGenerator
+from utils import get_elapsed_seconds
 
 # TODO () Look into addN() function for adding multiple triples in one go
 # https://rdflib.readthedocs.io/en/stable/_modules/rdflib/graph.html#ConjunctiveGraph.addN
